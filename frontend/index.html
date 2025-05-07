@@ -1,0 +1,47 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard CBTis 272</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header>
+    <h1>CBTis 272 - Panel del Administrador</h1>
+    <nav>
+      <button onclick="mostrarSeccion('subirExcel')">Subir Excel</button>
+      <button onclick="mostrarSeccion('verRegistros')">Ver Registros</button>
+      <button onclick="mostrarSeccion('generarPDF')">Generar PDF</button>
+    </nav>
+  </header>
+
+  <main>
+    <section id="subirExcel" class="contenido">
+      <h2>Subir plantilla Excel</h2>
+      <form id="excelForm" enctype="multipart/form-data">
+        <input type="file" name="archivo" accept=".xlsx" required />
+        <button type="submit">Subir</button>
+      </form>
+      <div id="excelMsg"></div>
+    </section>
+
+    <section id="verRegistros" class="contenido" style="display:none;">
+      <h2>Registros Alumnos</h2>
+      <table id="tablaRegistros">
+        <thead><tr><th>Folio</th><th>Nombre</th><th>Periodo</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </section>
+
+    <section id="generarPDF" class="contenido" style="display:none;">
+      <h2>Generar PDF por folio</h2>
+      <input type="text" id="folioPDF" placeholder="Ingrese folio" />
+      <button onclick="generarPDF()">Generar</button>
+    </section>
+  </main>
+
+  <script src="dashboard.js"></script>
+</body>
+</html>
