@@ -1,0 +1,69 @@
+html
+CopiarEditar
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Formulario de Alumno</title>
+</head>
+<body>
+  <nav>
+    <a href="index.html">Inicio</a>
+  </nav>
+  <h2>Formulario de Registro</h2>
+  <form id="registroForm">
+    <input type="text" name="curp" placeholder="CURP" required>
+    <input type="email" name="correo_alumno" placeholder="Correo" required>
+    <input type="text" name="carrera" placeholder="Carrera" required>
+    <button type="submit">Guardar</button>
+  </form>
+
+  <script>
+    window.onload = () => {
+      const datos = JSON.parse(localStorage.getItem('datosPrecargados'));
+      if (datos) {
+        document.querySelector('[name="curp"]').value = datos.datos_alumno?.curp || '';
+        document.querySelector('[name="correo_alumno"]').value = datos.datos_generales?.correo_alumno || '';
+        document.querySelector('[name="carrera"]').value = datos.datos_alumno?.carrera || '';
+      }
+    };
+
+    document.getElementById('registroForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const folio = localStorage.getItem('alumnoFolio');
+      if (!folio) return alert('Folio perdido');
+
+      const datosPrecargados = JSON.parse(localStorage.getItem('datosPrecargados'));
+      const formData = new FormData(e.target);
+      const nuevoRegistro = {
+        folio,
+        datos_alumno: {
+          ...datosPrecargados.datos_alumno,
+          curp: formData.get('curp'),
+          carrera: formData.get('carrera')
+        },
+        datos_generales: {
+          ...datosPrecargados.datos_generales,
+          correo_alumno: formData.get('correo_alumno')
+        }
+      };
+
+      const res = await fetch('http://localhost:3001/api/guardar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(nuevoRegistro)
+      });
+
+      const result = await res.json();
+      if (res.ok) {
+        alert('Registro guardado con éxito');
+        window.open(`http://localhost:3001/api/pdf/${folio}`, '_blank');
+      } else {
+        alert(result.message || 'Error al guardar');
+      }
+    });
+  </script>
+  <script src="scripts.js"></script>
+
+</body>
+</html>

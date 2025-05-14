@@ -1,0 +1,37 @@
+html
+CopiarEditar
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Búsqueda de Folio</title>
+</head>
+<body>
+  <nav>
+    <a href="index.html">Inicio</a>
+    <a href="login.html">Iniciar sesión (admin)</a>
+  </nav>
+  <h2>Consulta tu folio</h2>
+  <form id="folioForm">
+    <input type="text" id="folio" placeholder="Ingresa tu folio" required>
+    <button type="submit">Buscar</button>
+  </form>
+  <script>
+    document.getElementById('folioForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const folio = document.getElementById('folio').value.trim();
+      const res = await fetch(`http://localhost:3001/api/folio/${folio}`);
+      if (res.ok) {
+        const data = await res.json();
+        localStorage.setItem('alumnoFolio', folio);
+        localStorage.setItem('datosPrecargados', JSON.stringify(data));
+        window.location.href = 'formulario.html';
+      } else {
+        alert('Folio no encontrado');
+      }
+    });
+  </script>
+  <script src="scripts.js"></script>
+
+</body>
+</html>
