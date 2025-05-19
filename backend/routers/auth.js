@@ -6,6 +6,7 @@ const bcrypt = require('bcrypt');
 // Ruta para login
 router.post('/login', async (req, res) => {
   const { username, password } = req.body;
+  console.log('🔐 Intentando login con:', username); // 👈 AGREGAR ESTO
 
   try {
     const user = await User.findOne({ username });
