@@ -13,9 +13,9 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/pdfs', express.static(path.join(__dirname, 'public/pdfs')));
 
 // Rutas
-app.use('/api', require('./routes/alumno.js'));
+app.use('/api', require('./routers/alumno.js'));
 
-app.use('/api', require('./routes/auth.js'));
+app.use('/api', require('./routers/auth.js'));
 
 // Conexión a MongoDB
 mongoose.connect(process.env.MONGO_URI, {
