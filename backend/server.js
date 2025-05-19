@@ -31,6 +31,13 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
+const corsOptions = {
+  origin: 'https://registro272.onrender.com/', // <-- URL del frontend
+  methods: ['GET', 'POST'],
+  credentials: true
+};
+
+app.use(cors(corsOptions));
 
 // Puerto
 const PORT = process.env.PORT || 3001;
