@@ -1,45 +1,50 @@
-
 <!DOCTYPE html>
 <html lang="es">
-  
 <head>
-  <link rel="stylesheet" href="/style.css">
-
   <meta charset="UTF-8">
   <title>Login Admin</title>
+  <link rel="stylesheet" href="/style.css">
 </head>
 <body>
   <nav>
     <a href="index.html">Inicio</a>
   </nav>
+
   <h2>Iniciar Sesión Administrador</h2>
+
   <form id="loginForm">
     <input type="text" id="username" placeholder="Usuario" required>
     <input type="password" id="password" placeholder="Contraseña" required>
     <button type="submit">Ingresar</button>
   </form>
+
   <script>
     document.getElementById('loginForm').addEventListener('submit', async (e) => {
       e.preventDefault();
+
       const username = document.getElementById('username').value;
       const password = document.getElementById('password').value;
 
-    const res = await fetch('https://registro272.onrender.com/api/auth/login', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({ username, password })
-});
+      try {
+        const res = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
 
+        const data = await res.json();
 
-      const data = await res.json();
-      if (res.ok) {
-        window.location.href = 'dashboard.html';
-      } else {
-        alert(data.message || 'Error al iniciar sesión');
+        if (res.ok) {
+          window.location.href = 'dashboard.html';
+        } else {
+          alert(data.message || 'Error al iniciar sesión');
+        }
+      } catch (error) {
+        console.error('❌ Error en login:', error);
+        alert('Error de conexión con el servidor.');
       }
     });
   </script>
-  <script src="scripts.js"></script>
 
 </body>
 </html>
