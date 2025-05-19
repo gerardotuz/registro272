@@ -13,7 +13,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/pdfs', express.static(path.join(__dirname, 'public/pdfs')));
 
 // Rutas
-app.use('/api/alumnos', require('./routes/Alumno')); // ✅ Corregido (singular y sin extensión)
+app.use('/api/alumnos', require('./routes/alumno')); // ✅ Corregido (singular y sin extensión)
 app.use('/api/auth', require('./routes/auth'));
 
 // Conexión a MongoDB
