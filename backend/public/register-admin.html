@@ -23,7 +23,7 @@
       const password = document.getElementById('password').value;
 
       try {
-        const res = await fetch('/api/auth/register-admin', {
+        const res = await fetch('https://registro272.onrender.com/api/auth/register-admin', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ username, password })
