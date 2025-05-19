@@ -4,7 +4,7 @@ const cors = require('cors');
 const path = require('path');
 require('dotenv').config();
 
-const app = express(); // ✅ Solo esta línea debe quedar
+const app = express();
 
 // Middleware
 app.use(cors());
@@ -13,8 +13,8 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/pdfs', express.static(path.join(__dirname, 'public/pdfs')));
 
 // Rutas
-app.use('/api', require('./routes/Alumno.js'));
-app.use('/api/auth', require('./routes/auth.js'));
+app.use('/api/alumnos', require('./routes/Alumno')); // ✅ Corregido (singular y sin extensión)
+app.use('/api/auth', require('./routes/auth'));
 
 // Conexión a MongoDB
 mongoose.connect(process.env.MONGO_URI, {
