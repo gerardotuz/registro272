@@ -17,29 +17,30 @@
   <p style="color: red;">⚠️ Este formulario solo debe usarse una vez para crear el primer admin. Luego puedes eliminarlo del servidor.</p>
 
   <script>
-    document.getElementById('registerForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const username = document.getElementById('username').value;
-      const password = document.getElementById('password').value;
+  document.getElementById('registerForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
 
-      try {
-        const res = await fetch('https://registro272.onrender.com/api/auth/register-admin', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username, password })
-        });
+    try {
+      const res = await fetch('https://registro272.onrender.com/api/auth/register-admin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+      });
 
-        const data = await res.json();
-        if (res.ok) {
-          alert('✅ Administrador registrado con éxito');
-        } else {
-          alert(data.message || 'Error al registrar administrador');
-        }
-      } catch (err) {
-        console.error('Error:', err);
-        alert('❌ Error de conexión con el servidor');
+      const data = await res.json();
+      if (res.ok) {
+        alert('✅ Administrador registrado con éxito');
+      } else {
+        alert(data.message || 'Error al registrar administrador');
       }
-    });
-  </script>
+    } catch (err) {
+      console.error('Error:', err);
+      alert('❌ Error de conexión con el servidor');
+    }
+  });
+</script>
+
 </body>
 </html>
