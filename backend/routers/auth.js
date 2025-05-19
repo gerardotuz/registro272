@@ -4,9 +4,9 @@ const User = require('../models/User');
 const bcrypt = require('bcrypt');
 
 // Ruta para login
-router.post('/login', async (req, res) => {
+router.post('/auth/login', async (req, res) => {
   const { username, password } = req.body;
-  console.log('🔐 Intentando login con:', username); // 👈 AGREGAR ESTO
+  console.log('🔐 Intentando login con:', username);
 
   try {
     const user = await User.findOne({ username });
@@ -15,22 +15,31 @@ router.post('/login', async (req, res) => {
     const match = await bcrypt.compare(password, user.password);
     if (!match) return res.status(401).json({ message: 'Contraseña incorrecta' });
 
-    res.status(200).json({ message: 'Login exitoso' }); // Puedes usar JWT si deseas.
+    res.status(200).json({ message: 'Login exitoso' });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    console.error('❌ Error en login:', err);
+    res.status(500).json({ message: 'Error del servidor' });
   }
 });
 
-// Ruta para crear el primer admin (sólo una vez)
-router.post('/register-admin', async (req, res) => {
+// Ruta para crear el primer admin
+router.post('/auth/register-admin', async (req, res) => {
   const { username, password } = req.body;
-  const existing = await User.findOne({ username });
-  if (existing) return res.status(400).json({ message: 'El usuario ya existe' });
+  console.log('🛠️ Registrando nuevo admin:', username);
 
-  const hashed = await bcrypt.hash(password, 10);
-  const newUser = new User({ username, password: hashed });
-  await newUser.save();
-  res.status(201).json({ message: 'Administrador creado' });
+  try {
+    const existing = await User.findOne({ username });
+    if (existing) return res.status(400).json({ message: 'El usuario ya existe' });
+
+    const hashed = await bcrypt.hash(password, 10);
+    const newUser = new User({ username, password: hashed });
+    await newUser.save();
+
+    res.status(201).json({ message: 'Administrador creado' });
+  } catch (err) {
+    console.error('❌ Error en register-admin:', err);
+    res.status(500).json({ message: 'Error del servidor' });
+  }
 });
 
 module.exports = router;
