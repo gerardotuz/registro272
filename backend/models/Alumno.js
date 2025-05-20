@@ -62,3 +62,6 @@ const alumnoSchema = new mongoose.Schema({
     }
   }
 });
+
+module.exports = mongoose.model('Alumno', alumnoSchema);
+
