@@ -58,7 +58,7 @@
       const result = await res.json();
       if (res.ok) {
         alert('Registro guardado con éxito');
-        window.open(`http://localhost:3001/api/pdf/${folio}`, '_blank');
+        window.open(`http://registro272.onrender.com/api/pdf/${folio}`, '_blank');
       } else {
         alert(result.message || 'Error al guardar');
       }
