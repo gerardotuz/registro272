@@ -1,9 +1,7 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
   <link rel="stylesheet" href="/style.css">
-
   <meta charset="UTF-8">
   <title>Dashboard Administrador</title>
 </head>
@@ -12,6 +10,7 @@
     <a href="index.html">Inicio</a>
     <a href="dashboard.html">Dashboard</a>
   </nav>
+
   <h2>Cargar Excel de alumnos</h2>
   <form id="excelForm" enctype="multipart/form-data">
     <input type="file" name="archivo" accept=".xlsx" required>
@@ -22,16 +21,27 @@
     document.getElementById('excelForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const formData = new FormData(e.target);
-      const res = await fetch('https://registro-api.onrender.com/api/cargar-excel', {
-        method: 'POST',
-        body: formData
-      });
 
-      const result = await res.json();
-      alert(result.message);
+      try {
+        const res = await fetch('https://registro-api.onrender.com/api/cargar-excel', {
+          method: 'POST',
+          body: formData
+        });
+
+        if (!res.ok) {
+          const errorText = await res.text();
+          throw new Error(`Error ${res.status}: ${errorText}`);
+        }
+
+        const result = await res.json();
+        alert(result.message);
+      } catch (error) {
+        alert("❌ Error al cargar el archivo: " + error.message);
+        console.error("Detalles del error:", error);
+      }
     });
   </script>
-  <script src="scripts.js"></script>
 
+  <script src="scripts.js"></script>
 </body>
 </html>
