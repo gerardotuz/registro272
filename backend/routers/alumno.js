@@ -6,9 +6,10 @@ const xlsx = require('xlsx');
 const PDFDocument = require('pdfkit');
 const fs = require('fs');
 const path = require('path');
+const flattenToNested = require('../utils/flattenToNested');
 
-// Configuración para subir archivos con multer
-const upload = multer({ dest: 'backend/uploads/' });
+// Configuración para subir archivos desde memoria
+const upload = multer({ storage: multer.memoryStorage() });
 
 // Obtener alumno por folio
 router.get('/folio/:folio', async (req, res) => {
@@ -26,12 +27,10 @@ router.post('/guardar', async (req, res) => {
   try {
     const data = req.body;
 
-    // Validación de campos obligatorios (ejemplo)
     if (!data.folio || !data.datos_alumno?.curp || !data.datos_generales?.correo_alumno) {
       return res.status(400).json({ message: 'Faltan datos obligatorios' });
     }
 
-    // Convertir todo a mayúsculas
     const upperCaseData = JSON.parse(JSON.stringify(data), (key, value) =>
       typeof value === 'string' ? value.toUpperCase() : value
     );
@@ -43,23 +42,26 @@ router.post('/guardar', async (req, res) => {
   }
 });
 
-// Cargar alumnos desde Excel
+// Cargar alumnos desde Excel (plano → anidado)
 router.post('/cargar-excel', upload.single('archivo'), async (req, res) => {
-  const workbook = xlsx.readFile(req.file.path);
-  const sheetName = workbook.SheetNames[0];
-  const data = xlsx.utils.sheet_to_json(workbook.Sheets[sheetName]);
-
   try {
+    const workbook = xlsx.read(req.file.buffer, { type: 'buffer' });
+    const sheetName = workbook.SheetNames[0];
+    const data = xlsx.utils.sheet_to_json(workbook.Sheets[sheetName]);
+
     for (let row of data) {
-      await Alumno.updateOne({ folio: row.folio }, { $set: row }, { upsert: true });
+      const alumno = flattenToNested(row);
+      await Alumno.findOneAndUpdate({ folio: alumno.folio }, { $set: alumno }, { upsert: true });
     }
+
     res.status(200).json({ message: 'Carga exitosa' });
   } catch (err) {
+    console.error('Error al procesar Excel:', err);
     res.status(500).json({ message: err.message });
   }
 });
 
-// Generar PDF
+// Generar PDF por folio
 router.get('/pdf/:folio', async (req, res) => {
   try {
     const alumno = await Alumno.findOne({ folio: req.params.folio });
