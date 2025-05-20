@@ -1,4 +1,32 @@
-<script>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <link rel="stylesheet" href="/style.css">
+
+  <meta charset="UTF-8">
+  <title>Formulario de Alumno</title>
+</head>
+<body>
+ <nav>
+  <div class="nav-logo">
+    <img src="/logo.png" alt="Logo" />
+  </div>
+  <div class="nav-links">
+    <a href="index.html">Inicio</a>
+    <a href="dashboard.html">Dashboard</a>
+    <a href="login.html">Iniciar sesión</a>
+  </div>
+</nav>
+
+  <h2>Formulario de Registro</h2>
+  <form id="registroForm">
+    <input type="text" name="curp" placeholder="CURP" required>
+    <input type="email" name="correo_alumno" placeholder="Correo" required>
+    <input type="text" name="carrera" placeholder="Carrera" required>
+    <button type="submit">Guardar</button>
+  </form>
+
+  <script>
   // Detectar entorno automáticamente
   const BASE_URL = window.location.origin.includes('localhost')
     ? 'http://localhost:3001'
@@ -56,3 +84,7 @@
   });
 </script>
 
+  <script src="scripts.js"></script>
+
+</body>
+</html>
