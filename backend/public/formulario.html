@@ -19,71 +19,235 @@
   </div>
 </nav>
 
-  <h2>Formulario de Registro</h2>
-  <form id="registroForm">
+ <h2>Formulario de Registro</h2>
+<form id="registroForm">
+  <fieldset>
+    <legend>Datos del Alumno</legend>
+    <input type="text" name="nombres" placeholder="Nombres" required>
+    <input type="text" name="primer_apellido" placeholder="Primer Apellido" required>
+    <input type="text" name="segundo_apellido" placeholder="Segundo Apellido" required>
     <input type="text" name="curp" placeholder="CURP" required>
-    <input type="email" name="correo_alumno" placeholder="Correo" required>
     <input type="text" name="carrera" placeholder="Carrera" required>
-    <button type="submit">Guardar</button>
-  </form>
+    <input type="text" name="periodo_semestral" placeholder="Periodo Semestral">
+    <input type="number" name="semestre" placeholder="Semestre">
+    <input type="text" name="grupo" placeholder="Grupo">
+    <input type="text" name="turno" placeholder="Turno">
+    <input type="date" name="fecha_nacimiento" placeholder="Fecha de Nacimiento">
+    <input type="number" name="edad" placeholder="Edad">
+    <input type="text" name="sexo" placeholder="Sexo">
+    <input type="text" name="estado_nacimiento" placeholder="Estado de Nacimiento">
+    <input type="text" name="municipio_nacimiento" placeholder="Municipio de Nacimiento">
+    <input type="text" name="ciudad_nacimiento" placeholder="Ciudad de Nacimiento">
+    <input type="text" name="estado_civil" placeholder="Estado Civil">
+  </fieldset>
+
+  <fieldset>
+    <legend>Datos Generales</legend>
+    <input type="text" name="colonia" placeholder="Colonia">
+    <input type="text" name="domicilio" placeholder="Domicilio">
+    <input type="text" name="codigo_postal" placeholder="Código Postal">
+    <input type="text" name="telefono_alumno" placeholder="Teléfono">
+    <input type="email" name="correo_alumno" placeholder="Correo" required>
+    <input type="text" name="tipo_sangre" placeholder="Tipo de Sangre">
+    <input type="text" name="contacto_emergencia_nombre" placeholder="Contacto de Emergencia - Nombre">
+    <input type="text" name="contacto_emergencia_telefono" placeholder="Contacto de Emergencia - Teléfono">
+    <input type="text" name="habla_lengua_indigena_respuesta" placeholder="¿Habla lengua indígena? (Sí/No)">
+    <input type="text" name="habla_lengua_indigena_cual" placeholder="¿Cuál lengua?">
+  </fieldset>
+
+  <fieldset>
+    <legend>Datos Médicos</legend>
+    <input type="text" name="numero_seguro_social" placeholder="Número de Seguro Social">
+    <input type="text" name="unidad_medica_familiar" placeholder="Unidad Médica Familiar">
+    <input type="text" name="enfermedad_cronica_o_alergia_respuesta" placeholder="¿Tiene enfermedad o alergia? (Sí/No)">
+    <input type="text" name="enfermedad_cronica_o_alergia_detalle" placeholder="Detalle enfermedad o alergia">
+    <input type="text" name="discapacidad" placeholder="Discapacidad">
+  </fieldset>
+
+  <fieldset>
+    <legend>Secundaria de Origen</legend>
+    <input type="text" name="nombre_secundaria" placeholder="Nombre de Secundaria">
+    <input type="text" name="regimen" placeholder="Régimen">
+    <input type="number" step="0.01" name="promedio_general" placeholder="Promedio General">
+    <input type="text" name="modalidad" placeholder="Modalidad">
+  </fieldset>
+
+  <fieldset>
+    <legend>Tutor Responsable</legend>
+    <input type="text" name="nombre_padre" placeholder="Nombre del Padre">
+    <input type="text" name="telefono_padre" placeholder="Teléfono del Padre">
+    <input type="text" name="nombre_madre" placeholder="Nombre de la Madre">
+    <input type="text" name="telefono_madre" placeholder="Teléfono de la Madre">
+    <input type="text" name="vive_con" placeholder="¿Con quién vive?">
+    <input type="text" name="persona_emergencia_nombre" placeholder="Persona Emergencia - Nombre">
+    <input type="text" name="persona_emergencia_parentesco" placeholder="Persona Emergencia - Parentesco">
+    <input type="text" name="persona_emergencia_telefono" placeholder="Persona Emergencia - Teléfono">
+  </fieldset>
+
+  <button type="submit">Guardar</button>
+</form>
 
   <script>
-  // Detectar entorno automáticamente
   const BASE_URL = window.location.origin.includes('localhost')
     ? 'http://localhost:3001'
     : 'https://registro272.onrender.com';
 
-  // Precargar datos al abrir el formulario
   window.onload = () => {
     const datos = JSON.parse(localStorage.getItem('datosPrecargados'));
-    if (datos) {
-      document.querySelector('[name="curp"]').value = datos.datos_alumno?.curp || '';
-      document.querySelector('[name="correo_alumno"]').value = datos.datos_generales?.correo_alumno || '';
-      document.querySelector('[name="carrera"]').value = datos.datos_alumno?.carrera || '';
-    }
+    if (!datos) return;
+
+    const set = (name, value) => {
+      const input = document.querySelector(`[name="${name}"]`);
+      if (input) input.value = value || '';
+    };
+
+    // datos_alumno
+    set('nombres', datos.datos_alumno?.nombres);
+    set('primer_apellido', datos.datos_alumno?.primer_apellido);
+    set('segundo_apellido', datos.datos_alumno?.segundo_apellido);
+    set('curp', datos.datos_alumno?.curp);
+    set('carrera', datos.datos_alumno?.carrera);
+    set('periodo_semestral', datos.datos_alumno?.periodo_semestral);
+    set('semestre', datos.datos_alumno?.semestre);
+    set('grupo', datos.datos_alumno?.grupo);
+    set('turno', datos.datos_alumno?.turno);
+    set('fecha_nacimiento', datos.datos_alumno?.fecha_nacimiento);
+    set('edad', datos.datos_alumno?.edad);
+    set('sexo', datos.datos_alumno?.sexo);
+    set('estado_nacimiento', datos.datos_alumno?.estado_nacimiento);
+    set('municipio_nacimiento', datos.datos_alumno?.municipio_nacimiento);
+    set('ciudad_nacimiento', datos.datos_alumno?.ciudad_nacimiento);
+    set('estado_civil', datos.datos_alumno?.estado_civil);
+
+    // datos_generales
+    set('colonia', datos.datos_generales?.colonia);
+    set('domicilio', datos.datos_generales?.domicilio);
+    set('codigo_postal', datos.datos_generales?.codigo_postal);
+    set('telefono_alumno', datos.datos_generales?.telefono_alumno);
+    set('correo_alumno', datos.datos_generales?.correo_alumno);
+    set('tipo_sangre', datos.datos_generales?.tipo_sangre);
+    set('contacto_emergencia_nombre', datos.datos_generales?.contacto_emergencia_nombre);
+    set('contacto_emergencia_telefono', datos.datos_generales?.contacto_emergencia_telefono);
+    set('habla_lengua_indigena_respuesta', datos.datos_generales?.habla_lengua_indigena?.respuesta);
+    set('habla_lengua_indigena_cual', datos.datos_generales?.habla_lengua_indigena?.cual);
+
+    // datos_medicos
+    set('numero_seguro_social', datos.datos_medicos?.numero_seguro_social);
+    set('unidad_medica_familiar', datos.datos_medicos?.unidad_medica_familiar);
+    set('enfermedad_cronica_o_alergia_respuesta', datos.datos_medicos?.enfermedad_cronica_o_alergia?.respuesta);
+    set('enfermedad_cronica_o_alergia_detalle', datos.datos_medicos?.enfermedad_cronica_o_alergia?.detalle);
+    set('discapacidad', datos.datos_medicos?.discapacidad);
+
+    // secundaria_origen
+    set('nombre_secundaria', datos.secundaria_origen?.nombre_secundaria);
+    set('regimen', datos.secundaria_origen?.regimen);
+    set('promedio_general', datos.secundaria_origen?.promedio_general);
+    set('modalidad', datos.secundaria_origen?.modalidad);
+
+    // tutor_responsable
+    set('nombre_padre', datos.tutor_responsable?.nombre_padre);
+    set('telefono_padre', datos.tutor_responsable?.telefono_padre);
+    set('nombre_madre', datos.tutor_responsable?.nombre_madre);
+    set('telefono_madre', datos.tutor_responsable?.telefono_madre);
+    set('vive_con', datos.tutor_responsable?.vive_con);
+    set('persona_emergencia_nombre', datos.tutor_responsable?.persona_emergencia?.nombre);
+    set('persona_emergencia_parentesco', datos.tutor_responsable?.persona_emergencia?.parentesco);
+    set('persona_emergencia_telefono', datos.tutor_responsable?.persona_emergencia?.telefono);
   };
 
-  // Guardar formulario
+  // Guardar datos
   document.getElementById('registroForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const folio = localStorage.getItem('alumnoFolio');
     if (!folio) return alert('Folio perdido');
 
-    const datosPrecargados = JSON.parse(localStorage.getItem('datosPrecargados'));
     const formData = new FormData(e.target);
+    const toObj = (prefixes) => Object.fromEntries(
+      Object.entries(Object.fromEntries(formData)).filter(([k]) => prefixes.includes(k))
+    );
+
+    const datosPrecargados = JSON.parse(localStorage.getItem('datosPrecargados')) || {};
+
     const nuevoRegistro = {
       folio,
       datos_alumno: {
         ...datosPrecargados.datos_alumno,
+        nombres: formData.get('nombres'),
+        primer_apellido: formData.get('primer_apellido'),
+        segundo_apellido: formData.get('segundo_apellido'),
         curp: formData.get('curp'),
-        carrera: formData.get('carrera')
+        carrera: formData.get('carrera'),
+        periodo_semestral: formData.get('periodo_semestral'),
+        semestre: formData.get('semestre'),
+        grupo: formData.get('grupo'),
+        turno: formData.get('turno'),
+        fecha_nacimiento: formData.get('fecha_nacimiento'),
+        edad: formData.get('edad'),
+        sexo: formData.get('sexo'),
+        estado_nacimiento: formData.get('estado_nacimiento'),
+        municipio_nacimiento: formData.get('municipio_nacimiento'),
+        ciudad_nacimiento: formData.get('ciudad_nacimiento'),
+        estado_civil: formData.get('estado_civil')
       },
       datos_generales: {
-        ...datosPrecargados.datos_generales,
-        correo_alumno: formData.get('correo_alumno')
+        colonia: formData.get('colonia'),
+        domicilio: formData.get('domicilio'),
+        codigo_postal: formData.get('codigo_postal'),
+        telefono_alumno: formData.get('telefono_alumno'),
+        correo_alumno: formData.get('correo_alumno'),
+        tipo_sangre: formData.get('tipo_sangre'),
+        contacto_emergencia_nombre: formData.get('contacto_emergencia_nombre'),
+        contacto_emergencia_telefono: formData.get('contacto_emergencia_telefono'),
+        habla_lengua_indigena: {
+          respuesta: formData.get('habla_lengua_indigena_respuesta'),
+          cual: formData.get('habla_lengua_indigena_cual')
+        }
+      },
+      datos_medicos: {
+        numero_seguro_social: formData.get('numero_seguro_social'),
+        unidad_medica_familiar: formData.get('unidad_medica_familiar'),
+        enfermedad_cronica_o_alergia: {
+          respuesta: formData.get('enfermedad_cronica_o_alergia_respuesta'),
+          detalle: formData.get('enfermedad_cronica_o_alergia_detalle')
+        },
+        discapacidad: formData.get('discapacidad')
+      },
+      secundaria_origen: {
+        nombre_secundaria: formData.get('nombre_secundaria'),
+        regimen: formData.get('regimen'),
+        promedio_general: formData.get('promedio_general'),
+        modalidad: formData.get('modalidad')
+      },
+      tutor_responsable: {
+        nombre_padre: formData.get('nombre_padre'),
+        telefono_padre: formData.get('telefono_padre'),
+        nombre_madre: formData.get('nombre_madre'),
+        telefono_madre: formData.get('telefono_madre'),
+        vive_con: formData.get('vive_con'),
+        persona_emergencia: {
+          nombre: formData.get('persona_emergencia_nombre'),
+          parentesco: formData.get('persona_emergencia_parentesco'),
+          telefono: formData.get('persona_emergencia_telefono')
+        }
       }
     };
 
-    try {
-      const res = await fetch(`${BASE_URL}/api/guardar`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(nuevoRegistro)
-      });
+    const res = await fetch(`${BASE_URL}/api/guardar`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(nuevoRegistro)
+    });
 
-      const result = await res.json();
-      if (res.ok) {
-        alert('Registro guardado con éxito');
-        window.open(`${BASE_URL}/api/pdf/${folio}`, '_blank');
-      } else {
-        alert(result.message || 'Error al guardar');
-      }
-    } catch (error) {
-      console.error('❌ Error al guardar:', error);
-      alert('Error de red o del servidor');
+    const result = await res.json();
+    if (res.ok) {
+      alert('Registro guardado con éxito');
+      window.open(`${BASE_URL}/api/pdf/${folio}`, '_blank');
+    } else {
+      alert(result.message || 'Error al guardar');
     }
   });
 </script>
+
 
   <script src="scripts.js"></script>
 
