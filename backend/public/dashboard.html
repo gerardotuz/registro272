@@ -1,11 +1,11 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
 <link rel="icon" href="/favicon.ico" type="image/x-icon">
-
-  <link rel="stylesheet" href="/style.css">
-  <meta charset="UTF-8">
-  <title>Dashboard Administrador</title>
+<link rel="stylesheet" href="/style.css">
+<meta charset="UTF-8">
+<title>Dashboard Administrador</title>
 </head>
 <body>
 <nav>
@@ -19,38 +19,46 @@
   </div>
 </nav>
 
+<h2>Cargar Excel de alumnos</h2>
+<form id="excelForm" enctype="multipart/form-data">
+  <input type="file" name="archivo" accept=".xlsx" required>
+  <button type="submit">Cargar</button>
+</form>
 
-  <h2>Cargar Excel de alumnos</h2>
-  <form id="excelForm" enctype="multipart/form-data">
-    <input type="file" name="archivo" accept=".xlsx" required>
-    <button type="submit">Cargar</button>
-  </form>
+<p id="cargando" style="display:none; color: darkblue; text-align:center; font-weight: bold; margin-top: 10px;">
+  ⏳ Cargando archivo, por favor espera...
+</p>
 
-  <script>
-    document.getElementById('excelForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const formData = new FormData(e.target);
+<script>
+  document.getElementById('excelForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const cargando = document.getElementById('cargando');
+    cargando.style.display = 'block';
 
-      try {
-        const res = await fetch('https://registro272.onrender.com/api/cargar-excel', {
-          method: 'POST',
-          body: formData
-        });
+    try {
+      const res = await fetch('https://registro272.onrender.com/api/cargar-excel', {
+        method: 'POST',
+        body: formData
+      });
 
-        if (!res.ok) {
-          const errorText = await res.text();
-          throw new Error(`Error ${res.status}: ${errorText}`);
-        }
-
-        const result = await res.json();
-        alert("✅ " + result.message);
-      } catch (error) {
-        alert("❌ Error al cargar el archivo: " + error.message);
-        console.error("Detalles del error:", error);
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(`Error ${res.status}: ${errorText}`);
       }
-    });
-  </script>
 
-  <script src="scripts.js"></script>
+      const result = await res.json();
+      alert("✅ " + result.message);
+    } catch (error) {
+      alert("❌ Error al cargar el archivo: " + error.message);
+      console.error("Detalles del error:", error);
+    } finally {
+      cargando.style.display = 'none';
+    }
+  });
+</script>
+
+<script src="scripts.js"></script>
 </body>
 </html>
+
