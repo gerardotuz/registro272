@@ -2,8 +2,7 @@
 <html lang="es">
 <head>
   <link rel="stylesheet" href="/style.css">
-<link rel="icon" href="/favicon.ico" type="image/x-icon">
-
+  <link rel="icon" href="/favicon.ico" type="image/x-icon">
   <meta charset="UTF-8">
   <title>Formulario de Alumno</title>
 </head>
@@ -14,80 +13,109 @@
   </div>
   <div class="nav-links">
     <a href="index.html">Inicio</a>
-    
     <a href="login.html">Iniciar sesión</a>
   </div>
 </nav>
 
  <h2>Formulario de Registro</h2>
 <form id="registroForm">
-  <fieldset>
-    <legend>Datos del Alumno</legend>
-    <input type="text" name="nombres" placeholder="Nombres" required>
-    <input type="text" name="primer_apellido" placeholder="Primer Apellido" required>
-    <input type="text" name="segundo_apellido" placeholder="Segundo Apellido" required>
-    <input type="text" name="curp" placeholder="CURP" required>
-    <input type="text" name="carrera" placeholder="Carrera" required>
-    <input type="text" name="periodo_semestral" placeholder="Periodo Semestral">
-    <input type="number" name="semestre" placeholder="Semestre">
-    <input type="text" name="grupo" placeholder="Grupo">
-    <input type="text" name="turno" placeholder="Turno">
-    <input type="date" name="fecha_nacimiento" placeholder="Fecha de Nacimiento">
-    <input type="number" name="edad" placeholder="Edad">
-    <input type="text" name="sexo" placeholder="Sexo">
-    <input type="text" name="estado_nacimiento" placeholder="Estado de Nacimiento">
-    <input type="text" name="municipio_nacimiento" placeholder="Municipio de Nacimiento">
-    <input type="text" name="ciudad_nacimiento" placeholder="Ciudad de Nacimiento">
-    <input type="text" name="estado_civil" placeholder="Estado Civil">
-  </fieldset>
+<!-- Fieldsets integrados -->
+<fieldset>
+  <legend>Datos del Alumno</legend>
+  <input type="text" name="nombres" placeholder="Nombres" required>
+  <input type="text" name="primer_apellido" placeholder="Primer Apellido" required>
+  <input type="text" name="segundo_apellido" placeholder="Segundo Apellido" required>
+  <input type="text" name="curp" placeholder="CURP" required>
+  <input type="text" name="carrera" placeholder="Carrera" required>
+  <input type="text" name="periodo_semestral" placeholder="Periodo Semestral" value="2025-2026" required>
+  <input type="number" name="semestre" placeholder="Semestre" value="1" required>
+  <input type="text" name="grupo" placeholder="Grupo">
+  <select name="turno" required>
+    <option value="">Selecciona turno</option>
+    <option value="matutino">Matutino</option>
+    <option value="vespertino">Vespertino</option>
+  </select>
+  <input type="date" name="fecha_nacimiento" placeholder="Fecha de Nacimiento">
+  <input type="number" name="edad" placeholder="Edad">
+  <select name="sexo" required>
+    <option value="">Selecciona sexo</option>
+    <option value="femenino">Femenino</option>
+    <option value="masculino">Masculino</option>
+  </select>
+  <input type="text" name="estado_nacimiento" placeholder="Estado de Nacimiento">
+  <input type="text" name="municipio_nacimiento" placeholder="Municipio de Nacimiento">
+  <input type="text" name="ciudad_nacimiento" placeholder="Ciudad de Nacimiento">
+  <input type="text" name="estado_civil" placeholder="Estado Civil">
+</fieldset>
 
-  <fieldset>
-    <legend>Datos Generales</legend>
-    <input type="text" name="colonia" placeholder="Colonia">
-    <input type="text" name="domicilio" placeholder="Domicilio">
-    <input type="text" name="codigo_postal" placeholder="Código Postal">
-    <input type="text" name="telefono_alumno" placeholder="Teléfono">
-    <input type="email" name="correo_alumno" placeholder="Correo" required>
-    <input type="text" name="tipo_sangre" placeholder="Tipo de Sangre">
-    <input type="text" name="contacto_emergencia_nombre" placeholder="Contacto de Emergencia - Nombre">
-    <input type="text" name="contacto_emergencia_telefono" placeholder="Contacto de Emergencia - Teléfono">
-    <input type="text" name="habla_lengua_indigena_respuesta" placeholder="¿Habla lengua indígena? (Sí/No)">
-    <input type="text" name="habla_lengua_indigena_cual" placeholder="¿Cuál lengua?">
-  </fieldset>
+<fieldset>
+  <legend>Datos Generales</legend>
+  <input type="text" name="colonia" placeholder="Colonia">
+  <input type="text" name="domicilio" placeholder="Domicilio">
+  <input type="text" name="codigo_postal" placeholder="Código Postal">
+  <input type="text" name="telefono_alumno" placeholder="Teléfono">
+  <input type="email" name="correo_alumno" placeholder="Correo" required>
+  <input type="text" name="tipo_sangre" placeholder="Tipo de Sangre">
+  <input type="text" name="contacto_emergencia_nombre" placeholder="Contacto de Emergencia - Nombre">
+  <input type="text" name="contacto_emergencia_telefono" placeholder="Contacto de Emergencia - Teléfono">
+  <input type="text" name="habla_lengua_indigena_respuesta" placeholder="¿Habla lengua indígena? (Sí/No)">
+  <input type="text" name="habla_lengua_indigena_cual" placeholder="¿Cuál lengua?">
+</fieldset>
 
-  <fieldset>
-    <legend>Datos Médicos</legend>
-    <input type="text" name="numero_seguro_social" placeholder="Número de Seguro Social">
-    <input type="text" name="unidad_medica_familiar" placeholder="Unidad Médica Familiar">
-    <input type="text" name="enfermedad_cronica_o_alergia_respuesta" placeholder="¿Tiene enfermedad o alergia? (Sí/No)">
-    <input type="text" name="enfermedad_cronica_o_alergia_detalle" placeholder="Detalle enfermedad o alergia">
-    <input type="text" name="discapacidad" placeholder="Discapacidad">
-  </fieldset>
+<fieldset>
+  <legend>Datos Médicos</legend>
+  <input type="text" name="numero_seguro_social" placeholder="Número de Seguro Social">
+  <input type="text" name="unidad_medica_familiar" placeholder="Unidad Médica Familiar">
+  <input type="text" name="enfermedad_cronica_o_alergia_respuesta" placeholder="¿Tiene enfermedad o alergia? (Sí/No)">
+  <input type="text" name="enfermedad_cronica_o_alergia_detalle" placeholder="Detalle enfermedad o alergia">
+  <input type="text" name="discapacidad" placeholder="Discapacidad">
+</fieldset>
 
-  <fieldset>
-    <legend>Secundaria de Origen</legend>
-    <input type="text" name="nombre_secundaria" placeholder="Nombre de Secundaria">
-    <input type="text" name="regimen" placeholder="Régimen">
-    <input type="number" step="0.01" name="promedio_general" placeholder="Promedio General">
-    <input type="text" name="modalidad" placeholder="Modalidad">
-  </fieldset>
+<fieldset>
+  <legend>Secundaria de Origen</legend>
+  <input type="text" name="nombre_secundaria" placeholder="Nombre de Secundaria">
+  <select name="regimen" required>
+    <option value="">Selecciona régimen</option>
+    <option value="publica">Pública</option>
+    <option value="privada">Privada</option>
+  </select>
+  <input type="number" step="0.01" name="promedio_general" placeholder="Promedio General">
+  <select name="modalidad" required>
+    <option value="">Selecciona modalidad</option>
+    <option value="general">General</option>
+    <option value="tecnica">Técnica</option>
+    <option value="abierta">Abierta</option>
+    <option value="telesecundaria">Telesecundaria</option>
+    <option value="ceneval">CENEVAL</option>
+    <option value="inea">INEA</option>
+    <option value="modular">Modular</option>
+  </select>
+</fieldset>
 
-  <fieldset>
-    <legend>Tutor Responsable</legend>
-    <input type="text" name="nombre_padre" placeholder="Nombre del Padre">
-    <input type="text" name="telefono_padre" placeholder="Teléfono del Padre">
-    <input type="text" name="nombre_madre" placeholder="Nombre de la Madre">
-    <input type="text" name="telefono_madre" placeholder="Teléfono de la Madre">
-    <input type="text" name="vive_con" placeholder="¿Con quién vive?">
-    <input type="text" name="persona_emergencia_nombre" placeholder="Persona Emergencia - Nombre">
-    <input type="text" name="persona_emergencia_parentesco" placeholder="Persona Emergencia - Parentesco">
-    <input type="text" name="persona_emergencia_telefono" placeholder="Persona Emergencia - Teléfono">
-  </fieldset>
+<fieldset>
+  <legend>Tutor Responsable</legend>
+  <input type="text" name="nombre_padre" placeholder="Nombre del Padre">
+  <input type="text" name="telefono_padre" placeholder="Teléfono del Padre">
+  <input type="text" name="nombre_madre" placeholder="Nombre de la Madre">
+  <input type="text" name="telefono_madre" placeholder="Teléfono de la Madre">
+  <select name="vive_con" required>
+    <option value="">¿Con quién vive?</option>
+    <option value="padres">Padres</option>
+    <option value="mama">Mamá</option>
+    <option value="papa">Papá</option>
+    <option value="abuelos">Abuelos</option>
+    <option value="tios">Tíos</option>
+  </select>
+  <input type="text" name="persona_emergencia_nombre" placeholder="Persona Emergencia - Nombre">
+  <input type="text" name="persona_emergencia_parentesco" placeholder="Persona Emergencia - Parentesco">
+  <input type="text" name="persona_emergencia_telefono" placeholder="Persona Emergencia - Teléfono">
+</fieldset>
+
 
   <button type="submit">Guardar</button>
 </form>
 
-  <script>
+<script>
   const BASE_URL = window.location.origin.includes('localhost')
     ? 'http://localhost:3001'
     : 'https://registro272.onrender.com';
@@ -101,117 +129,58 @@
       if (input) input.value = value || '';
     };
 
-    // datos_alumno
-    set('nombres', datos.datos_alumno?.nombres);
-    set('primer_apellido', datos.datos_alumno?.primer_apellido);
-    set('segundo_apellido', datos.datos_alumno?.segundo_apellido);
-    set('curp', datos.datos_alumno?.curp);
-    set('carrera', datos.datos_alumno?.carrera);
-    set('periodo_semestral', datos.datos_alumno?.periodo_semestral);
-    set('semestre', datos.datos_alumno?.semestre);
-    set('grupo', datos.datos_alumno?.grupo);
-    set('turno', datos.datos_alumno?.turno);
-    set('fecha_nacimiento', datos.datos_alumno?.fecha_nacimiento);
-    set('edad', datos.datos_alumno?.edad);
-    set('sexo', datos.datos_alumno?.sexo);
-    set('estado_nacimiento', datos.datos_alumno?.estado_nacimiento);
-    set('municipio_nacimiento', datos.datos_alumno?.municipio_nacimiento);
-    set('ciudad_nacimiento', datos.datos_alumno?.ciudad_nacimiento);
-    set('estado_civil', datos.datos_alumno?.estado_civil);
+    // Autocompletar campos (igual que antes)
+    const mappings = {
+      ...datos.datos_alumno,
+      ...datos.datos_generales,
+      ...datos.datos_medicos,
+      ...datos.secundaria_origen,
+      ...datos.tutor_responsable,
+      'habla_lengua_indigena_respuesta': datos.datos_generales?.habla_lengua_indigena?.respuesta,
+      'habla_lengua_indigena_cual': datos.datos_generales?.habla_lengua_indigena?.cual,
+      'enfermedad_cronica_o_alergia_respuesta': datos.datos_medicos?.enfermedad_cronica_o_alergia?.respuesta,
+      'enfermedad_cronica_o_alergia_detalle': datos.datos_medicos?.enfermedad_cronica_o_alergia?.detalle,
+      'persona_emergencia_nombre': datos.tutor_responsable?.persona_emergencia?.nombre,
+      'persona_emergencia_parentesco': datos.tutor_responsable?.persona_emergencia?.parentesco,
+      'persona_emergencia_telefono': datos.tutor_responsable?.persona_emergencia?.telefono
+    };
 
-    // datos_generales
-    set('colonia', datos.datos_generales?.colonia);
-    set('domicilio', datos.datos_generales?.domicilio);
-    set('codigo_postal', datos.datos_generales?.codigo_postal);
-    set('telefono_alumno', datos.datos_generales?.telefono_alumno);
-    set('correo_alumno', datos.datos_generales?.correo_alumno);
-    set('tipo_sangre', datos.datos_generales?.tipo_sangre);
-    set('contacto_emergencia_nombre', datos.datos_generales?.contacto_emergencia_nombre);
-    set('contacto_emergencia_telefono', datos.datos_generales?.contacto_emergencia_telefono);
-    set('habla_lengua_indigena_respuesta', datos.datos_generales?.habla_lengua_indigena?.respuesta);
-    set('habla_lengua_indigena_cual', datos.datos_generales?.habla_lengua_indigena?.cual);
-
-    // datos_medicos
-    set('numero_seguro_social', datos.datos_medicos?.numero_seguro_social);
-    set('unidad_medica_familiar', datos.datos_medicos?.unidad_medica_familiar);
-    set('enfermedad_cronica_o_alergia_respuesta', datos.datos_medicos?.enfermedad_cronica_o_alergia?.respuesta);
-    set('enfermedad_cronica_o_alergia_detalle', datos.datos_medicos?.enfermedad_cronica_o_alergia?.detalle);
-    set('discapacidad', datos.datos_medicos?.discapacidad);
-
-    // secundaria_origen
-    set('nombre_secundaria', datos.secundaria_origen?.nombre_secundaria);
-    set('regimen', datos.secundaria_origen?.regimen);
-    set('promedio_general', datos.secundaria_origen?.promedio_general);
-    set('modalidad', datos.secundaria_origen?.modalidad);
-
-    // tutor_responsable
-    set('nombre_padre', datos.tutor_responsable?.nombre_padre);
-    set('telefono_padre', datos.tutor_responsable?.telefono_padre);
-    set('nombre_madre', datos.tutor_responsable?.nombre_madre);
-    set('telefono_madre', datos.tutor_responsable?.telefono_madre);
-    set('vive_con', datos.tutor_responsable?.vive_con);
-    set('persona_emergencia_nombre', datos.tutor_responsable?.persona_emergencia?.nombre);
-    set('persona_emergencia_parentesco', datos.tutor_responsable?.persona_emergencia?.parentesco);
-    set('persona_emergencia_telefono', datos.tutor_responsable?.persona_emergencia?.telefono);
+    Object.entries(mappings).forEach(([k, v]) => set(k, v));
   };
 
-  // Guardar datos
   document.getElementById('registroForm').addEventListener('submit', async (e) => {
     e.preventDefault();
 
+    const camposObligatorios = [
+      'nombres','primer_apellido','segundo_apellido','curp','carrera',
+      'periodo_semestral','semestre','turno','fecha_nacimiento','edad','sexo',
+      'estado_nacimiento','municipio_nacimiento','ciudad_nacimiento','estado_civil',
+      'colonia','domicilio','codigo_postal','telefono_alumno','correo_alumno',
+      'tipo_sangre','contacto_emergencia_nombre','contacto_emergencia_telefono',
+      'habla_lengua_indigena_respuesta',
+      'numero_seguro_social','enfermedad_cronica_o_alergia_respuesta',
+      'enfermedad_cronica_o_alergia_detalle','discapacidad',
+      'nombre_secundaria','regimen','promedio_general','modalidad',
+      'nombre_padre','telefono_padre','nombre_madre','telefono_madre',
+      'vive_con','persona_emergencia_nombre','persona_emergencia_parentesco','persona_emergencia_telefono'
+    ];
 
-// Validación: asegura que todos los campos tengan valor
-const camposObligatorios = [
-  // datos_alumno
-  'nombres', 'primer_apellido', 'segundo_apellido', 'curp', 'carrera',
-  'periodo_semestral', 'semestre', 'grupo', 'turno', 'fecha_nacimiento',
-  'edad', 'sexo', 'estado_nacimiento', 'municipio_nacimiento', 'ciudad_nacimiento', 'estado_civil',
+    for (const campo of camposObligatorios) {
+      const input = document.querySelector(`[name="${campo}"]`);
+      if (!input || !input.value.trim()) {
+        alert(`⚠️ Por favor completa el campo: ${campo.replaceAll('_', ' ')}`);
+        input?.focus();
+        return;
+      }
+    }
 
-  // datos_generales
-  'colonia', 'domicilio', 'codigo_postal', 'telefono_alumno', 'correo_alumno',
-  'tipo_sangre', 'contacto_emergencia_nombre', 'contacto_emergencia_telefono',
-  'habla_lengua_indigena_respuesta', 'habla_lengua_indigena_cual',
-
-  // datos_medicos
-  'numero_seguro_social', 'unidad_medica_familiar', 'enfermedad_cronica_o_alergia_respuesta',
-  'enfermedad_cronica_o_alergia_detalle', 'discapacidad',
-
-  // secundaria_origen
-  'nombre_secundaria', 'regimen', 'promedio_general', 'modalidad',
-
-  // tutor_responsable
-  'nombre_padre', 'telefono_padre', 'nombre_madre', 'telefono_madre',
-  'vive_con', 'persona_emergencia_nombre', 'persona_emergencia_parentesco', 'persona_emergencia_telefono'
-];
-
-for (const campo of camposObligatorios) {
-  const input = document.querySelector(`[name="${campo}"]`);
-  if (!input || !input.value.trim()) {
-    alert(`⚠️ Por favor completa el campo: ${campo.replaceAll('_', ' ')}`);
-    input?.focus();
-    return;
-  }
-}
-
-
-
-
-
-    
     const folio = localStorage.getItem('alumnoFolio');
     if (!folio) return alert('Folio perdido');
 
     const formData = new FormData(e.target);
-    const toObj = (prefixes) => Object.fromEntries(
-      Object.entries(Object.fromEntries(formData)).filter(([k]) => prefixes.includes(k))
-    );
-
-    const datosPrecargados = JSON.parse(localStorage.getItem('datosPrecargados')) || {};
-
     const nuevoRegistro = {
       folio,
       datos_alumno: {
-        ...datosPrecargados.datos_alumno,
         nombres: formData.get('nombres'),
         primer_apellido: formData.get('primer_apellido'),
         segundo_apellido: formData.get('segundo_apellido'),
@@ -288,8 +257,6 @@ for (const campo of camposObligatorios) {
   });
 </script>
 
-
-  <script src="scripts.js"></script>
-
+<script src="scripts.js"></script>
 </body>
 </html>
