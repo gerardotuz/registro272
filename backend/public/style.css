@@ -12,7 +12,7 @@ body {
   background-position: center;
   background-attachment: fixed;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  color: #fff;
+  color: #fffff;
   padding: 20px;
 }
 
@@ -52,7 +52,7 @@ h2 {
 
 /* Formulario */
 form {
-  max-width: 400px;
+  max-width: 90%;
   margin: 0 auto;
   background: white;
   padding: 25px;
