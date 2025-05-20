@@ -136,4 +136,45 @@ button:hover {
     align-items: center;
   }
 }
+/* Mejora del formulario: ancho completo y disposición responsiva en filas */
+form {
+  max-width: 100%;
+  width: 100%;
+  margin: 0 auto;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Contenedor de campos tipo grid */
+fieldset {
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  padding: 15px 20px;
+}
+
+fieldset legend {
+  font-weight: bold;
+  padding: 0 10px;
+}
+
+/* Usar grid para los inputs en filas */
+fieldset input {
+  width: 100%;
+}
+
+fieldset {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 15px;
+}
+
+/* Ajuste global para que no se corte el fondo */
+html, body {
+  height: 100%;
+}
 
