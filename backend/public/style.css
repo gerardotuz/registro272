@@ -7,11 +7,12 @@
 
 /* Estilo general del cuerpo */
 body {
+  background: linear-gradient(to bottom, #f0f4f8, #dce3ea);
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: #f5f7fa;
   color: #333;
   padding: 20px;
 }
+
 
 /* NavegaciÃ³n */
 nav {
