@@ -7,11 +7,15 @@
 
 /* Estilo general del cuerpo */
 body {
-  background: linear-gradient(to bottom, #f0f4f8, #dce3ea);
+  background-image: url('/background.jpg');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   color: #333;
   padding: 20px;
 }
+
 
 
 /* NavegaciÃ³n */
