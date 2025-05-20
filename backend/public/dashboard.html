@@ -22,7 +22,7 @@
     document.getElementById('excelForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const formData = new FormData(e.target);
-      const res = await fetch('http://localhost:3001/api/cargar-excel', {
+      const res = await fetch('https://registro-api.onrender.com/api/cargar-excel', {
         method: 'POST',
         body: formData
       });
