@@ -23,7 +23,7 @@
       const formData = new FormData(e.target);
 
       try {
-        const res = await fetch('https://registro-api.onrender.com/api/cargar-excel', {
+        const res = await fetch('https://registro272.onrender.com/api/cargar-excel', {
           method: 'POST',
           body: formData
         });
@@ -34,7 +34,7 @@
         }
 
         const result = await res.json();
-        alert(result.message);
+        alert("✅ " + result.message);
       } catch (error) {
         alert("❌ Error al cargar el archivo: " + error.message);
         console.error("Detalles del error:", error);
