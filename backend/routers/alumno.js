@@ -59,32 +59,67 @@ router.post('/cargar-excel', upload.single('archivo'), async (req, res) => {
   }
 });
 
-// Generar PDF directamente en respuesta (sin escribir en disco)
+// Generar PDF con todos los campos del formulario
 router.get('/pdf/:folio', async (req, res) => {
   try {
     const alumno = await Alumno.findOne({ folio: req.params.folio });
     if (!alumno) return res.status(404).send('Folio no encontrado');
 
     const doc = new PDFDocument();
-
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `attachment; filename=${req.params.folio}.pdf`);
-
     doc.pipe(res);
 
     doc.fontSize(18).text('Registro de Alumno', { align: 'center' });
     doc.moveDown();
-    doc.fontSize(12).text(`Folio: ${alumno.folio}`);
-    doc.text(`Nombre: ${alumno.datos_alumno?.nombres || ''} ${alumno.datos_alumno?.primer_apellido || ''} ${alumno.datos_alumno?.segundo_apellido || ''}`);
-    doc.text(`CURP: ${alumno.datos_alumno?.curp || ''}`);
-    doc.text(`Carrera: ${alumno.datos_alumno?.carrera || ''}`);
-    doc.text(`Correo: ${alumno.datos_generales?.correo_alumno || ''}`);
+
+    doc.fontSize(14).text('📘 DATOS DEL ALUMNO');
+    for (const [key, val] of Object.entries(alumno.datos_alumno || {})) {
+      doc.text(`${key.replace(/_/g, ' ')}: ${val}`);
+    }
+
+    doc.moveDown().text('📗 DATOS GENERALES');
+    for (const [key, val] of Object.entries(alumno.datos_generales || {})) {
+      if (typeof val === 'object' && val !== null) {
+        for (const [subkey, subval] of Object.entries(val)) {
+          doc.text(`${key.replace(/_/g, ' ')} - ${subkey}: ${subval}`);
+        }
+      } else {
+        doc.text(`${key.replace(/_/g, ' ')}: ${val}`);
+      }
+    }
+
+    doc.moveDown().text('📙 DATOS MÉDICOS');
+    for (const [key, val] of Object.entries(alumno.datos_medicos || {})) {
+      if (typeof val === 'object' && val !== null) {
+        for (const [subkey, subval] of Object.entries(val)) {
+          doc.text(`${key.replace(/_/g, ' ')} - ${subkey}: ${subval}`);
+        }
+      } else {
+        doc.text(`${key.replace(/_/g, ' ')}: ${val}`);
+      }
+    }
+
+    doc.moveDown().text('📒 SECUNDARIA DE ORIGEN');
+    for (const [key, val] of Object.entries(alumno.secundaria_origen || {})) {
+      doc.text(`${key.replace(/_/g, ' ')}: ${val}`);
+    }
+
+    doc.moveDown().text('📕 TUTOR RESPONSABLE');
+    for (const [key, val] of Object.entries(alumno.tutor_responsable || {})) {
+      if (typeof val === 'object' && val !== null) {
+        for (const [subkey, subval] of Object.entries(val)) {
+          doc.text(`${key.replace(/_/g, ' ')} - ${subkey}: ${subval}`);
+        }
+      } else {
+        doc.text(`${key.replace(/_/g, ' ')}: ${val}`);
+      }
+    }
 
     doc.end();
   } catch (err) {
-    console.error('Error generando PDF:', err);
+    console.error('Error generando PDF completo:', err);
     res.status(500).send('Error generando el PDF');
   }
 });
-
 module.exports = router;
