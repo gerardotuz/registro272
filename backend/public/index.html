@@ -21,7 +21,7 @@
     document.getElementById('folioForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const folio = document.getElementById('folio').value.trim();
-      const res = await fetch(`http://localhost:3001/api/folio/${folio}`);
+      const res = await fetch(`https://tu-backend.onrender.com/api/folio/${folio}`);
       if (res.ok) {
         const data = await res.json();
         localStorage.setItem('alumnoFolio', folio);
