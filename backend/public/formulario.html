@@ -158,6 +158,46 @@
   // Guardar datos
   document.getElementById('registroForm').addEventListener('submit', async (e) => {
     e.preventDefault();
+
+
+// Validación: asegura que todos los campos tengan valor
+const camposObligatorios = [
+  // datos_alumno
+  'nombres', 'primer_apellido', 'segundo_apellido', 'curp', 'carrera',
+  'periodo_semestral', 'semestre', 'grupo', 'turno', 'fecha_nacimiento',
+  'edad', 'sexo', 'estado_nacimiento', 'municipio_nacimiento', 'ciudad_nacimiento', 'estado_civil',
+
+  // datos_generales
+  'colonia', 'domicilio', 'codigo_postal', 'telefono_alumno', 'correo_alumno',
+  'tipo_sangre', 'contacto_emergencia_nombre', 'contacto_emergencia_telefono',
+  'habla_lengua_indigena_respuesta', 'habla_lengua_indigena_cual',
+
+  // datos_medicos
+  'numero_seguro_social', 'unidad_medica_familiar', 'enfermedad_cronica_o_alergia_respuesta',
+  'enfermedad_cronica_o_alergia_detalle', 'discapacidad',
+
+  // secundaria_origen
+  'nombre_secundaria', 'regimen', 'promedio_general', 'modalidad',
+
+  // tutor_responsable
+  'nombre_padre', 'telefono_padre', 'nombre_madre', 'telefono_madre',
+  'vive_con', 'persona_emergencia_nombre', 'persona_emergencia_parentesco', 'persona_emergencia_telefono'
+];
+
+for (const campo of camposObligatorios) {
+  const input = document.querySelector(`[name="${campo}"]`);
+  if (!input || !input.value.trim()) {
+    alert(`⚠️ Por favor completa el campo: ${campo.replaceAll('_', ' ')}`);
+    input?.focus();
+    return;
+  }
+}
+
+
+
+
+
+    
     const folio = localStorage.getItem('alumnoFolio');
     if (!folio) return alert('Folio perdido');
 
