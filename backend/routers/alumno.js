@@ -4,8 +4,6 @@ const Alumno = require('../models/Alumno');
 const multer = require('multer');
 const xlsx = require('xlsx');
 const PDFDocument = require('pdfkit');
-const fs = require('fs');
-const path = require('path');
 const flattenToNested = require('../utils/flattenToNested');
 
 // Configuración para subir archivos desde memoria
@@ -61,30 +59,31 @@ router.post('/cargar-excel', upload.single('archivo'), async (req, res) => {
   }
 });
 
-// Generar PDF por folio
+// Generar PDF directamente en respuesta (sin escribir en disco)
 router.get('/pdf/:folio', async (req, res) => {
   try {
     const alumno = await Alumno.findOne({ folio: req.params.folio });
     if (!alumno) return res.status(404).send('Folio no encontrado');
 
     const doc = new PDFDocument();
-    const pdfPath = `backend/public/pdfs/${req.params.folio}.pdf`;
-    doc.pipe(fs.createWriteStream(pdfPath));
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename=${req.params.folio}.pdf`);
+
+    doc.pipe(res);
 
     doc.fontSize(18).text('Registro de Alumno', { align: 'center' });
     doc.moveDown();
     doc.fontSize(12).text(`Folio: ${alumno.folio}`);
-    doc.text(`Nombre: ${alumno.datos_alumno.nombres} ${alumno.datos_alumno.primer_apellido} ${alumno.datos_alumno.segundo_apellido}`);
-    doc.text(`CURP: ${alumno.datos_alumno.curp}`);
-    doc.text(`Carrera: ${alumno.datos_alumno.carrera}`);
-    doc.text(`Correo: ${alumno.datos_generales.correo_alumno}`);
-    doc.end();
+    doc.text(`Nombre: ${alumno.datos_alumno?.nombres || ''} ${alumno.datos_alumno?.primer_apellido || ''} ${alumno.datos_alumno?.segundo_apellido || ''}`);
+    doc.text(`CURP: ${alumno.datos_alumno?.curp || ''}`);
+    doc.text(`Carrera: ${alumno.datos_alumno?.carrera || ''}`);
+    doc.text(`Correo: ${alumno.datos_generales?.correo_alumno || ''}`);
 
-    doc.on('finish', () => {
-      res.download(pdfPath);
-    });
+    doc.end();
   } catch (err) {
-    res.status(500).send(err.message);
+    console.error('Error generando PDF:', err);
+    res.status(500).send('Error generando el PDF');
   }
 });
 
