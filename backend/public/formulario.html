@@ -126,7 +126,7 @@
 
     const set = (name, value) => {
       const input = document.querySelector(`[name="${name}"]`);
-      if (input) input.value = value || '';
+      if (input && value != null && value !== '') input.value = value;
     };
 
     // Autocompletar campos (igual que antes)
