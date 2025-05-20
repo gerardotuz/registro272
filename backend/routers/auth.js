@@ -21,6 +21,12 @@ router.post('/auth/login', async (req, res) => {
     res.status(500).json({ message: 'Error del servidor' });
   }
 });
+// Ruta para ver todos los usuarios (SOLO PARA PRUEBA, BORRAR DESPUÉS)
+router.get('/auth/users', async (req, res) => {
+  const users = await User.find();
+  res.json(users);
+});
+
 
 // Ruta para crear el primer admin
 router.post('/auth/register-admin', async (req, res) => {
