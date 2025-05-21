@@ -36,14 +36,8 @@
     <option value="vespertino">Vespertino</option>
   </select>
   <input type="date" name="fecha_nacimiento" placeholder="Fecha de Nacimiento">
-  <select name="edad" required>
-  <option value="">Selecciona edad</option>
-  <option value="13">13</option>
-  <option value="14">14</option>
-  <option value="15">15</option>
-  <option value="16">16</option>
-  <option value="19">19</option>
-</select>
+<input type="text" name="edad" placeholder="Edad">
+
   <select name="sexo" required>
     <option value="">Selecciona sexo</option>
     <option value="femenino">Femenino</option>
@@ -72,7 +66,14 @@
 <fieldset>
   <legend>Datos Médicos</legend>
   <input type="text" name="numero_seguro_social" placeholder="Número de Seguro Social">
-  <input type="text" name="unidad_medica_familiar" placeholder="Unidad Médica Familiar">
+  <select name="Unidad Medica" required>
+  <option value="">Selecciona Unidad Medica</option>
+  <option value="13">13</option>
+  <option value="14">14</option>
+  <option value="15">15</option>
+  <option value="16">16</option>
+  <option value="19">19</option>
+</select>
   <input type="text" name="enfermedad_cronica_o_alergia_respuesta" placeholder="¿Tiene enfermedad o alergia? (Sí/No)">
   <input type="text" name="enfermedad_cronica_o_alergia_detalle" placeholder="Detalle enfermedad o alergia">
   <select name="discapacidad" required>
