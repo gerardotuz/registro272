@@ -73,48 +73,24 @@ router.get('/pdf/:folio', async (req, res) => {
     doc.fontSize(18).text('Registro de Alumno', { align: 'center' });
     doc.moveDown();
 
-    doc.fontSize(14).text('📘 DATOS DEL ALUMNO');
-    for (const [key, val] of Object.entries(alumno.datos_alumno || {})) {
-      doc.text(`${key.replace(/_/g, ' ')}: ${val}`);
-    }
-
-    doc.moveDown().text('📗 DATOS GENERALES');
-    for (const [key, val] of Object.entries(alumno.datos_generales || {})) {
-      if (typeof val === 'object' && val !== null) {
-        for (const [subkey, subval] of Object.entries(val)) {
-          doc.text(`${key.replace(/_/g, ' ')} - ${subkey}: ${subval}`);
+    const imprimirObjeto = (titulo, objeto) => {
+      doc.moveDown().fontSize(14).text(titulo);
+      for (const [key, val] of Object.entries(objeto || {})) {
+        if (typeof val === 'object' && val !== null) {
+          for (const [subkey, subval] of Object.entries(val)) {
+            doc.fontSize(12).text(`${key.replace(/_/g, ' ')} - ${subkey}: ${subval}`);
+          }
+        } else {
+          doc.fontSize(12).text(`${key.replace(/_/g, ' ')}: ${val}`);
         }
-      } else {
-        doc.text(`${key.replace(/_/g, ' ')}: ${val}`);
       }
-    }
+    };
 
-    doc.moveDown().text('📙 DATOS MÉDICOS');
-    for (const [key, val] of Object.entries(alumno.datos_medicos || {})) {
-      if (typeof val === 'object' && val !== null) {
-        for (const [subkey, subval] of Object.entries(val)) {
-          doc.text(`${key.replace(/_/g, ' ')} - ${subkey}: ${subval}`);
-        }
-      } else {
-        doc.text(`${key.replace(/_/g, ' ')}: ${val}`);
-      }
-    }
-
-    doc.moveDown().text('📒 SECUNDARIA DE ORIGEN');
-    for (const [key, val] of Object.entries(alumno.secundaria_origen || {})) {
-      doc.text(`${key.replace(/_/g, ' ')}: ${val}`);
-    }
-
-    doc.moveDown().text('📕 TUTOR RESPONSABLE');
-    for (const [key, val] of Object.entries(alumno.tutor_responsable || {})) {
-      if (typeof val === 'object' && val !== null) {
-        for (const [subkey, subval] of Object.entries(val)) {
-          doc.text(`${key.replace(/_/g, ' ')} - ${subkey}: ${subval}`);
-        }
-      } else {
-        doc.text(`${key.replace(/_/g, ' ')}: ${val}`);
-      }
-    }
+    imprimirObjeto('📘 DATOS DEL ALUMNO', alumno.datos_alumno);
+    imprimirObjeto('📗 DATOS GENERALES', alumno.datos_generales);
+    imprimirObjeto('📙 DATOS MÉDICOS', alumno.datos_medicos);
+    imprimirObjeto('📒 SECUNDARIA DE ORIGEN', alumno.secundaria_origen);
+    imprimirObjeto('📕 TUTOR RESPONSABLE', alumno.tutor_responsable);
 
     doc.end();
   } catch (err) {
@@ -122,4 +98,6 @@ router.get('/pdf/:folio', async (req, res) => {
     res.status(500).send('Error generando el PDF');
   }
 });
+
 module.exports = router;
+
