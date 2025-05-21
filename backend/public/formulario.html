@@ -59,7 +59,14 @@
   <input type="text" name="tipo_sangre" placeholder="Tipo de Sangre">
   <input type="text" name="contacto_emergencia_nombre" placeholder="Contacto de Emergencia - Nombre">
   <input type="text" name="contacto_emergencia_telefono" placeholder="Contacto de Emergencia - Teléfono">
-  <input type="text" name="habla_lengua_indigena_respuesta" placeholder="¿Habla lengua indígena? (Sí/No)">
+  <legend>¿Habla Lengua Indigena?</legend>
+
+  <select name="habla_lengua_indigena_respuesta" required>
+    <option value="">¿Habla lengua indígena? (Sí/No)</option>
+    <option value="si">Sí</option>
+    <option value="no">No</option>
+  </select>
+
   <input type="text" name="habla_lengua_indigena_cual" placeholder="¿Cuál lengua?">
 </fieldset>
 
@@ -78,6 +85,7 @@
   <input type="text" name="enfermedad_cronica_o_alergia_detalle" placeholder="Detalle enfermedad o alergia">
   <select name="discapacidad" required>
   <option value="">Selecciona discapacidad</option>
+    <option value="Ninguna">Ninguna</option>
   <option value="Visual">Visual</option>
   <option value="Motriz">Motriz</option>
   <option value="Auditiva">Auditiva</option>
