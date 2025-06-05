@@ -21,21 +21,19 @@ const alumnoSchema = new mongoose.Schema({
     estado_civil: String
   },
   datos_generales: {
-  colonia: String,
-  domicilio: String,
-  codigo_postal: String,
-  telefono_alumno: String,
-  correo_alumno: String,
-  paraescolar: String, // ← AGREGA ESTA LÍNEA
-  tipo_sangre: String,
-  contacto_emergencia_nombre: String,
-  contacto_emergencia_telefono: String,
-  habla_lengua_indigena: {
-    respuesta: String,
-    cual: String
-  }
-},
-
+    colonia: String,
+    domicilio: String,
+    codigo_postal: String,
+    telefono_alumno: String,
+    correo_alumno: String,
+    paraescolar: String, // 👈 COMA aquí
+    tipo_sangre: String,
+    contacto_emergencia_nombre: String,
+    contacto_emergencia_telefono: String,
+    habla_lengua_indigena: {
+      respuesta: String,
+      cual: String
+    }
   },
   datos_medicos: {
     numero_seguro_social: String,
@@ -67,4 +65,3 @@ const alumnoSchema = new mongoose.Schema({
 });
 
 module.exports = mongoose.model('Alumno', alumnoSchema);
-
