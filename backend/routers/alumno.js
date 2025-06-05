@@ -93,18 +93,18 @@ router.get('/pdf/:folio', async (req, res) => {
       }
     };
 
-    imprimirObjeto('📘 DATOS DEL ALUMNO', alumno.datos_alumno);
-    imprimirObjeto('📗 DATOS GENERALES', alumno.datos_generales);
+    imprimirObjeto('DATOS DEL ALUMNO', alumno.datos_alumno);
+    imprimirObjeto('DATOS GENERALES', alumno.datos_generales);
 
     doc.moveDown();
-    doc.fontSize(14).fillColor('blue').text(`🎯 PARAESCOLAR ELEGIDO: ${alumno.datos_generales?.paraescolar || 'NO REGISTRADO'}`, {
+    doc.fontSize(14).fillColor('blue').text(`PARAESCOLAR ELEGIDO: ${alumno.datos_generales?.paraescolar || 'NO REGISTRADO'}`, {
       align: 'left'
     });
     doc.fillColor('black');
 
-    imprimirObjeto('📙 DATOS MÉDICOS', alumno.datos_medicos);
-    imprimirObjeto('📒 SECUNDARIA DE ORIGEN', alumno.secundaria_origen);
-    imprimirObjeto('📕 TUTOR RESPONSABLE', alumno.tutor_responsable);
+    imprimirObjeto('DATOS MÉDICOS', alumno.datos_medicos);
+    imprimirObjeto('SECUNDARIA DE ORIGEN', alumno.secundaria_origen);
+    imprimirObjeto('TUTOR RESPONSABLE', alumno.tutor_responsable);
 
     doc.end();
   } catch (err) {
