@@ -2,21 +2,11 @@ const PDFDocument = require('pdfkit');
 const fs = require('fs');
 const path = require('path');
 
-function generarPDF(datos, nombreArchivo = 'formulario_generado.pdf') {
-  const doc = new PDFDocument();
+function generarPDF(datos, nombreArchivo = 'formulario_estilizado.pdf') {
+  const doc = new PDFDocument({ margin: 50 });
   const rutaPDF = path.join(__dirname, '../public/pdfs', nombreArchivo);
   const writeStream = fs.createWriteStream(rutaPDF);
   doc.pipe(writeStream);
-
-  const logoPath = path.join(__dirname, '../public/images/logo.png');
-  if (fs.existsSync(logoPath)) {
-    doc.image(logoPath, 40, 30, { width: 530 });
-  }
-
-  doc.moveDown(4);
-  doc.fontSize(16).text('Formulario de Registro de Alumno', { align: 'center' });
-  doc.moveDown(1);
-  doc.fontSize(12);
 
   const alumno = datos.datos_alumno || {};
   const generales = datos.datos_generales || {};
@@ -24,46 +14,64 @@ function generarPDF(datos, nombreArchivo = 'formulario_generado.pdf') {
   const secundaria = datos.secundaria_origen || {};
   const tutor = datos.tutor_responsable || {};
 
-  // DATOS DEL ALUMNO
-  doc.text(`Nombre: ${alumno.nombres} ${alumno.primer_apellido} ${alumno.segundo_apellido}`);
-  doc.text(`CURP: ${alumno.curp}`);
-  doc.text(`Carrera: ${alumno.carrera}`);
-  doc.text(`Semestre: ${alumno.semestre}  Grupo: ${alumno.grupo}  Turno: ${alumno.turno}`);
-  doc.text(`Fecha de Nacimiento: ${alumno.fecha_nacimiento}  Edad: ${alumno.edad}  Sexo: ${alumno.sexo}`);
-  doc.text(`Estado Nacimiento: ${alumno.estado_nacimiento}  Municipio: ${alumno.municipio_nacimiento}  Ciudad: ${alumno.ciudad_nacimiento}`);
-  doc.text(`Estado Civil: ${alumno.estado_civil}`);
+  const logoPath = path.join(__dirname, '../public/images/logo.png');
+  if (fs.existsSync(logoPath)) {
+    doc.image(logoPath, 50, 30, { width: 500 });
+    doc.moveDown(4);
+  }
+
+  doc.fontSize(16).text('FICHA DE INSCRIPCIÓN', { align: 'center' });
   doc.moveDown();
+
+  const seccion = (titulo) => {
+    doc.moveDown().fontSize(12).fillColor('#ffffff')
+      .rect(doc.x - 2, doc.y - 2, 500, 18).fill('#89042e').fillColor('#ffffff')
+      .text(`  ${titulo}`, doc.x, doc.y, { continued: false })
+      .fillColor('black').moveDown(0.5);
+  };
+
+  const campo = (label, valor) => {
+    doc.font('Helvetica-Bold').text(`${label}: `, { continued: true });
+    doc.font('Helvetica').text(valor || '---');
+  };
+
+  // DATOS DEL ALUMNO
+  seccion('DATOS DEL ALUMNO');
+  campo('Nombre completo', `${alumno.nombres} ${alumno.primer_apellido} ${alumno.segundo_apellido}`);
+  campo('CURP', alumno.curp);
+  campo('Carrera', alumno.carrera);
+  campo('Semestre / Grupo / Turno', `${alumno.semestre} / ${alumno.grupo} / ${alumno.turno}`);
+  campo('Fecha de Nacimiento / Edad / Sexo', `${alumno.fecha_nacimiento} / ${alumno.edad} / ${alumno.sexo}`);
+  campo('Lugar de Nacimiento', `${alumno.estado_nacimiento}, ${alumno.municipio_nacimiento}, ${alumno.ciudad_nacimiento}`);
+  campo('Estado Civil', alumno.estado_civil);
 
   // DATOS GENERALES
-  doc.text('Domicilio:', { underline: true });
-  doc.text(`${generales.domicilio}, ${generales.colonia}, CP: ${generales.codigo_postal}`);
-  doc.text(`Teléfono: ${generales.telefono_alumno}  Correo: ${generales.correo_alumno}`);
-  doc.text(`Paraescolar: ${generales.paraescolar}`);
-  doc.text(`Tipo de Sangre: ${generales.tipo_sangre}`);
-  doc.text(`Contacto Emergencia: ${generales.contacto_emergencia_nombre} - Tel: ${generales.contacto_emergencia_telefono}`);
-  doc.text(`Lengua Indígena: ${generales.habla_lengua_indigena?.respuesta || ''} - ${generales.habla_lengua_indigena?.cual || ''}`);
-  doc.moveDown();
+  seccion('DATOS GENERALES');
+  campo('Domicilio', `${generales.domicilio}, ${generales.colonia}, CP: ${generales.codigo_postal}`);
+  campo('Teléfono / Correo', `${generales.telefono_alumno} / ${generales.correo_alumno}`);
+  campo('Paraescolar', generales.paraescolar);
+  campo('Tipo de Sangre', generales.tipo_sangre);
+  campo('Contacto Emergencia', `${generales.contacto_emergencia_nombre} - Tel: ${generales.contacto_emergencia_telefono}`);
+  campo('Lengua Indígena', `${generales.habla_lengua_indigena?.respuesta || ''} / ${generales.habla_lengua_indigena?.cual || ''}`);
 
   // DATOS MÉDICOS
-  doc.text('Datos Médicos:', { underline: true });
-  doc.text(`Número Seguro Social: ${medicos.numero_seguro_social}`);
-  doc.text(`Unidad Médica Familiar: ${medicos.unidad_medica_familiar}`);
-  doc.text(`Enfermedad o Alergia: ${medicos.enfermedad_cronica_o_alergia?.respuesta || ''} - ${medicos.enfermedad_cronica_o_alergia?.detalle || ''}`);
-  doc.text(`Discapacidad: ${medicos.discapacidad}`);
-  doc.moveDown();
+  seccion('DATOS MÉDICOS');
+  campo('Número Seguro Social', medicos.numero_seguro_social);
+  campo('Unidad Médica', medicos.unidad_medica_familiar);
+  campo('Enfermedad o Alergia', `${medicos.enfermedad_cronica_o_alergia?.respuesta || ''} - ${medicos.enfermedad_cronica_o_alergia?.detalle || ''}`);
+  campo('Discapacidad', medicos.discapacidad);
 
-  // SECUNDARIA
-  doc.text('Secundaria de Origen:', { underline: true });
-  doc.text(`Nombre: ${secundaria.nombre_secundaria}`);
-  doc.text(`Régimen: ${secundaria.regimen}  Promedio: ${secundaria.promedio_general}  Modalidad: ${secundaria.modalidad}`);
-  doc.moveDown();
+  // SECUNDARIA DE ORIGEN
+  seccion('SECUNDARIA DE ORIGEN');
+  campo('Nombre', secundaria.nombre_secundaria);
+  campo('Régimen / Promedio / Modalidad', `${secundaria.regimen} / ${secundaria.promedio_general} / ${secundaria.modalidad}`);
 
-  // TUTOR
-  doc.text('Tutor Responsable:', { underline: true });
-  doc.text(`Padre: ${tutor.nombre_padre} - Tel: ${tutor.telefono_padre}`);
-  doc.text(`Madre: ${tutor.nombre_madre} - Tel: ${tutor.telefono_madre}`);
-  doc.text(`Vive con: ${tutor.vive_con}`);
-  doc.text(`Persona Emergencia: ${tutor.persona_emergencia?.nombre || ''} (${tutor.persona_emergencia?.parentesco || ''}) - Tel: ${tutor.persona_emergencia?.telefono || ''}`);
+  // TUTOR RESPONSABLE
+  seccion('TUTOR RESPONSABLE');
+  campo('Padre', `${tutor.nombre_padre} - Tel: ${tutor.telefono_padre}`);
+  campo('Madre', `${tutor.nombre_madre} - Tel: ${tutor.telefono_madre}`);
+  campo('Vive con', tutor.vive_con);
+  campo('Persona Emergencia', `${tutor.persona_emergencia?.nombre || ''} (${tutor.persona_emergencia?.parentesco || ''}) - Tel: ${tutor.persona_emergencia?.telefono || ''}`);
 
   doc.end();
 
