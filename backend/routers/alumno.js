@@ -101,7 +101,15 @@ router.get('/pdf/:folio', async (req, res) => {
 
     imprimirObjeto('📘 DATOS DEL ALUMNO', alumno.datos_alumno);
     imprimirObjeto('📗 DATOS GENERALES', alumno.datos_generales);
-    imprimirObjeto('📙 DATOS MÉDICOS', alumno.datos_medicos);
+
+// Mostrar el paraescolar destacado
+doc.moveDown();
+doc.fontSize(14).fillColor('blue').text(`🎯 PARAESCOLAR ELEGIDO: ${alumno.datos_generales?.paraescolar || 'NO REGISTRADO'}`, {
+  align: 'left'
+});
+doc.fillColor('black'); // restablecer color para el resto
+
+imprimirObjeto('📙 DATOS MÉDICOS', alumno.datos_medicos);
     imprimirObjeto('📒 SECUNDARIA DE ORIGEN', alumno.secundaria_origen);
     imprimirObjeto('📕 TUTOR RESPONSABLE', alumno.tutor_responsable);
 
