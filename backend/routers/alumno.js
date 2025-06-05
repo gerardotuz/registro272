@@ -7,7 +7,7 @@ const PDFDocument = require('pdfkit');
 const flattenToNested = require('../utils/flattenToNested');
 
 const upload = multer({ storage: multer.memoryStorage() });
-const MAX_PARAESCOLAR = 1;
+const MAX_PARAESCOLAR = 50;
 
 router.get('/folio/:folio', async (req, res) => {
   try {
@@ -131,3 +131,4 @@ router.get('/pdf/:folio', async (req, res) => {
 });
 
 module.exports = router;
+
