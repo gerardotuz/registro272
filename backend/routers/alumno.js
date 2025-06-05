@@ -9,7 +9,7 @@ const flattenToNested = require('../utils/flattenToNested');
 // Configuración para subir archivos desde memoria
 const upload = multer({ storage: multer.memoryStorage() });
 
-const MAX_PARAESCOLAR = 50;
+const MAX_PARAESCOLAR = 5;
 
 // Obtener alumno por folio
 router.get('/folio/:folio', async (req, res) => {
