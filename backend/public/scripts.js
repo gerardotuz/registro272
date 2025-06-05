@@ -1,10 +1,47 @@
 // Convierte todos los inputs de texto a mayúsculas automáticamente
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   const inputs = document.querySelectorAll('input[type="text"], textarea');
   inputs.forEach(input => {
     input.addEventListener('input', () => {
       input.value = input.value.toUpperCase();
     });
+  });
+
+  // Desactivar opciones de paraescolar que ya están llenas
+  const opciones = [
+    "AJEDREZ", "ATLETISMO", "BANDA DE GUERRA", "BASQUETBOL", "DANZA",
+    "ESCOLTA DE BANDERA", "FOTOGRAFÍA", "FUTBOL", "PINTURA",
+    "TEATRO-CANTO", "TOCHO BANDERA", "VOLEIBOL"
+  ];
+
+  const select = document.querySelector('select[name="paraescolar"]');
+  const folioInput = document.querySelector('input[name="folio"]');
+  let paraescolarPrevio = null;
+
+  if (folioInput && folioInput.value.trim()) {
+    try {
+      const res = await fetch(`/api/folio/${folioInput.value.trim()}`);
+      const alumno = await res.json();
+      paraescolarPrevio = alumno?.datos_generales?.paraescolar;
+    } catch (e) {
+      console.warn("No se pudo verificar el folio existente");
+    }
+  }
+
+  opciones.forEach(async (opcion) => {
+    try {
+      const res = await fetch(`/api/validar-paraescolar/${encodeURIComponent(opcion)}`);
+      const data = await res.json();
+      if (data.count >= 50 && opcion !== paraescolarPrevio) {
+        const optionElement = [...select.options].find(opt => opt.value === opcion);
+        if (optionElement) {
+          optionElement.disabled = true;
+          optionElement.textContent += ' (LLENO)';
+        }
+      }
+    } catch (e) {
+      console.error("Error consultando paraescolar:", opcion);
+    }
   });
 });
 
@@ -19,76 +56,43 @@ function validarFormularioCompleto(form) {
   return true;
 }
 
-async function validarParaescolarDisponible(paraescolar, folio) {
-  try {
-    const res = await fetch(`/api/validar-paraescolar/${encodeURIComponent(paraescolar)}`);
-    const data = await res.json();
-
-    // Si ya hay el máximo y el alumno no está registrado, bloquear
-    if (data.count >= 1) {
-      const alumno = await fetch(`/api/folio/${folio}`);
-      const dataAlumno = await alumno.ok ? await alumno.json() : null;
-
-      if (!dataAlumno || (dataAlumno.datos_generales?.paraescolar !== paraescolar.toUpperCase())) {
-        return false;
-      }
-    }
-    return true;
-  } catch (error) {
-    console.error("Error validando paraescolar:", error);
-    return true;
-  }
-}
-
 document.getElementById('registroForm').addEventListener('submit', async (e) => {
   e.preventDefault();
 
   const form = e.target;
   if (!validarFormularioCompleto(form)) return;
 
-  const paraescolar = form.paraescolar.value;
-  const folio = form.folio.value;
-
-  const disponible = await validarParaescolarDisponible(paraescolar, folio);
-  if (!disponible) {
-    alert(`Ya no hay lugares disponibles para ${paraescolar}.`);
-    return;
-  }
-
-  const datos = {
-    folio,
-    datos_alumno: {
-      curp: form.curp.value,
-      nombres: form.nombres.value,
-      primer_apellido: form.primer_apellido.value,
-      segundo_apellido: form.segundo_apellido.value,
-      carrera: form.carrera.value,
-      periodo_semestral: form.periodo_semestral.value,
-      semestre: form.semestre.value,
-      grupo: form.grupo.value,
-      turno: form.turno.value
-    },
-    datos_generales: {
-      paraescolar,
-      correo_alumno: form.correo_alumno?.value || ''
+  const datos = new FormData(form);
+  const objeto = {};
+  for (let [clave, valor] of datos.entries()) {
+    const partes = clave.split('.');
+    if (partes.length === 1) {
+      objeto[clave] = valor;
+    } else {
+      if (!objeto[partes[0]]) objeto[partes[0]] = {};
+      objeto[partes[0]][partes[1]] = valor;
     }
-  };
+  }
 
   try {
-    const response = await fetch('/api/guardar', {
+    const res = await fetch('/api/guardar', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(datos)
+      body: JSON.stringify(objeto)
     });
 
-    const resultado = await response.json();
-    alert(resultado.message);
+    const data = await res.json();
 
-    if (response.ok) {
-      window.location.href = `/api/pdf/${folio}`;
+    if (!res.ok) {
+      alert(data.message || 'Error al guardar los datos.');
+      return;
     }
+
+    alert('Registro exitoso');
+    form.reset();
   } catch (error) {
     console.error(error);
-    alert('Error al registrar: ' + error.message);
+    alert('Error al enviar el formulario.');
   }
 });
+
