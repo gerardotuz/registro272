@@ -50,7 +50,13 @@ router.post('/guardar', async (req, res) => {
     }
 
     await Alumno.findOneAndUpdate({ folio: data.folio }, upperCaseData, { upsert: true });
-    res.status(200).json({ message: 'Registro exitoso' });
+
+    // 🔁 Ahora devuelve la URL del PDF correspondiente
+    res.status(200).json({
+      message: 'Registro exitoso',
+      pdf_url: `/api/pdf/${data.folio}`
+    });
+
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -131,4 +137,3 @@ router.get('/pdf/:folio', async (req, res) => {
 });
 
 module.exports = router;
-
