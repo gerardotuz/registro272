@@ -9,6 +9,8 @@ const flattenToNested = require('../utils/flattenToNested');
 // Configuración para subir archivos desde memoria
 const upload = multer({ storage: multer.memoryStorage() });
 
+const MAX_PARAESCOLAR = 50;
+
 // Obtener alumno por folio
 router.get('/folio/:folio', async (req, res) => {
   try {
@@ -20,7 +22,7 @@ router.get('/folio/:folio', async (req, res) => {
   }
 });
 
-// Guardar formulario
+// Guardar formulario con validación del paraescolar
 router.post('/guardar', async (req, res) => {
   try {
     const data = req.body;
@@ -32,6 +34,17 @@ router.post('/guardar', async (req, res) => {
     const upperCaseData = JSON.parse(JSON.stringify(data), (key, value) =>
       typeof value === 'string' ? value.toUpperCase() : value
     );
+
+    const paraescolar = data.datos_generales?.paraescolar;
+
+    if (paraescolar) {
+      const count = await Alumno.countDocuments({ "datos_generales.paraescolar": paraescolar.toUpperCase() });
+      const yaRegistrado = await Alumno.findOne({ folio: data.folio });
+
+      if (!yaRegistrado && count >= MAX_PARAESCOLAR) {
+        return res.status(400).json({ message: `El paraescolar ${paraescolar} ya alcanzó el límite de 50 alumnos.` });
+      }
+    }
 
     await Alumno.findOneAndUpdate({ folio: data.folio }, upperCaseData, { upsert: true });
     res.status(200).json({ message: 'Registro exitoso' });
@@ -100,4 +113,3 @@ router.get('/pdf/:folio', async (req, res) => {
 });
 
 module.exports = router;
-
