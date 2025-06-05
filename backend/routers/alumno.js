@@ -32,13 +32,20 @@ router.post('/guardar', async (req, res) => {
     );
 
     const paraescolar = data.datos_generales?.paraescolar;
+    const yaRegistrado = await Alumno.findOne({ folio: data.folio });
 
     if (paraescolar) {
       const count = await Alumno.countDocuments({ "datos_generales.paraescolar": paraescolar.toUpperCase() });
-      const yaRegistrado = await Alumno.findOne({ folio: data.folio });
+
+      const paraescolarPrevio = yaRegistrado?.datos_generales?.paraescolar;
+      const estaCambiando = paraescolarPrevio && paraescolarPrevio.toUpperCase() !== paraescolar.toUpperCase();
 
       if (!yaRegistrado && count >= MAX_PARAESCOLAR) {
-        return res.status(400).json({ message: `El paraescolar ${paraescolar} ya alcanzó el límite de 50 alumnos.` });
+        return res.status(400).json({ message: `El paraescolar ${paraescolar} ya alcanzó el límite de ${MAX_PARAESCOLAR} alumno(s).` });
+      }
+
+      if (yaRegistrado && estaCambiando && count >= MAX_PARAESCOLAR) {
+        return res.status(400).json({ message: `No se puede cambiar a ${paraescolar}, ya alcanzó su límite.` });
       }
     }
 
@@ -46,6 +53,16 @@ router.post('/guardar', async (req, res) => {
     res.status(200).json({ message: 'Registro exitoso' });
   } catch (err) {
     res.status(500).json({ message: err.message });
+  }
+});
+
+router.get('/validar-paraescolar/:nombre', async (req, res) => {
+  try {
+    const nombre = req.params.nombre.toUpperCase();
+    const count = await Alumno.countDocuments({ "datos_generales.paraescolar": nombre });
+    res.json({ count });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 });
 
@@ -114,4 +131,3 @@ router.get('/pdf/:folio', async (req, res) => {
 });
 
 module.exports = router;
-
