@@ -1,29 +1,26 @@
+
 // Convierte todos los inputs de texto a mayúsculas automáticamente
 document.addEventListener('DOMContentLoaded', () => {
-    const inputs = document.querySelectorAll('input[type="text"], textarea');
-  
-    inputs.forEach(input => {
-      input.addEventListener('input', () => {
-        input.value = input.value.toUpperCase();
-      });
+  const inputs = document.querySelectorAll('input[type="text"], textarea');
+
+  inputs.forEach(input => {
+    input.addEventListener('input', () => {
+      input.value = input.value.toUpperCase();
     });
   });
-  
-  // Validación básica para campos requeridos antes de enviar
-  function validarFormularioCompleto(form) {
-    const campos = form.querySelectorAll('[required]');
-    for (let campo of campos) {
-      if (!campo.value.trim()) {
-        alert('Por favor completa todos los campos requeridos.');
-        return false;
-      }
+});
+
+// Validación básica para campos requeridos antes de enviar
+function validarFormularioCompleto(form) {
+  const campos = form.querySelectorAll('[required]');
+  for (let campo of campos) {
+    if (!campo.value.trim()) {
+      alert('Por favor completa todos los campos requeridos.');
+      return false;
     }
-    return true;
   }
-  
-  // Puedes usar esto en cualquier formulario así:
-  // if (!validarFormularioCompleto(miFormulario)) return;
-  
+  return true;
+}
 
 document.getElementById('registroForm').addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -51,7 +48,7 @@ document.getElementById('registroForm').addEventListener('submit', async (e) => 
   };
 
   try {
-    const response = await fetch('/alumnos/guardar', {
+    const response = await fetch('/api/guardar', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -62,6 +59,7 @@ document.getElementById('registroForm').addEventListener('submit', async (e) => 
     const resultado = await response.json();
     alert(resultado.message);
   } catch (error) {
+    console.error(error);
     alert('Error al registrar: ' + error.message);
   }
 });
