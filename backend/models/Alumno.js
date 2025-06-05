@@ -21,6 +21,7 @@ const alumnoSchema = new mongoose.Schema({
     estado_civil: String
   },
   datos_generales: {
+    paraescolar: String,
     colonia: String,
     domicilio: String,
     codigo_postal: String,
