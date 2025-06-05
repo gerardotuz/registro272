@@ -39,7 +39,7 @@ router.post('/guardar', async (req, res) => {
     const yaRegistrado = await Alumno.findOne({ folio: data.folio });
 
     if (!yaRegistrado && count >= MAX_PARAESCOLAR) {
-      return res.status(400).json({ message: \`El paraescolar \${paraescolar} ya alcanzó el límite de 50 alumnos.\` });
+      return res.status(400).json({ message: `El paraescolar ${paraescolar} ya alcanzó el límite de 50 alumnos.` });
     }
 
     const upperCaseData = JSON.parse(JSON.stringify(data), (key, value) =>
