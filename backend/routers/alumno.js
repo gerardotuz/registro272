@@ -77,7 +77,7 @@ router.get('/pdf/:folio', async (req, res) => {
 
     const doc = new PDFDocument();
     res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', \`attachment; filename=\${req.params.folio}.pdf\`);
+    res.setHeader('Content-Disposition', `attachment; filename=${req.params.folio}.pdf`);
     doc.pipe(res);
 
     doc.fontSize(18).text('Registro de Alumno', { align: 'center' });
