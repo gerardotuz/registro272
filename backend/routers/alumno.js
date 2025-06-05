@@ -5,6 +5,8 @@ const multer = require('multer');
 const xlsx = require('xlsx');
 const PDFDocument = require('pdfkit');
 const flattenToNested = require('../utils/flattenToNested');
+const generarPDF = require('../utils/pdfGenerator'); // NUEVO
+const path = require('path'); // NUEVO
 
 const upload = multer({ storage: multer.memoryStorage() });
 const MAX_PARAESCOLAR = 1;
@@ -51,12 +53,10 @@ router.post('/guardar', async (req, res) => {
 
     await Alumno.findOneAndUpdate({ folio: data.folio }, upperCaseData, { upsert: true });
 
-    // 🔁 Ahora devuelve la URL del PDF correspondiente
     res.status(200).json({
       message: 'Registro exitoso',
       pdf_url: `/api/pdf/${data.folio}`
     });
-
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -95,45 +95,15 @@ router.get('/pdf/:folio', async (req, res) => {
     const alumno = await Alumno.findOne({ folio: req.params.folio });
     if (!alumno) return res.status(404).send('Folio no encontrado');
 
-    const doc = new PDFDocument();
-    res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `attachment; filename=${req.params.folio}.pdf`);
-    doc.pipe(res);
+    const nombrePDF = `${alumno.datos_alumno?.curp || 'alumno'}.pdf`;
+    const rutaPDF = await generarPDF(alumno, nombrePDF);
 
-    doc.fontSize(18).text('Registro de Alumno', { align: 'center' });
-    doc.moveDown();
-
-    const imprimirObjeto = (titulo, objeto) => {
-      doc.moveDown().fontSize(14).text(titulo);
-      for (const [key, val] of Object.entries(objeto || {})) {
-        if (typeof val === 'object' && val !== null) {
-          for (const [subkey, subval] of Object.entries(val)) {
-            doc.fontSize(12).text(`${key.replace(/_/g, ' ')} - ${subkey}: ${subval}`);
-          }
-        } else {
-          doc.fontSize(12).text(`${key.replace(/_/g, ' ')}: ${val}`);
-        }
-      }
-    };
-
-    imprimirObjeto('DATOS DEL ALUMNO', alumno.datos_alumno);
-    imprimirObjeto('DATOS GENERALES', alumno.datos_generales);
-
-    doc.moveDown();
-    doc.fontSize(14).fillColor('blue').text(`PARAESCOLAR ELEGIDO: ${alumno.datos_generales?.paraescolar || 'NO REGISTRADO'}`, {
-      align: 'left'
-    });
-    doc.fillColor('black');
-
-    imprimirObjeto('DATOS MÉDICOS', alumno.datos_medicos);
-    imprimirObjeto('SECUNDARIA DE ORIGEN', alumno.secundaria_origen);
-    imprimirObjeto('TUTOR RESPONSABLE', alumno.tutor_responsable);
-
-    doc.end();
+    res.redirect(rutaPDF); // redirige a /pdfs/<archivo>.pdf
   } catch (err) {
-    console.error('Error generando PDF completo:', err);
+    console.error('Error generando PDF con diseño:', err);
     res.status(500).send('Error generando el PDF');
   }
 });
 
 module.exports = router;
+
