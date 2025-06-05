@@ -90,9 +90,23 @@ document.getElementById('registroForm').addEventListener('submit', async (e) => 
 
     alert('Registro exitoso');
     form.reset();
+
+    // Si el backend devuelve PDF generado, mostrar enlace
+    if (data.pdf_url) {
+      const div = document.getElementById('pdfLink');
+      div.innerHTML = ''; // limpiar anterior
+      const link = document.createElement('a');
+      link.href = data.pdf_url;
+      link.textContent = '📄 Ver PDF generado';
+      link.target = '_blank';
+      link.style.display = 'inline-block';
+      link.style.marginTop = '10px';
+      link.style.color = '#0066cc';
+      div.appendChild(link);
+    }
+
   } catch (error) {
     console.error(error);
     alert('Error al enviar el formulario.');
   }
 });
-
