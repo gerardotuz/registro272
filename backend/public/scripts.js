@@ -1,8 +1,6 @@
-
 // Convierte todos los inputs de texto a mayúsculas automáticamente
 document.addEventListener('DOMContentLoaded', () => {
   const inputs = document.querySelectorAll('input[type="text"], textarea');
-
   inputs.forEach(input => {
     input.addEventListener('input', () => {
       input.value = input.value.toUpperCase();
@@ -10,7 +8,6 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
-// Validación básica para campos requeridos antes de enviar
 function validarFormularioCompleto(form) {
   const campos = form.querySelectorAll('[required]');
   for (let campo of campos) {
@@ -22,14 +19,45 @@ function validarFormularioCompleto(form) {
   return true;
 }
 
+async function validarParaescolarDisponible(paraescolar, folio) {
+  try {
+    const res = await fetch(`/api/validar-paraescolar/${encodeURIComponent(paraescolar)}`);
+    const data = await res.json();
+
+    // Si ya hay el máximo y el alumno no está registrado, bloquear
+    if (data.count >= 1) {
+      // Opcional: permitir si es el mismo folio reintentando su registro sin cambiar paraescolar
+      const alumno = await fetch(`/api/folio/${folio}`);
+      const dataAlumno = await alumno.ok ? await alumno.json() : null;
+
+      if (!dataAlumno || (dataAlumno.datos_generales?.paraescolar !== paraescolar.toUpperCase())) {
+        return false;
+      }
+    }
+    return true;
+  } catch (error) {
+    console.error("Error validando paraescolar:", error);
+    return true; // permite continuar si falla la validación
+  }
+}
+
 document.getElementById('registroForm').addEventListener('submit', async (e) => {
   e.preventDefault();
 
   const form = e.target;
   if (!validarFormularioCompleto(form)) return;
 
+  const paraescolar = form.paraescolar.value;
+  const folio = form.folio.value;
+
+  const disponible = await validarParaescolarDisponible(paraescolar, folio);
+  if (!disponible) {
+    alert(`Ya no hay lugares disponibles para ${paraescolar}.`);
+    return;
+  }
+
   const datos = {
-    folio: form.folio?.value || '',
+    folio,
     datos_alumno: {
       curp: form.curp.value,
       nombres: form.nombres.value,
@@ -42,7 +70,7 @@ document.getElementById('registroForm').addEventListener('submit', async (e) => 
       turno: form.turno.value
     },
     datos_generales: {
-      paraescolar: form.paraescolar.value,
+      paraescolar,
       correo_alumno: form.correo_alumno?.value || ''
     }
   };
@@ -50,9 +78,7 @@ document.getElementById('registroForm').addEventListener('submit', async (e) => 
   try {
     const response = await fetch('/api/guardar', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(datos)
     });
 
