@@ -23,28 +23,24 @@ router.post('/guardar', async (req, res) => {
   try {
     const data = req.body;
 
-    // Validación mejorada
-    const obligatorios = [
-      data.folio,
-      data.datos_alumno?.curp,
-      data.datos_generales?.correo_alumno,
-      data.datos_generales?.paraescolar
-    ];
-    if (obligatorios.some(d => !d || d.trim() === '')) {
+    if (!data.folio || !data.datos_alumno?.curp || !data.datos_generales?.correo_alumno) {
       return res.status(400).json({ message: 'Faltan datos obligatorios' });
-    }
-
-    const paraescolar = data.datos_generales.paraescolar.toUpperCase();
-    const count = await Alumno.countDocuments({ "datos_generales.paraescolar": paraescolar });
-    const yaRegistrado = await Alumno.findOne({ folio: data.folio });
-
-    if (!yaRegistrado && count >= MAX_PARAESCOLAR) {
-      return res.status(400).json({ message: `El paraescolar \${paraescolar} ya alcanzó el límite de 50 alumnos.` });
     }
 
     const upperCaseData = JSON.parse(JSON.stringify(data), (key, value) =>
       typeof value === 'string' ? value.toUpperCase() : value
     );
+
+    const paraescolar = data.datos_generales?.paraescolar;
+
+    if (paraescolar) {
+      const count = await Alumno.countDocuments({ "datos_generales.paraescolar": paraescolar.toUpperCase() });
+      const yaRegistrado = await Alumno.findOne({ folio: data.folio });
+
+      if (!yaRegistrado && count >= MAX_PARAESCOLAR) {
+        return res.status(400).json({ message: `El paraescolar ${paraescolar} ya alcanzó el límite de 50 alumnos.` });
+      }
+    }
 
     await Alumno.findOneAndUpdate({ folio: data.folio }, upperCaseData, { upsert: true });
     res.status(200).json({ message: 'Registro exitoso' });
@@ -66,6 +62,7 @@ router.post('/cargar-excel', upload.single('archivo'), async (req, res) => {
 
     res.status(200).json({ message: 'Carga exitosa' });
   } catch (err) {
+    console.error('Error al procesar Excel:', err);
     res.status(500).json({ message: err.message });
   }
 });
@@ -77,7 +74,7 @@ router.get('/pdf/:folio', async (req, res) => {
 
     const doc = new PDFDocument();
     res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `attachment; filename=\${req.params.folio}.pdf`);
+    res.setHeader('Content-Disposition', `attachment; filename=${req.params.folio}.pdf`);
     doc.pipe(res);
 
     doc.fontSize(18).text('Registro de Alumno', { align: 'center' });
@@ -88,10 +85,10 @@ router.get('/pdf/:folio', async (req, res) => {
       for (const [key, val] of Object.entries(objeto || {})) {
         if (typeof val === 'object' && val !== null) {
           for (const [subkey, subval] of Object.entries(val)) {
-            doc.fontSize(12).text(`\${key.replace(/_/g, ' ')} - \${subkey}: \${subval}`);
+            doc.fontSize(12).text(`${key.replace(/_/g, ' ')} - ${subkey}: ${subval}`);
           }
         } else {
-          doc.fontSize(12).text(`\${key.replace(/_/g, ' ')}: \${val}`);
+          doc.fontSize(12).text(`${key.replace(/_/g, ' ')}: ${val}`);
         }
       }
     };
@@ -100,7 +97,9 @@ router.get('/pdf/:folio', async (req, res) => {
     imprimirObjeto('📗 DATOS GENERALES', alumno.datos_generales);
 
     doc.moveDown();
-    doc.fontSize(14).fillColor('blue').text(`🎯 PARAESCOLAR ELEGIDO: \${alumno.datos_generales?.paraescolar || 'NO REGISTRADO'}`);
+    doc.fontSize(14).fillColor('blue').text(`🎯 PARAESCOLAR ELEGIDO: ${alumno.datos_generales?.paraescolar || 'NO REGISTRADO'}`, {
+      align: 'left'
+    });
     doc.fillColor('black');
 
     imprimirObjeto('📙 DATOS MÉDICOS', alumno.datos_medicos);
@@ -109,8 +108,10 @@ router.get('/pdf/:folio', async (req, res) => {
 
     doc.end();
   } catch (err) {
+    console.error('Error generando PDF completo:', err);
     res.status(500).send('Error generando el PDF');
   }
 });
 
 module.exports = router;
+
