@@ -26,7 +26,6 @@ async function validarParaescolarDisponible(paraescolar, folio) {
 
     // Si ya hay el máximo y el alumno no está registrado, bloquear
     if (data.count >= 1) {
-      // Opcional: permitir si es el mismo folio reintentando su registro sin cambiar paraescolar
       const alumno = await fetch(`/api/folio/${folio}`);
       const dataAlumno = await alumno.ok ? await alumno.json() : null;
 
@@ -37,7 +36,7 @@ async function validarParaescolarDisponible(paraescolar, folio) {
     return true;
   } catch (error) {
     console.error("Error validando paraescolar:", error);
-    return true; // permite continuar si falla la validación
+    return true;
   }
 }
 
@@ -84,6 +83,10 @@ document.getElementById('registroForm').addEventListener('submit', async (e) => 
 
     const resultado = await response.json();
     alert(resultado.message);
+
+    if (response.ok) {
+      window.location.href = `/api/pdf/${folio}`;
+    }
   } catch (error) {
     console.error(error);
     alert('Error al registrar: ' + error.message);
