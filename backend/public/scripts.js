@@ -47,6 +47,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 function validarFormularioCompleto(form) {
   const campos = form.querySelectorAll('[required]');
+  console.log("Campos requeridos encontrados:");
+  campos.forEach(c => console.log(`→ ${c.name}: ${c.value}`));
+
   for (let campo of campos) {
     if (!campo.value || !campo.value.trim()) {
       const nombre = campo.getAttribute('name') || 'campo';
