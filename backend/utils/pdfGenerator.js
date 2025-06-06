@@ -2,7 +2,7 @@ const PDFDocument = require('pdfkit');
 const fs = require('fs');
 const path = require('path');
 
-function generarPDF(datos, nombreArchivo = 'formulario_con_recuadros.pdf') {
+function generarPDF(datos, nombreArchivo = 'formulario_con_recuadros_alineado.pdf') {
   const doc = new PDFDocument({ margin: 50 });
   const rutaPDF = path.join(__dirname, '../public/pdfs', nombreArchivo);
   const stream = fs.createWriteStream(rutaPDF);
@@ -118,19 +118,18 @@ function generarPDF(datos, nombreArchivo = 'formulario_con_recuadros.pdf') {
   drawField('Paraescolar', generales.paraescolar, 50, y, 500, 30);
   y += 60;
 
-  // FIRMAS Y SELLOS
-doc.moveTo(100, y).lineTo(250, y).stroke();
-doc.text('Firma del Padre o Tutor', 100, y + 5, { width: 150, align: 'center' });
+  // Agregar imagen de firma si hay espacio, si no, agregar nueva página
+  const firmaFooter = path.join(__dirname, '../public/images/firma_footer.png');
+  if (fs.existsSync(firmaFooter)) {
+    const espacioRestante = doc.page.height - y - 100;
+    if (espacioRestante < 200) {
+      doc.addPage();
+      y = 50;
+    }
+    doc.image(firmaFooter, 50, y, { width: 500 });
+  }
 
-doc.moveTo(350, y).lineTo(500, y).stroke();
-doc.text('Sello de la Institución', 350, y + 5, { width: 150, align: 'center' });
-
-const firmaFooter = path.join(__dirname, '../public/images/firma_footer.png');
-if (fs.existsSync(firmaFooter)) {
-  doc.addPage();
-  doc.image(firmaFooter, 50, 100, { width: 500 });
-}
-doc.end();
+  doc.end();
 
   return new Promise((resolve, reject) => {
     stream.on('finish', () => resolve(`/pdfs/${nombreArchivo}`));
