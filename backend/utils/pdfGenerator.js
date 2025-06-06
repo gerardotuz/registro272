@@ -22,6 +22,11 @@ function generarPDF(datos, nombreArchivo = 'formulario_con_recuadros_alineado.pd
 
   const drawSectionTitle = (title, y) => {
     doc.rect(50, y, 500, 20).fill('#89042e');
+    doc.fillColor('white').fontSize(12).text('  ' + title.toUpperCase(), 55, y + 5);
+    doc.fillColor('black');
+    return y + 30;
+}
+    doc.rect(50, y, 500, 20).fill('#89042e');
     doc.fillColor('white').fontSize(12).text('  ' + title, 55, y + 5);
     doc.fillColor('black');
     return y + 30;
@@ -30,7 +35,7 @@ function generarPDF(datos, nombreArchivo = 'formulario_con_recuadros_alineado.pd
   let y = 50;
   const logoPath = path.join(__dirname, '../public/images/logo.png');
   if (fs.existsSync(logoPath)) {
-    doc.image(logoPath, 50, y, { width: 500 });
+    doc.image(logoPath, 50, y, { width: 500, align: 'center' });
     y += 80;
   }
 
@@ -126,7 +131,7 @@ function generarPDF(datos, nombreArchivo = 'formulario_con_recuadros_alineado.pd
       doc.addPage();
       y = 50;
     }
-    doc.image(firmaFooter, 50, y, { width: 500 });
+    doc.image(firmaFooter, 50, y, { width: 500, align: 'center' });
   }
 
   doc.end();
