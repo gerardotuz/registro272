@@ -118,7 +118,19 @@ function generarPDF(datos, nombreArchivo = 'formulario_con_recuadros.pdf') {
   drawField('Paraescolar', generales.paraescolar, 50, y, 500, 30);
   y += 60;
 
-  doc.end();
+  // FIRMAS Y SELLOS
+doc.moveTo(100, y).lineTo(250, y).stroke();
+doc.text('Firma del Padre o Tutor', 100, y + 5, { width: 150, align: 'center' });
+
+doc.moveTo(350, y).lineTo(500, y).stroke();
+doc.text('Sello de la Institución', 350, y + 5, { width: 150, align: 'center' });
+
+const firmaFooter = path.join(__dirname, '../public/images/firma_footer.png');
+if (fs.existsSync(firmaFooter)) {
+  doc.addPage();
+  doc.image(firmaFooter, 50, 100, { width: 500 });
+}
+doc.end();
 
   return new Promise((resolve, reject) => {
     stream.on('finish', () => resolve(`/pdfs/${nombreArchivo}`));
