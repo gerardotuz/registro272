@@ -45,4 +45,101 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 });
 
-);
+  }
+  return true;
+}
+
+// ORIGINAL ANTERIOR:
+
+  const campos = form.querySelectorAll('[required]');
+  for (let campo of campos) {
+    if (!campo.value.trim()) {
+      alert('Por favor completa todos los campos requeridos.');
+      return false;
+    }
+  }
+  return true;
+}
+
+function validarFormularioCompleto(form) {
+  const campos = form.querySelectorAll('[required]');
+  const errores = [];
+
+  console.log("✅ Iniciando validación estructurada...");
+  campos.forEach(campo => {
+    const name = campo.name;
+    const visible = campo.offsetParent !== null;
+    const habilitado = !campo.disabled;
+
+    if (visible && habilitado && (!campo.value || !campo.value.trim())) {
+      errores.push(name);
+    }
+  });
+
+  if (errores.length > 0) {
+    console.warn("❌ Campos vacíos detectados:", errores);
+    alert("Faltan campos obligatorios:
+" + errores.join("\n"));
+    const primerCampo = form.querySelector(`[name="\${errores[0]}"]`);
+    if (primerCampo) primerCampo.focus();
+    return false;
+  }
+
+  console.log("✅ Todos los campos obligatorios están completos.");
+  return true;
+}
+
+document.getElementById('registroForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const form = e.target;
+  if (!validarFormularioCompleto(form)) return;
+
+  const datos = new FormData(form);
+  const objeto = {};
+  for (let [clave, valor] of datos.entries()) {
+    const partes = clave.split('.');
+    if (partes.length === 1) {
+      objeto[clave] = valor;
+    } else {
+      if (!objeto[partes[0]]) objeto[partes[0]] = {};
+      objeto[partes[0]][partes[1]] = valor;
+    }
+  }
+
+  try {
+    const res = await fetch('/api/guardar', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(objeto)
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      alert(data.message || 'Error al guardar los datos.');
+      return;
+    }
+
+    alert('Registro exitoso');
+    form.reset();
+
+    // Si el backend devuelve PDF generado, mostrar enlace
+    if (data.pdf_url) {
+      const div = document.getElementById('pdfLink');
+      div.innerHTML = ''; // limpiar anterior
+      const link = document.createElement('a');
+      link.href = data.pdf_url;
+      link.textContent = '📄 Ver PDF generado';
+      link.target = '_blank';
+      link.style.display = 'inline-block';
+      link.style.marginTop = '10px';
+      link.style.color = '#0066cc';
+      div.appendChild(link);
+    }
+
+  } catch (error) {
+    console.error(error);
+    alert('Error al enviar el formulario.');
+  }
+});
