@@ -48,6 +48,20 @@ document.addEventListener('DOMContentLoaded', async () => {
 function validarFormularioCompleto(form) {
   const campos = form.querySelectorAll('[required]');
   for (let campo of campos) {
+    if (!campo.value || !campo.value.trim()) {
+      const nombre = campo.getAttribute('name') || 'campo';
+      alert(`⚠️ Por favor completa el campo: ${nombre}`);
+      campo.focus();
+      return false;
+    }
+  }
+  return true;
+}
+
+// ORIGINAL ANTERIOR:
+
+  const campos = form.querySelectorAll('[required]');
+  for (let campo of campos) {
     if (!campo.value.trim()) {
       alert('Por favor completa todos los campos requeridos.');
       return false;
