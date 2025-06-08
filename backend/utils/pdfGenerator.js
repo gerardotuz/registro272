@@ -101,7 +101,7 @@ function generarPDF(datos, nombreArchivo = 'formulario_paginado.pdf') {
 
   y = drawSectionTitle('Datos Médicos', y);
   y = drawBox('Número Seguro Social', medicos.numero_seguro_social, marginX, y);
-  y = drawBox('Unidad Médica', medicos.unidad_medica_familiar, marginX + 260, y);
+  y = drawBox('Unidad Médica', medicos.unidad_medica_familiar || '', marginX + 260, y);
   y += GAP_Y;
   y = drawBox('¿Alergia o Enfermedad?', medicos.enfermedad_cronica_o_alergia?.respuesta, marginX, y);
   y = drawBox('Detalle', medicos.enfermedad_cronica_o_alergia?.detalle, marginX + 260, y);
