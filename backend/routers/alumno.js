@@ -9,7 +9,7 @@ const generarPDF = require('../utils/pdfGenerator'); // NUEVO
 const path = require('path'); // NUEVO
 
 const upload = multer({ storage: multer.memoryStorage() });
-const MAX_PARAESCOLAR = 1;
+const MAX_PARAESCOLAR = 40;
 
 router.get('/folio/:folio', async (req, res) => {
   try {
