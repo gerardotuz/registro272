@@ -94,15 +94,15 @@
 
 
 <fieldset>
-  <legend>Datos Generales del Alumno</legend>
-  <input type="text" name="colonia" placeholder="COLONIA, SMZ, FRACCIÓNAMIENTO">
+  <legend>Datos Generales</legend>
+  <input type="text" name="colonia" placeholder="Colonia">
   <input type="text" name="domicilio" placeholder="Domicilio">
   <input type="text" name="codigo_postal" placeholder="Código Postal">
-  <input type="text" name="telefono_alumno" placeholder="Teléfono del Alumno">
+  <input type="text" name="telefono_alumno" placeholder="Teléfono">
   <input type="email" name="correo_alumno" placeholder="Correo" required>
   <input type="text" name="tipo_sangre" placeholder="Tipo de Sangre">
-  <input type="text" name="contacto_emergencia_nombre" placeholder="Contacto de Emergencia (TUTOR)">
-  <input type="text" name="contacto_emergencia_telefono" placeholder="Contacto de Emergencia (TUTOR)">
+  <input type="text" name="contacto_emergencia_nombre" placeholder="Contacto de Emergencia - Nombre">
+  <input type="text" name="contacto_emergencia_telefono" placeholder="Contacto de Emergencia - Teléfono">
 
 
   <select name="habla_lengua_indigena_respuesta" required>
@@ -116,8 +116,8 @@
 
 <fieldset>
   <legend>Datos Médicos</legend>
-  <input type="text" name="numero_seguro_social" placeholder="Número de Seguro Social - Alumno">
-  <select name="unidad_medica_familiar" required>
+  <input type="text" name="numero_seguro_social" placeholder="Número de Seguro Social">
+  <select name="Unidad Medica" required>
   <option value="">Selecciona Unidad Medica</option>
   <option value="13">13</option>
   <option value="14">14</option>
@@ -125,10 +125,7 @@
   <option value="16">16</option>
   <option value="19">19</option>
 </select>
-  <input type="text" name="enfermedad_cronica_o_alergia_respuesta" placeholder="¿enfermedad o alergia?-Alumno (Sí/No)">
-   <option value="">¿Entrega Diagnostico?</option>
-    <option value="Ninguna">Si</option>
-  <option value="Visual">No</option>
+  <input type="text" name="enfermedad_cronica_o_alergia_respuesta" placeholder="¿Tiene enfermedad o alergia? (Sí/No)">
   <input type="text" name="enfermedad_cronica_o_alergia_detalle" placeholder="Detalle enfermedad o alergia">
   <select name="discapacidad" required>
   <option value="">Selecciona discapacidad</option>
@@ -197,14 +194,10 @@
     <option value="ESCOLTA DE BANDERA">ESCOLTA DE BANDERA</option>
     <option value="FOTOGRAFÍA">FOTOGRAFÍA</option>
     <option value="FUTBOL">FUTBOL</option>
-    <option value="PINTURA">PINTURA-DIBUJO</option>
+    <option value="PINTURA">PINTURA</option>
     <option value="TEATRO-CANTO">TEATRO-CANTO</option>
     <option value="TOCHO BANDERA">TOCHO BANDERA</option>
     <option value="VOLEIBOL">VOLEIBOL</option>
-   <option value="TOCHO BANDERA">DECLAMACIÓN</option>
-    <option value="VOLEIBOL">ORATORIA</option>
-   <option value="TOCHO BANDERA">MÚSICA</option>
-    <option value="VOLEIBOL">CORO</option>
   </select>
 </fieldset>
   <button type="submit">Guardar</button>
@@ -357,3 +350,4 @@
 <script src="scripts.js"></script>
 </body>
 </html>
+
