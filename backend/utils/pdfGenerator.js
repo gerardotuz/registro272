@@ -140,6 +140,37 @@ function generarPDF(datos, nombreArchivo = 'formulario_paginado.pdf') {
     doc.image(footerPath, 50, y, { width: 500 });
   }
 
+  
+  // Nacionalidad y País si extranjero
+  doc.text(`Nacionalidad: ${alumno.nacionalidad || '---'}` , marginX, y); y += GAP_Y;
+  if (alumno.nacionalidad === 'Extranjero') {
+    doc.text(`País de origen: ${alumno.pais_extranjero || '---'}`, marginX, y); y += GAP_Y;
+  }
+
+  // Estado civil
+  doc.text(`Estado civil: ${alumno.estado_civil || '---'}`, marginX, y); y += GAP_Y;
+
+  // Entrega diagnóstico
+  doc.text(`¿Entrega diagnóstico?: ${medicos.entrega_diagnostico || '---'}`, marginX, y); y += GAP_Y;
+
+  // Detalle enfermedad con espacio doble
+  doc.text("Detalle enfermedad:", marginX, y); y += 20;
+  doc.text(`${medicos.detalle_enfermedad || '---'}`, {
+    width: PAGE_WIDTH - marginX * 2,
+    height: 80,
+    align: 'left'
+  }); y += 80;
+
+  // Responsable de emergencia adicional
+  const emergencia = datos.responsable_emergencia || {};
+  doc.text("Responsable de emergencia adicional:", marginX, y); y += GAP_Y;
+  doc.text(`Nombre: ${emergencia.nombre || '---'}`, marginX, y); y += GAP_Y;
+  doc.text(`Teléfono: ${emergencia.telefono || '---'}`, marginX, y); y += GAP_Y;
+  doc.text(`Parentesco: ${emergencia.parentesco || '---'}`, marginX, y); y += GAP_Y;
+
+  // Carta poder
+  doc.text(`¿Entregó carta poder?: ${datos.carta_poder || '---'}`, marginX, y); y += GAP_Y;
+
   doc.end();
   return new Promise((resolve, reject) => {
     stream.on('finish', () => resolve(`/pdfs/${nombreArchivo}`));
