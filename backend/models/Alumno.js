@@ -18,7 +18,9 @@ const alumnoSchema = new mongoose.Schema({
     estado_nacimiento: String,
     municipio_nacimiento: String,
     ciudad_nacimiento: String,
-    estado_civil: String
+    estado_civil: String,
+    nacionalidad: String,
+    pais_extranjero: String
   },
   datos_generales: {
     colonia: String,
@@ -26,7 +28,15 @@ const alumnoSchema = new mongoose.Schema({
     codigo_postal: String,
     telefono_alumno: String,
     correo_alumno: String,
-    paraescolar: String, // 👈 COMA aquí
+    paraescolar: String,
+    entrega_diagnostico: String,
+    detalle_enfermedad: String,
+    responsable_emergencia: {
+      nombre: String,
+      telefono: String,
+      parentesco: String
+    },
+    carta_poder: String, // 👈 COMA aquí
     tipo_sangre: String,
     contacto_emergencia_nombre: String,
     contacto_emergencia_telefono: String,
