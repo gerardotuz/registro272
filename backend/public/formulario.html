@@ -27,14 +27,10 @@
   <input type="text" name="primer_apellido" placeholder="Primer Apellido" required>
   <input type="text" name="segundo_apellido" placeholder="Segundo Apellido" required>
   <input type="text" name="curp" placeholder="CURP" required>
-  <input type="text" name="carrera" placeholder="Carrera" value="Ingeniería" readonly>
-  <input type="text" name="semestre" placeholder="Semestre" value="1" readonly>
-  <input type="text" name="grupo" placeholder="Grupo" value="A" readonly>
-  <select name="turno" required>
-    <option value="">Selecciona turno</option>
-    <option value="matutino">Matutino</option>
-    <option value="vespertino">Vespertino</option>
-  </select>
+  <input type="text" name="carrera" placeholder="Carrera" required>
+  <input type="text" name="periodo_semestral" placeholder="Periodo Semestral" value="2025-2026" required>
+  <input type="text" name="semestre" placeholder="Semestre" value="Primer Semestre" required>
+  <input type="text" name="grupo" placeholder="Grupo" readonly>
   <select name="nacionalidad" required>
     <option value="">Selecciona Nacionalidad</option>
     <option value="Mexicano">Mexicano</option>
@@ -48,14 +44,6 @@
     <option value="Unión libre">Unión libre</option>
     <option value="Otro">Otro</option>
   </select>
-  <input type="text" name="nombres" placeholder="Nombres" required>
-  <input type="text" name="primer_apellido" placeholder="Primer Apellido" required>
-  <input type="text" name="segundo_apellido" placeholder="Segundo Apellido" required>
-  <input type="text" name="curp" placeholder="CURP" required>
-  <input type="text" name="carrera" placeholder="Carrera" required>
-  <input type="text" name="periodo_semestral" placeholder="Periodo Semestral" value="2025-2026" required>
-  <input type="text" name="semestre" placeholder="Semestre" value="Primer Semestre" required>
-  <input type="text" name="grupo" placeholder="Grupo">
   <select name="turno" required>
     <option value="">Selecciona turno</option>
     <option value="matutino">Matutino</option>
@@ -154,6 +142,20 @@
   <input type="text" name="enfermedad_cronica_o_alergia_detalle" placeholder="Detalle enfermedad o alergia">
   <select name="discapacidad" required>
   <option value="">Selecciona discapacidad</option>
+  <option value="Ninguna">Ninguna</option>
+  <option value="Visual">Visual</option>
+  <option value="Motriz">Motriz</option>
+  <option value="Auditiva">Auditiva</option>
+  <option value="Habla">Habla</option>
+  <option value="Otro">Otro</option>
+</select>
+<select name="entrega_diagnostico" required>
+  <option value="">¿Entrega diagnóstico?</option>
+  <option value="Sí">Sí</option>
+  <option value="No">No</option>
+</select>
+<textarea name="detalle_enfermedad" placeholder="Detalle de enfermedad" rows="5"></textarea>
+  <option value="">Selecciona discapacidad</option>
     <option value="Ninguna">Ninguna</option>
   <option value="Visual">Visual</option>
   <option value="Motriz">Motriz</option>
@@ -201,6 +203,16 @@
   <input type="text" name="persona_emergencia_nombre" placeholder="Persona Emergencia - Nombre">
   <input type="text" name="persona_emergencia_parentesco" placeholder="Persona Emergencia - Parentesco">
   <input type="text" name="persona_emergencia_telefono" placeholder="Persona Emergencia - Teléfono">
+
+  <h4>Responsable de Emergencia Adicional</h4>
+  <input type="text" name="responsable_emergencia_nombre" placeholder="Nombre del Responsable">
+  <input type="text" name="responsable_emergencia_telefono" placeholder="Teléfono del Responsable">
+  <input type="text" name="responsable_emergencia_parentesco" placeholder="Parentesco">
+  <select name="carta_poder" required>
+    <option value="">¿Entregó carta poder?</option>
+    <option value="Sí">Sí</option>
+    <option value="No">No</option>
+  </select>
 </fieldset>
 
 
@@ -223,6 +235,9 @@
     <option value="TEATRO-CANTO">TEATRO-CANTO</option>
     <option value="TOCHO BANDERA">TOCHO BANDERA</option>
     <option value="VOLEIBOL">VOLEIBOL</option>
+    <option value="ORATORIADECLAMACION">ORATORIADECLAMACION</option>
+    <option value="CORO">CORO</option>
+    <option value="MÚSICA">MÚSICA</option>
   </select>
 </fieldset>
   <button type="submit">Guardar</button>
@@ -375,4 +390,3 @@
 <script src="scripts.js"></script>
 </body>
 </html>
-
