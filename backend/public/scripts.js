@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const opciones = [
     "AJEDREZ", "ATLETISMO", "BANDA DE GUERRA", "BASQUETBOL", "DANZA",
     "ESCOLTA DE BANDERA", "FOTOGRAFÍA", "FUTBOL", "PINTURA",
-    "TEATRO-CANTO", "TOCHO BANDERA", "VOLEIBOL"
+    "TEATRO-CANTO", "TOCHO BANDERA", "VOLEIBOL", "ORATORIADECLAMACION", "CORO", "MÚSICA"
   ];
 
   const select = document.querySelector('select[name="paraescolar"]');
