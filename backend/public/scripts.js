@@ -1,4 +1,4 @@
-// Convierte todos los inputs de texto a mayúsculas automáticamente
+
 document.addEventListener('DOMContentLoaded', async () => {
   const inputs = document.querySelectorAll('input[type="text"], textarea');
   inputs.forEach(input => {
@@ -7,7 +7,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   });
 
-  // Desactivar opciones de paraescolar que ya están llenas
   const opciones = [
     "AJEDREZ", "ATLETISMO", "BANDA DE GUERRA", "BASQUETBOL", "DANZA",
     "ESCOLTA DE BANDERA", "FOTOGRAFÍA", "FUTBOL", "PINTURA",
@@ -45,36 +44,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 });
 
-: ${c.value}`));
-
-  for (let campo of campos) {
-    if (!campo.value || !campo.value.trim()) {
-      const nombre = campo.getAttribute('name') || 'campo';
-      alert(`⚠️ Por favor completa el campo: ${nombre}`);
-      campo.focus();
-      return false;
-    }
-  }
-  return true;
-}
-
-// ORIGINAL ANTERIOR:
-
-  const campos = form.querySelectorAll('[required]');
-  for (let campo of campos) {
-    if (!campo.value.trim()) {
-      alert('Por favor completa todos los campos requeridos.');
-      return false;
-    }
-  }
-  return true;
-}
-
 function validarFormularioCompleto(form) {
   const campos = form.querySelectorAll('[required]');
   const errores = [];
 
-  console.log("✅ Iniciando validación estructurada...");
   campos.forEach(campo => {
     const name = campo.name;
     const visible = campo.offsetParent !== null;
@@ -86,15 +59,12 @@ function validarFormularioCompleto(form) {
   });
 
   if (errores.length > 0) {
-    console.warn("❌ Campos vacíos detectados:", errores);
-    alert("Faltan campos obligatorios:
-" + errores.join("\n"));
-    const primerCampo = form.querySelector(`[name="\${errores[0]}"]`);
+    alert("Faltan campos obligatorios:\n" + errores.join("\n"));
+    const primerCampo = form.querySelector(`[name="${errores[0]}"]`);
     if (primerCampo) primerCampo.focus();
     return false;
   }
 
-  console.log("✅ Todos los campos obligatorios están completos.");
   return true;
 }
 
@@ -106,13 +76,18 @@ document.getElementById('registroForm').addEventListener('submit', async (e) => 
 
   const datos = new FormData(form);
   const objeto = {};
+
   for (let [clave, valor] of datos.entries()) {
     const partes = clave.split('.');
     if (partes.length === 1) {
       objeto[clave] = valor;
-    } else {
+    } else if (partes.length === 2) {
       if (!objeto[partes[0]]) objeto[partes[0]] = {};
       objeto[partes[0]][partes[1]] = valor;
+    } else if (partes.length === 3) {
+      if (!objeto[partes[0]]) objeto[partes[0]] = {};
+      if (!objeto[partes[0]][partes[1]]) objeto[partes[0]][partes[1]] = {};
+      objeto[partes[0]][partes[1]][partes[2]] = valor;
     }
   }
 
@@ -133,10 +108,9 @@ document.getElementById('registroForm').addEventListener('submit', async (e) => 
     alert('Registro exitoso');
     form.reset();
 
-    // Si el backend devuelve PDF generado, mostrar enlace
     if (data.pdf_url) {
       const div = document.getElementById('pdfLink');
-      div.innerHTML = ''; // limpiar anterior
+      div.innerHTML = '';
       const link = document.createElement('a');
       link.href = data.pdf_url;
       link.textContent = '📄 Ver PDF generado';
