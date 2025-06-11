@@ -1,3 +1,4 @@
+// Convierte todos los inputs de texto a mayúsculas automáticamente
 document.addEventListener('DOMContentLoaded', async () => {
   const inputs = document.querySelectorAll('input[type="text"], textarea');
   inputs.forEach(input => {
@@ -6,13 +7,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   });
 
+  // Desactivar opciones de paraescolar que ya están llenas
   const opciones = [
     "AJEDREZ", "ATLETISMO", "BANDA DE GUERRA", "BASQUETBOL", "DANZA",
     "ESCOLTA DE BANDERA", "FOTOGRAFÍA", "FUTBOL", "PINTURA",
     "TEATRO-CANTO", "TOCHO BANDERA", "VOLEIBOL", "ORATORIA-DECLAMACION", "CORO", "MÚSICA"
   ];
 
-  const select = document.querySelector('select[name="paraescolar"]');
+  const select = document.querySelector('select[name="datos_generales.paraescolar"]');
   const folioInput = document.querySelector('input[name="folio"]');
   let paraescolarPrevio = null;
 
@@ -48,17 +50,16 @@ function validarFormularioCompleto(form) {
   const errores = [];
 
   campos.forEach(campo => {
-    const name = campo.name;
     const visible = campo.offsetParent !== null;
     const habilitado = !campo.disabled;
-
     if (visible && habilitado && (!campo.value || !campo.value.trim())) {
-      errores.push(name);
+      errores.push(campo.name);
     }
   });
 
   if (errores.length > 0) {
-    alert("Faltan campos obligatorios:\n" + errores.join("\n"));
+    alert("Faltan campos obligatorios:
+" + errores.join("\n"));
     const primerCampo = form.querySelector(`[name="${errores[0]}"]`);
     if (primerCampo) primerCampo.focus();
     return false;
@@ -69,24 +70,23 @@ function validarFormularioCompleto(form) {
 
 document.getElementById('registroForm').addEventListener('submit', async (e) => {
   e.preventDefault();
-
   const form = e.target;
   if (!validarFormularioCompleto(form)) return;
 
   const datos = new FormData(form);
   const objeto = {};
-
   for (let [clave, valor] of datos.entries()) {
     const partes = clave.split('.');
     if (partes.length === 1) {
       objeto[clave] = valor;
-    } else if (partes.length === 2) {
+    } else {
       if (!objeto[partes[0]]) objeto[partes[0]] = {};
-      objeto[partes[0]][partes[1]] = valor;
-    } else if (partes.length === 3) {
-      if (!objeto[partes[0]]) objeto[partes[0]] = {};
-      if (!objeto[partes[0]][partes[1]]) objeto[partes[0]][partes[1]] = {};
-      objeto[partes[0]][partes[1]][partes[2]] = valor;
+      if (partes.length === 3) {
+        if (!objeto[partes[0]][partes[1]]) objeto[partes[0]][partes[1]] = {};
+        objeto[partes[0]][partes[1]][partes[2]] = valor;
+      } else {
+        objeto[partes[0]][partes[1]] = valor;
+      }
     }
   }
 
