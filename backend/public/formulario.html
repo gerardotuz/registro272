@@ -238,148 +238,138 @@
 </form>
 
 <script>
-  const BASE_URL = window.location.origin.includes('localhost')
-    ? 'http://localhost:3001'
-    : 'https://registro272.onrender.com';
+    const BASE_URL = window.location.origin.includes('localhost')
+      ? 'http://localhost:3001'
+      : 'https://registro272.onrender.com';
 
-  window.onload = () => {
-    const datos = JSON.parse(localStorage.getItem('datosPrecargados'));
-    if (!datos) return;
+    window.onload = () => {
+      const datos = JSON.parse(localStorage.getItem('datosPrecargados'));
+      if (!datos) return;
 
-    const set = (name, value) => {
-      const input = document.querySelector(`[name="${name}"]`);
-      if (input && value != null && value !== '') input.value = value;
+      const set = (name, value) => {
+        const input = document.querySelector(`[name="${name}"]`);
+        if (input && value != null && value !== '') input.value = value;
+      };
+
+      const mappings = {
+        ...datos.datos_alumno,
+        ...datos.datos_generales,
+        ...datos.datos_medicos,
+        ...datos.secundaria_origen,
+        ...datos.tutor_responsable,
+        'habla_lengua_indigena_respuesta': datos.datos_generales?.habla_lengua_indigena?.respuesta,
+        'habla_lengua_indigena_cual': datos.datos_generales?.habla_lengua_indigena?.cual,
+        'enfermedad_cronica_o_alergia_respuesta': datos.datos_medicos?.enfermedad_cronica_o_alergia?.respuesta,
+        'enfermedad_cronica_o_alergia_detalle': datos.datos_medicos?.enfermedad_cronica_o_alergia?.detalle,
+        'persona_emergencia_nombre': datos.tutor_responsable?.persona_emergencia?.nombre,
+        'persona_emergencia_parentesco': datos.tutor_responsable?.persona_emergencia?.parentesco,
+        'persona_emergencia_telefono': datos.tutor_responsable?.persona_emergencia?.telefono,
+        'responsable_emergencia_nombre': datos.datos_generales?.responsable_emergencia?.nombre,
+        'responsable_emergencia_telefono': datos.datos_generales?.responsable_emergencia?.telefono,
+        'responsable_emergencia_parentesco': datos.datos_generales?.responsable_emergencia?.parentesco,
+        'carta_poder': datos.datos_generales?.carta_poder,
+        'entrega_diagnostico': datos.datos_generales?.entrega_diagnostico,
+        'detalle_enfermedad': datos.datos_generales?.detalle_enfermedad
+      };
+
+      Object.entries(mappings).forEach(([k, v]) => set(k, v));
     };
 
-    // Autocompletar campos (igual que antes)
-    const mappings = {
-      ...datos.datos_alumno,
-      ...datos.datos_generales,
-      ...datos.datos_medicos,
-      ...datos.secundaria_origen,
-      ...datos.tutor_responsable,
-      'habla_lengua_indigena_respuesta': datos.datos_generales?.habla_lengua_indigena?.respuesta,
-      'habla_lengua_indigena_cual': datos.datos_generales?.habla_lengua_indigena?.cual,
-      'enfermedad_cronica_o_alergia_respuesta': datos.datos_medicos?.enfermedad_cronica_o_alergia?.respuesta,
-      'enfermedad_cronica_o_alergia_detalle': datos.datos_medicos?.enfermedad_cronica_o_alergia?.detalle,
-      'persona_emergencia_nombre': datos.tutor_responsable?.persona_emergencia?.nombre,
-      'persona_emergencia_parentesco': datos.tutor_responsable?.persona_emergencia?.parentesco,
-      'persona_emergencia_telefono': datos.tutor_responsable?.persona_emergencia?.telefono
-    };
+    document.getElementById('registroForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const folio = localStorage.getItem('alumnoFolio');
+      if (!folio) return alert('Folio perdido');
 
-    Object.entries(mappings).forEach(([k, v]) => set(k, v));
-  };
-
-  document.getElementById('registroForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-
-    const camposObligatorios = [
-      'nombres','primer_apellido','segundo_apellido','curp','carrera',
-      'periodo_semestral','semestre','turno','fecha_nacimiento','edad','sexo',
-      'estado_nacimiento','municipio_nacimiento','ciudad_nacimiento','estado_civil',
-      'colonia','domicilio','codigo_postal','telefono_alumno','correo_alumno',
-      'tipo_sangre','contacto_emergencia_nombre','contacto_emergencia_telefono',
-      'habla_lengua_indigena_respuesta',
-      'numero_seguro_social','enfermedad_cronica_o_alergia_respuesta',
-      'enfermedad_cronica_o_alergia_detalle','discapacidad',
-      'nombre_secundaria','regimen','promedio_general','modalidad',
-      'nombre_padre','telefono_padre','nombre_madre','telefono_madre',
-      'vive_con','persona_emergencia_nombre','persona_emergencia_parentesco','persona_emergencia_telefono'
-    ];
-
-    for (const campo of camposObligatorios) {
-      const input = document.querySelector(`[name="${campo}"]`);
-      if (!input || !input.value.trim()) {
-        alert(`⚠️ Por favor completa el campo: ${campo.replaceAll('_', ' ')}`);
-        input?.focus();
-        return;
-      }
-    }
-
-    const folio = localStorage.getItem('alumnoFolio');
-    if (!folio) return alert('Folio perdido');
-
-    const formData = new FormData(e.target);
-    const nuevoRegistro = {
-      folio,
-      datos_alumno: {
-        nombres: formData.get('nombres'),
-        primer_apellido: formData.get('primer_apellido'),
-        segundo_apellido: formData.get('segundo_apellido'),
-        curp: formData.get('curp'),
-        carrera: formData.get('carrera'),
-        periodo_semestral: formData.get('periodo_semestral'),
-        semestre: formData.get('semestre'),
-        grupo: formData.get('grupo'),
-        turno: formData.get('turno'),
-        fecha_nacimiento: formData.get('fecha_nacimiento'),
-        edad: formData.get('edad'),
-        sexo: formData.get('sexo'),
-        estado_nacimiento: formData.get('estado_nacimiento'),
-        municipio_nacimiento: formData.get('municipio_nacimiento'),
-        ciudad_nacimiento: formData.get('ciudad_nacimiento'),
-        estado_civil: formData.get('estado_civil')
-      },
-      datos_generales: {
-        colonia: formData.get('colonia'),
-        domicilio: formData.get('domicilio'),
-        codigo_postal: formData.get('codigo_postal'),
-        telefono_alumno: formData.get('telefono_alumno'),
-        correo_alumno: formData.get('correo_alumno'),
-       paraescolar: formData.get('paraescolar'),
-        tipo_sangre: formData.get('tipo_sangre'),
-        contacto_emergencia_nombre: formData.get('contacto_emergencia_nombre'),
-        contacto_emergencia_telefono: formData.get('contacto_emergencia_telefono'),
-        habla_lengua_indigena: {
-          respuesta: formData.get('habla_lengua_indigena_respuesta'),
-          cual: formData.get('habla_lengua_indigena_cual')
-        }
-      },
-      datos_medicos: {
-        numero_seguro_social: formData.get('numero_seguro_social'),
-        unidad_medica_familiar: formData.get('unidad_medica_familiar'),
-        enfermedad_cronica_o_alergia: {
-          respuesta: formData.get('enfermedad_cronica_o_alergia_respuesta'),
-          detalle: formData.get('enfermedad_cronica_o_alergia_detalle')
+      const formData = new FormData(e.target);
+      const nuevoRegistro = {
+        folio,
+        datos_alumno: {
+          nombres: formData.get('nombres'),
+          primer_apellido: formData.get('primer_apellido'),
+          segundo_apellido: formData.get('segundo_apellido'),
+          curp: formData.get('curp'),
+          carrera: formData.get('carrera'),
+          periodo_semestral: formData.get('periodo_semestral'),
+          semestre: formData.get('semestre'),
+          grupo: formData.get('grupo'),
+          turno: formData.get('turno'),
+          fecha_nacimiento: formData.get('fecha_nacimiento'),
+          edad: formData.get('edad'),
+          sexo: formData.get('sexo'),
+          estado_nacimiento: formData.get('estado_nacimiento'),
+          municipio_nacimiento: formData.get('municipio_nacimiento'),
+          ciudad_nacimiento: formData.get('ciudad_nacimiento'),
+          estado_civil: formData.get('estado_civil'),
+          nacionalidad: formData.get('nacionalidad'),
+          pais_extranjero: formData.get('pais_extranjero')
         },
-        discapacidad: formData.get('discapacidad')
-      },
-      secundaria_origen: {
-        nombre_secundaria: formData.get('nombre_secundaria'),
-        regimen: formData.get('regimen'),
-        promedio_general: formData.get('promedio_general'),
-        modalidad: formData.get('modalidad')
-      },
-      tutor_responsable: {
-        nombre_padre: formData.get('nombre_padre'),
-        telefono_padre: formData.get('telefono_padre'),
-        nombre_madre: formData.get('nombre_madre'),
-        telefono_madre: formData.get('telefono_madre'),
-        vive_con: formData.get('vive_con'),
-        persona_emergencia: {
-          nombre: formData.get('persona_emergencia_nombre'),
-          parentesco: formData.get('persona_emergencia_parentesco'),
-          telefono: formData.get('persona_emergencia_telefono')
+        datos_generales: {
+          colonia: formData.get('colonia'),
+          domicilio: formData.get('domicilio'),
+          codigo_postal: formData.get('codigo_postal'),
+          telefono_alumno: formData.get('telefono_alumno'),
+          correo_alumno: formData.get('correo_alumno'),
+          paraescolar: formData.get('paraescolar'),
+          tipo_sangre: formData.get('tipo_sangre'),
+          contacto_emergencia_nombre: formData.get('contacto_emergencia_nombre'),
+          contacto_emergencia_telefono: formData.get('contacto_emergencia_telefono'),
+          habla_lengua_indigena: {
+            respuesta: formData.get('habla_lengua_indigena_respuesta'),
+            cual: formData.get('habla_lengua_indigena_cual')
+          },
+          responsable_emergencia: {
+            nombre: formData.get('responsable_emergencia_nombre'),
+            telefono: formData.get('responsable_emergencia_telefono'),
+            parentesco: formData.get('responsable_emergencia_parentesco')
+          },
+          carta_poder: formData.get('carta_poder'),
+          entrega_diagnostico: formData.get('entrega_diagnostico'),
+          detalle_enfermedad: formData.get('detalle_enfermedad')
+        },
+        datos_medicos: {
+          numero_seguro_social: formData.get('numero_seguro_social'),
+          unidad_medica_familiar: formData.get('unidad_medica_familiar'),
+          enfermedad_cronica_o_alergia: {
+            respuesta: formData.get('enfermedad_cronica_o_alergia_respuesta'),
+            detalle: formData.get('enfermedad_cronica_o_alergia_detalle')
+          },
+          discapacidad: formData.get('discapacidad')
+        },
+        secundaria_origen: {
+          nombre_secundaria: formData.get('nombre_secundaria'),
+          regimen: formData.get('regimen'),
+          promedio_general: formData.get('promedio_general'),
+          modalidad: formData.get('modalidad')
+        },
+        tutor_responsable: {
+          nombre_padre: formData.get('nombre_padre'),
+          telefono_padre: formData.get('telefono_padre'),
+          nombre_madre: formData.get('nombre_madre'),
+          telefono_madre: formData.get('telefono_madre'),
+          vive_con: formData.get('vive_con'),
+          persona_emergencia: {
+            nombre: formData.get('persona_emergencia_nombre'),
+            parentesco: formData.get('persona_emergencia_parentesco'),
+            telefono: formData.get('persona_emergencia_telefono')
+          }
         }
+      };
+
+      const res = await fetch(`${BASE_URL}/api/guardar`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(nuevoRegistro)
+      });
+
+      const result = await res.json();
+      if (res.ok) {
+        alert('Registro guardado con éxito');
+        window.open(`${BASE_URL}/api/pdf/${folio}`, '_blank');
+      } else {
+        alert(result.message || 'Error al guardar');
       }
-    };
-
-    const res = await fetch(`${BASE_URL}/api/guardar`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(nuevoRegistro)
     });
-
-    const result = await res.json();
-    if (res.ok) {
-      alert('Registro guardado con éxito');
-      window.open(`${BASE_URL}/api/pdf/${folio}`, '_blank');
-    } else {
-      alert(result.message || 'Error al guardar');
-    }
-  });
-</script>
-
-<script src="scripts.js"></script>
+  </script>
+  <script src="scripts.js"></script>
 </body>
 </html>
