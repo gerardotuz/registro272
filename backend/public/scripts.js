@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const opciones = [
     "AJEDREZ", "ATLETISMO", "BANDA DE GUERRA", "BASQUETBOL", "DANZA",
     "ESCOLTA DE BANDERA", "FOTOGRAFÍA", "FUTBOL", "PINTURA",
-    "TEATRO-CANTO", "TOCHO BANDERA", "VOLEIBOL", "ORATORIADECLAMACION", "CORO", "MÚSICA"
+    "TEATRO-CANTO", "TOCHO BANDERA", "VOLEIBOL", "ORATORIA-DECLAMACION", "CORO", "MÚSICA"
   ];
 
   const select = document.querySelector('select[name="paraescolar"]');
@@ -32,7 +32,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     try {
       const res = await fetch(`/api/validar-paraescolar/${encodeURIComponent(opcion)}`);
       const data = await res.json();
-      if (data.count >= 50 && opcion !== paraescolarPrevio) {
+      if (data.count >= 40 && opcion !== paraescolarPrevio) {
         const optionElement = [...select.options].find(opt => opt.value === opcion);
         if (optionElement) {
           optionElement.disabled = true;
