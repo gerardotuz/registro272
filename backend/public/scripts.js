@@ -1,4 +1,3 @@
-
 document.addEventListener('DOMContentLoaded', async () => {
   const inputs = document.querySelectorAll('input[type="text"], textarea');
   inputs.forEach(input => {
