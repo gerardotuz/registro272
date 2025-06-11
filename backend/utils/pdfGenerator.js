@@ -1,7 +1,3 @@
-
-// El contenido completo fue reconstruido antes, pero debido al reinicio de sesión no quedó persistido.
-// Aquí escribiremos el contenido real nuevamente para que pueda descargarse.
-
 const PDFDocument = require('pdfkit');
 const fs = require('fs');
 const path = require('path');
@@ -83,6 +79,9 @@ function generarPDF(datos, nombreArchivo = 'formulario_paginado.pdf') {
   y = drawBox('Ciudad Nac.', alumno.ciudad_nacimiento, marginX, y);
   y = drawBox('Estado Civil', alumno.estado_civil, marginX + 260, y);
   y += GAP_Y;
+  y = drawBox('Nacionalidad', alumno.nacionalidad, marginX, y);
+  y = drawBox('País Extranjero', alumno.pais_extranjero, marginX + 260, y);
+  y += GAP_Y;
 
   y = drawSectionTitle('Datos Generales', y);
   y = drawBox('Colonia', generales.colonia, marginX, y);
@@ -102,6 +101,9 @@ function generarPDF(datos, nombreArchivo = 'formulario_paginado.pdf') {
   y = drawBox('Lengua Indígena', generales.habla_lengua_indigena?.respuesta, marginX, y);
   y = drawBox('¿Cuál?', generales.habla_lengua_indigena?.cual, marginX + 260, y);
   y += GAP_Y;
+  y = drawBox('¿Entrega Diagnóstico?', generales.entrega_diagnostico, marginX, y);
+  y = drawBox('Detalle Enfermedad', generales.detalle_enfermedad, marginX + 260, y);
+  y += GAP_Y;
 
   y = drawSectionTitle('Datos Médicos', y);
   y = drawBox('Número Seguro Social', medicos.numero_seguro_social, marginX, y);
@@ -111,9 +113,6 @@ function generarPDF(datos, nombreArchivo = 'formulario_paginado.pdf') {
   y = drawBox('Detalle', medicos.enfermedad_cronica_o_alergia?.detalle, marginX + 260, y);
   y += GAP_Y;
   y = drawBox('Discapacidad', medicos.discapacidad, marginX, y);
-  y = drawBox('¿Entrega Diagnóstico?', generales.entrega_diagnostico || '---', marginX + 260, y);
-  y += GAP_Y;
-  y = drawBox('Detalle Enfermedad', generales.detalle_enfermedad || '---', marginX, y, 500);
   y += GAP_Y;
 
   y = drawSectionTitle('Secundaria de Origen', y);
@@ -140,11 +139,11 @@ function generarPDF(datos, nombreArchivo = 'formulario_paginado.pdf') {
   y += GAP_Y;
 
   y = drawSectionTitle('Emergencia Adicional', y);
-  y = drawBox('Nombre Emergencia Adic.', generales.responsable_emergencia?.nombre || '---', marginX, y);
-  y = drawBox('Tel. Emergencia Adic.', generales.responsable_emergencia?.telefono || '---', marginX + 260, y);
+  y = drawBox('Nombre Emergencia Adic.', generales.responsable_emergencia?.nombre, marginX, y);
+  y = drawBox('Tel. Emergencia Adic.', generales.responsable_emergencia?.telefono, marginX + 260, y);
   y += GAP_Y;
-  y = drawBox('Parentesco Emergencia', generales.responsable_emergencia?.parentesco || '---', marginX, y);
-  y = drawBox('¿Carta Poder?', generales.carta_poder || '---', marginX + 260, y);
+  y = drawBox('Parentesco Emergencia', generales.responsable_emergencia?.parentesco, marginX, y);
+  y = drawBox('¿Carta Poder?', generales.carta_poder, marginX + 260, y);
   y += GAP_Y;
 
   if (fs.existsSync(footerPath)) {
