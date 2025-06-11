@@ -1,127 +1,123 @@
-// Convierte todos los inputs de texto a mayúsculas automáticamente
-document.addEventListener('DOMContentLoaded', async () => {
-  const inputs = document.querySelectorAll('input[type="text"], textarea');
-  inputs.forEach(input => {
-    input.addEventListener('input', () => {
-      input.value = input.value.toUpperCase();
-    });
-  });
-
-  // Desactivar opciones de paraescolar que ya están llenas
-  const opciones = [
-    "AJEDREZ", "ATLETISMO", "BANDA DE GUERRA", "BASQUETBOL", "DANZA",
-    "ESCOLTA DE BANDERA", "FOTOGRAFÍA", "FUTBOL", "PINTURA",
-    "TEATRO-CANTO", "TOCHO BANDERA", "VOLEIBOL", "ORATORIA-DECLAMACION", "CORO", "MÚSICA"
-  ];
-
-  const select = document.querySelector('select[name="datos_generales.paraescolar"]');
-  const folioInput = document.querySelector('input[name="folio"]');
-  let paraescolarPrevio = null;
-
-  if (folioInput && folioInput.value.trim()) {
-    try {
-      const res = await fetch(`/api/folio/${folioInput.value.trim()}`);
-      const alumno = await res.json();
-      paraescolarPrevio = alumno?.datos_generales?.paraescolar;
-    } catch (e) {
-      console.warn("No se pudo verificar el folio existente");
-    }
-  }
-
-  opciones.forEach(async (opcion) => {
-    try {
-      const res = await fetch(`/api/validar-paraescolar/${encodeURIComponent(opcion)}`);
-      const data = await res.json();
-      if (data.count >= 40 && opcion !== paraescolarPrevio) {
-        const optionElement = [...select.options].find(opt => opt.value === opcion);
-        if (optionElement) {
-          optionElement.disabled = true;
-          optionElement.textContent += ' (LLENO)';
-        }
-      }
-    } catch (e) {
-      console.error("Error consultando paraescolar:", opcion);
-    }
-  });
-});
-
-function validarFormularioCompleto(form) {
-  const campos = form.querySelectorAll('[required]');
-  const errores = [];
-
-  campos.forEach(campo => {
-    const visible = campo.offsetParent !== null;
-    const habilitado = !campo.disabled;
-    if (visible && habilitado && (!campo.value || !campo.value.trim())) {
-      errores.push(campo.name);
-    }
-  });
-
-  if (errores.length > 0) {
-    alert("Faltan campos obligatorios:
-" + errores.join("\n"));
-    const primerCampo = form.querySelector(`[name="${errores[0]}"]`);
-    if (primerCampo) primerCampo.focus();
-    return false;
-  }
-
-  return true;
-}
+// scripts.js actualizado
 
 document.getElementById('registroForm').addEventListener('submit', async (e) => {
   e.preventDefault();
-  const form = e.target;
-  if (!validarFormularioCompleto(form)) return;
 
-  const datos = new FormData(form);
-  const objeto = {};
-  for (let [clave, valor] of datos.entries()) {
-    const partes = clave.split('.');
-    if (partes.length === 1) {
-      objeto[clave] = valor;
-    } else {
-      if (!objeto[partes[0]]) objeto[partes[0]] = {};
-      if (partes.length === 3) {
-        if (!objeto[partes[0]][partes[1]]) objeto[partes[0]][partes[1]] = {};
-        objeto[partes[0]][partes[1]][partes[2]] = valor;
-      } else {
-        objeto[partes[0]][partes[1]] = valor;
-      }
+  const camposObligatorios = [
+    'nombres','primer_apellido','segundo_apellido','curp','carrera',
+    'periodo_semestral','semestre','turno','fecha_nacimiento','edad','sexo',
+    'estado_nacimiento','municipio_nacimiento','ciudad_nacimiento','estado_civil',
+    'colonia','domicilio','codigo_postal','telefono_alumno','correo_alumno',
+    'tipo_sangre','contacto_emergencia_nombre','contacto_emergencia_telefono',
+    'habla_lengua_indigena_respuesta',
+    'numero_seguro_social','enfermedad_cronica_o_alergia_respuesta',
+    'enfermedad_cronica_o_alergia_detalle','discapacidad','entrega_diagnostico',
+    'detalle_enfermedad','nombre_secundaria','regimen','promedio_general','modalidad',
+    'nombre_padre','telefono_padre','nombre_madre','telefono_madre',
+    'vive_con','persona_emergencia_nombre','persona_emergencia_parentesco','persona_emergencia_telefono',
+    'responsable_emergencia_nombre','responsable_emergencia_telefono','responsable_emergencia_parentesco','carta_poder'
+  ];
+
+  for (const campo of camposObligatorios) {
+    const input = document.querySelector(`[name="${campo}"]`);
+    if (!input || !input.value.trim()) {
+      alert(`⚠️ Por favor completa el campo: ${campo.replaceAll('_', ' ')}`);
+      input?.focus();
+      return;
     }
   }
 
-  try {
-    const res = await fetch('/api/guardar', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(objeto)
-    });
+  const folio = localStorage.getItem('alumnoFolio');
+  if (!folio) return alert('Folio perdido');
 
-    const data = await res.json();
-
-    if (!res.ok) {
-      alert(data.message || 'Error al guardar los datos.');
-      return;
+  const formData = new FormData(e.target);
+  const nuevoRegistro = {
+    folio,
+    datos_alumno: {
+      nombres: formData.get('nombres'),
+      primer_apellido: formData.get('primer_apellido'),
+      segundo_apellido: formData.get('segundo_apellido'),
+      curp: formData.get('curp'),
+      carrera: formData.get('carrera'),
+      periodo_semestral: formData.get('periodo_semestral'),
+      semestre: formData.get('semestre'),
+      grupo: formData.get('grupo'),
+      turno: formData.get('turno'),
+      fecha_nacimiento: formData.get('fecha_nacimiento'),
+      edad: formData.get('edad'),
+      sexo: formData.get('sexo'),
+      estado_nacimiento: formData.get('estado_nacimiento'),
+      municipio_nacimiento: formData.get('municipio_nacimiento'),
+      ciudad_nacimiento: formData.get('ciudad_nacimiento'),
+      estado_civil: formData.get('estado_civil')
+    },
+    datos_generales: {
+      colonia: formData.get('colonia'),
+      domicilio: formData.get('domicilio'),
+      codigo_postal: formData.get('codigo_postal'),
+      telefono_alumno: formData.get('telefono_alumno'),
+      correo_alumno: formData.get('correo_alumno'),
+      paraescolar: formData.get('paraescolar'),
+      tipo_sangre: formData.get('tipo_sangre'),
+      contacto_emergencia_nombre: formData.get('contacto_emergencia_nombre'),
+      contacto_emergencia_telefono: formData.get('contacto_emergencia_telefono'),
+      habla_lengua_indigena: {
+        respuesta: formData.get('habla_lengua_indigena_respuesta'),
+        cual: formData.get('habla_lengua_indigena_cual')
+      },
+      entrega_diagnostico: formData.get('entrega_diagnostico'),
+      detalle_enfermedad: formData.get('detalle_enfermedad'),
+      responsable_emergencia: {
+        nombre: formData.get('responsable_emergencia_nombre'),
+        telefono: formData.get('responsable_emergencia_telefono'),
+        parentesco: formData.get('responsable_emergencia_parentesco')
+      },
+      carta_poder: formData.get('carta_poder')
+    },
+    datos_medicos: {
+      numero_seguro_social: formData.get('numero_seguro_social'),
+      unidad_medica_familiar: formData.get('unidad_medica_familiar'),
+      enfermedad_cronica_o_alergia: {
+        respuesta: formData.get('enfermedad_cronica_o_alergia_respuesta'),
+        detalle: formData.get('enfermedad_cronica_o_alergia_detalle')
+      },
+      discapacidad: formData.get('discapacidad')
+    },
+    secundaria_origen: {
+      nombre_secundaria: formData.get('nombre_secundaria'),
+      regimen: formData.get('regimen'),
+      promedio_general: formData.get('promedio_general'),
+      modalidad: formData.get('modalidad')
+    },
+    tutor_responsable: {
+      nombre_padre: formData.get('nombre_padre'),
+      telefono_padre: formData.get('telefono_padre'),
+      nombre_madre: formData.get('nombre_madre'),
+      telefono_madre: formData.get('telefono_madre'),
+      vive_con: formData.get('vive_con'),
+      persona_emergencia: {
+        nombre: formData.get('persona_emergencia_nombre'),
+        parentesco: formData.get('persona_emergencia_parentesco'),
+        telefono: formData.get('persona_emergencia_telefono')
+      }
     }
+  };
 
-    alert('Registro exitoso');
-    form.reset();
+  const BASE_URL = window.location.origin.includes('localhost')
+    ? 'http://localhost:3001'
+    : 'https://registro272.onrender.com';
 
-    if (data.pdf_url) {
-      const div = document.getElementById('pdfLink');
-      div.innerHTML = '';
-      const link = document.createElement('a');
-      link.href = data.pdf_url;
-      link.textContent = '📄 Ver PDF generado';
-      link.target = '_blank';
-      link.style.display = 'inline-block';
-      link.style.marginTop = '10px';
-      link.style.color = '#0066cc';
-      div.appendChild(link);
-    }
+  const res = await fetch(`${BASE_URL}/api/guardar`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(nuevoRegistro)
+  });
 
-  } catch (error) {
-    console.error(error);
-    alert('Error al enviar el formulario.');
+  const result = await res.json();
+  if (res.ok) {
+    alert('Registro guardado con éxito');
+    window.open(`${BASE_URL}/api/pdf/${folio}`, '_blank');
+  } else {
+    alert(result.message || 'Error al guardar');
   }
 });
