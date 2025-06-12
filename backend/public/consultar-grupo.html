@@ -1,55 +1,99 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <title>Consultar Grupo</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8">
+  <title>Consulta de Grupo Asignado</title>
+  <link rel="stylesheet" href="/style.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: url('background.jpg') no-repeat center center fixed;
+      background-size: cover;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .card {
+      background-color: #ffffffdd;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+      max-width: 500px;
+      width: 100%;
+      text-align: center;
+    }
+
+    .card input[type="text"] {
+      width: 90%;
+      padding: 10px;
+      margin-bottom: 20px;
+      font-size: 1.1em;
+      border-radius: 8px;
+      border: 1px solid #999;
+    }
+
+    .card button {
+      background-color: #007BFF;
+      color: white;
+      padding: 10px 25px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1.1em;
+    }
+
+    .card button:hover {
+      background-color: #0056b3;
+    }
+
+    .resultado {
+      margin-top: 20px;
+      text-align: left;
+      background-color: #f2f2f2;
+      padding: 15px;
+      border-radius: 10px;
+    }
+
+    .resultado p {
+      margin: 5px 0;
+      font-size: 1.1em;
+    }
+  </style>
 </head>
 <body>
-  <nav>
-    <div class="nav-logo"><img src="logo.png" alt="Logo" /></div>
-    <div class="nav-links">
-      <a href="index.html">Inicio</a>
-      <a href="consultar-grupo.html" class="active">Consultar grupo</a>
-    </div>
-  </nav>
-
-  <h2>Consulta tu grupo asignado</h2>
-  <form id="consultaForm">
-    <input type="text" id="folio" placeholder="Folio" required />
-    <button type="submit">Consultar</button>
-  </form>
-
-  <div id="resultado" class="card" style="display:none;"></div>
+  <div class="card">
+    <h2>Consulta tu Grupo Asignado</h2>
+    <form id="consultaForm">
+      <input type="text" id="folio" placeholder="Ingresa tu folio" required>
+      <br>
+      <button type="submit">Consultar</button>
+    </form>
+    <div id="resultado" class="resultado"></div>
+  </div>
 
   <script>
-    const form = document.getElementById('consultaForm');
-    const resultado = document.getElementById('resultado');
-
-    form.addEventListener('submit', async (e) => {
+    document.getElementById('consultaForm').addEventListener('submit', async (e) => {
       e.preventDefault();
-      resultado.style.display = 'none';
-      resultado.innerHTML = '';
-
       const folio = document.getElementById('folio').value.trim();
-      if (!folio) return;
+      const res = await fetch(`/api/consultar-grupo/${folio}`);
+      const data = await res.json();
+      const resultado = document.getElementById('resultado');
 
-      try {
-        const res = await fetch(`/api/consultar-grupo/${folio}`);
-        const data = await res.json();
-        if (!data.ok) throw new Error(data.msg);
-
-        const { nombres, primer_apellido, segundo_apellido, grupo, especialidad } = data.data;
+      if (res.ok) {
         resultado.innerHTML = `
-          <h3>${nombres} ${primer_apellido} ${segundo_apellido}</h3>
-          <p><strong>Grupo:</strong> ${grupo}</p>
-          <p><strong>Especialidad:</strong> ${especialidad}</p>
+          <p><strong>Nombre:</strong> ${data.nombres} ${data.primer_apellido} ${data.segundo_apellido}</p>
+          <p><strong>Grupo:</strong> ${data.grupo}</p>
+          <p><strong>Especialidad:</strong> ${data.especialidad}</p>
         `;
-        resultado.style.display = 'block';
-      } catch (err) {
-        alert(err.message || 'Error consultando grupo');
+      } else {
+        resultado.innerHTML = `<p style="color:red;">${data.mensaje}</p>`;
       }
     });
   </script>
 </body>
 </html>
+
