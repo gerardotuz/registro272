@@ -102,7 +102,7 @@ function generarPDF(datos, nombreArchivo = 'formulario_paginado.pdf') {
   y = drawBox('¿Cuál?', generales.habla_lengua_indigena?.cual, marginX + 260, y);
   y += GAP_Y;
   y = drawBox('¿Entrega Diagnóstico?', generales.entrega_diagnostico, marginX, y);
-  y = drawBox('Detalle Enfermedad', generales.detalle_enfermedad, marginx + 260, y);
+  y = drawBox('Detalle Enfermedad', generales.detalle_enfermedad, marginX + 500, y);
   y += GAP_Y;
 
   y = drawSectionTitle('Datos Médicos', y);
