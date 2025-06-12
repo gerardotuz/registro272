@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Consultar Grupo</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <nav>
+    <div class="nav-logo"><img src="logo.png" alt="Logo" /></div>
+    <div class="nav-links">
+      <a href="index.html">Inicio</a>
+      <a href="consultar-grupo.html" class="active">Consultar grupo</a>
+    </div>
+  </nav>
+
+  <h2>Consulta tu grupo asignado</h2>
+  <form id="consultaForm">
+    <input type="text" id="folio" placeholder="Folio" required />
+    <button type="submit">Consultar</button>
+  </form>
+
+  <div id="resultado" class="card" style="display:none;"></div>
+
+  <script>
+    const form = document.getElementById('consultaForm');
+    const resultado = document.getElementById('resultado');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      resultado.style.display = 'none';
+      resultado.innerHTML = '';
+
+      const folio = document.getElementById('folio').value.trim();
+      if (!folio) return;
+
+      try {
+        const res = await fetch(`/api/consultar-grupo/${folio}`);
+        const data = await res.json();
+        if (!data.ok) throw new Error(data.msg);
+
+        const { nombres, primer_apellido, segundo_apellido, grupo, especialidad } = data.data;
+        resultado.innerHTML = `
+          <h3>${nombres} ${primer_apellido} ${segundo_apellido}</h3>
+          <p><strong>Grupo:</strong> ${grupo}</p>
+          <p><strong>Especialidad:</strong> ${especialidad}</p>
+        `;
+        resultado.style.display = 'block';
+      } catch (err) {
+        alert(err.message || 'Error consultando grupo');
+      }
+    });
+  </script>
+</body>
+</html>
