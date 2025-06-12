@@ -57,6 +57,31 @@
     }
   });
 </script>
+<h3>Cargar grupos (Excel)</h3>
+<form id="formGrupos">
+  <input type="file" id="archivoGrupos" accept=".xlsx, .xls" required />
+  <button type="submit">Subir archivo</button>
+</form>
+
+<script>
+  document.getElementById('formGrupos').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const archivo = document.getElementById('archivoGrupos').files[0];
+    if (!archivo) return alert('Selecciona un archivo');
+
+    const formData = new FormData();
+    formData.append('archivo', archivo);
+
+    try {
+      const res  = await fetch('/api/cargar-grupos', { method: 'POST', body: formData });
+      const json = await res.json();
+      if (!json.ok) throw new Error(json.msg);
+      alert(json.msg);
+    } catch (err) {
+      alert(err.message || 'Error al cargar archivo');
+    }
+  });
+</script>
 
 <script src="scripts.js"></script>
 </body>
