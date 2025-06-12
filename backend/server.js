@@ -22,6 +22,7 @@ app.use('/pdfs', express.static(path.join(__dirname, 'public/pdfs')));
 // Rutas
 app.use('/api', require('./routers/alumno.js'));
 app.use('/api', require('./routers/auth.js'));
+app.use('/api', require('./routers/grupo.js')); // ✅ NUEVA RUTA PARA GRUPOS
 
 // Conexión a MongoDB
 mongoose.connect(process.env.MONGO_URI, {
@@ -43,3 +44,4 @@ const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`🚀 Servidor escuchando en puerto ${PORT}`);
 });
+
