@@ -195,12 +195,3 @@ html, body {
     width: 95%;
   }
 }
-legend,
-label,
-button,
-input::placeholder,
-select,
-textarea::placeholder {
-  text-transform: uppercase;
-}
-
