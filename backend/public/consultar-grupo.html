@@ -4,7 +4,19 @@
   <meta charset="UTF-8">
   <title>Consulta de Grupo Asignado</title>
   <link rel="stylesheet" href="/style.css">
-  
+  <style>
+    .resultado {
+      margin-top: 20px;
+      padding: 15px;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      background-color: #f9f9f9;
+      display: none; /* Oculto hasta que haya un resultado */
+    }
+    .error {
+      color: red;
+    }
+  </style>
 </head>
 <body>
 
@@ -24,9 +36,10 @@
       <h2>Consulta tu Grupo Asignado</h2>
       <form id="consultaForm">
         <input type="text" id="folio" placeholder="Ingresa tu folio" required>
-        <br>
+        <br><br>
         <button type="submit">Consultar</button>
       </form>
+
       <div id="resultado" class="resultado"></div>
     </div>
   </div>
@@ -35,20 +48,35 @@
     document.getElementById('consultaForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const folio = document.getElementById('folio').value.trim();
-      const res = await fetch(`/api/consultar-grupo/${folio}`);
-      const data = await res.json();
       const resultado = document.getElementById('resultado');
 
-      if (res.ok) {
-        resultado.innerHTML = `
-          <p><strong>Nombre:</strong> ${data.nombres} ${data.primer_apellido} ${data.segundo_apellido}</p>
-          <p><strong>Grupo:</strong> ${data.grupo}</p>
-          <p><strong>Especialidad:</strong> ${data.especialidad}</p>
-        `;
-      } else {
-        resultado.innerHTML = `<p style="color:red;">${data.mensaje}</p>`;
+      if (!folio) {
+        resultado.style.display = 'block';
+        resultado.innerHTML = `<p class="error">Por favor, ingresa un folio válido.</p>`;
+        return;
+      }
+
+      try {
+        const res = await fetch(`/api/consultar-grupo/${folio}`);
+        const data = await res.json();
+
+        resultado.style.display = 'block';
+
+        if (res.ok) {
+          resultado.innerHTML = `
+            <p><strong>Nombre:</strong> ${data.nombres || ''} ${data.primer_apellido || ''} ${data.segundo_apellido || ''}</p>
+            <p><strong>Grupo:</strong> ${data.grupo || 'Sin grupo asignado'}</p>
+            <p><strong>Especialidad:</strong> ${data.especialidad || 'Sin especialidad'}</p>
+          `;
+        } else {
+          resultado.innerHTML = `<p class="error">${data.mensaje || 'Folio no encontrado'}</p>`;
+        }
+      } catch (err) {
+        resultado.style.display = 'block';
+        resultado.innerHTML = `<p class="error">Error al consultar. Intenta de nuevo más tarde.</p>`;
       }
     });
   </script>
 </body>
 </html>
+
