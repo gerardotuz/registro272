@@ -1,6 +1,5 @@
 const express = require('express');
-const router = express.Router();  // ← SOLO UNA DECLARACIÓN DE "router"
-
+const router = express.Router();
 const multer = require('multer');
 const xlsx = require('xlsx');
 const Grupo = require('../models/Grupo');
@@ -31,35 +30,29 @@ router.post('/cargar-grupos', upload.single('archivo'), async (req, res) => {
 
     const workbook = xlsx.read(req.file.buffer, { type: 'buffer' });
     const hoja = workbook.Sheets[workbook.SheetNames[0]];
-    const rowsCrudos = xlsx.utils.sheet_to_json(hoja, { defval: '' });
+    const rows = xlsx.utils.sheet_to_json(hoja, { defval: '' });
 
-    // Limpieza de caracteres
-    const rows = rowsCrudos.map(row => {
-      const fila = {};
-      for (let key in row) {
-        const valor = row[key];
-        fila[key] = typeof valor === 'string'
-          ? Buffer.from(valor, 'binary').toString('utf8')
-          : valor;
-      }
-      return fila;
-    });
+    const operaciones = rows.map(row => {
+      // Convertimos todos los textos a UTF-8 seguros
+      const limpiar = texto =>
+        typeof texto === 'string'
+          ? Buffer.from(texto, 'utf8').toString()
+          : texto;
 
-    const operaciones = rows.map(row =>
-      Grupo.updateOne(
-        { folio: row.folio },
+      return Grupo.updateOne(
+        { folio: limpiar(row.folio) },
         {
           $set: {
-            nombres: row.nombres,
-            primer_apellido: row.primer_apellido,
-            segundo_apellido: row.segundo_apellido,
-            grupo: row.grupo,
-            especialidad: row.especialidad
+            nombres: limpiar(row.nombres),
+            primer_apellido: limpiar(row.primer_apellido),
+            segundo_apellido: limpiar(row.segundo_apellido),
+            grupo: limpiar(row.grupo),
+            especialidad: limpiar(row.especialidad)
           }
         },
         { upsert: true }
-      )
-    );
+      );
+    });
 
     await Promise.all(operaciones);
     res.json({ ok: true, msg: `Se cargaron/actualizaron ${operaciones.length} registros` });
@@ -70,3 +63,4 @@ router.post('/cargar-grupos', upload.single('archivo'), async (req, res) => {
 });
 
 module.exports = router;
+
