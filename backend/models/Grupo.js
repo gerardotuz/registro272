@@ -11,6 +11,7 @@ const upload = multer({ dest: 'uploads/' });
 // GET /api/consultar-grupo/:folio
 router.get('/consultar-grupo/:folio', async (req, res) => {
   try {
+    console.log("Buscando folio:", req.params.folio); // ← agrega esto
     const grupo = await Grupo.findOne({ folio: req.params.folio });
     if (!grupo) return res.status(404).json({ mensaje: 'Folio no encontrado' });
     res.json(grupo); // ✅ RESPUESTA PLANA SIN .data
