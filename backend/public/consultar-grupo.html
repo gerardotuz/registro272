@@ -44,39 +44,37 @@
     </div>
   </div>
 
-  <script>
-    document.getElementById('consultaForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const folio = document.getElementById('folio').value.trim();
-      const resultado = document.getElementById('resultado');
+ <script>
+  document.getElementById('consultaForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const folio = document.getElementById('folio').value.trim();
 
-      if (!folio) {
-        resultado.style.display = 'block';
-        resultado.innerHTML = `<p class="error">Por favor, ingresa un folio válido.</p>`;
+    const BASE_URL = window.location.origin.includes('localhost')
+      ? 'http://localhost:3001'
+      : 'https://registro272.onrender.com';
+
+    const res = await fetch(`${BASE_URL}/api/consultar-grupo/${folio}`);
+    const data = await res.json();
+    const resultado = document.getElementById('resultado');
+
+    console.log('Datos recibidos:', data); // depuración
+
+    if (res.ok) {
+      if (!data.nombres) {
+        resultado.innerHTML = `<p style="color:red;">⚠️ El folio fue encontrado, pero los datos están vacíos o incompletos.</p>`;
         return;
       }
+      resultado.innerHTML = `
+        <p><strong>Nombre:</strong> ${data.nombres} ${data.primer_apellido} ${data.segundo_apellido}</p>
+        <p><strong>Grupo:</strong> ${data.grupo}</p>
+        <p><strong>Especialidad:</strong> ${data.especialidad}</p>
+      `;
+    } else {
+      resultado.innerHTML = `<p style="color:red;">${data.mensaje}</p>`;
+    }
+  });
+</script>
 
-      try {
-        const res = await fetch(`/api/consultar-grupo/${folio}`);
-        const data = await res.json();
-
-        resultado.style.display = 'block';
-
-        if (res.ok) {
-          resultado.innerHTML = `
-            <p><strong>Nombre:</strong> ${data.nombres || ''} ${data.primer_apellido || ''} ${data.segundo_apellido || ''}</p>
-            <p><strong>Grupo:</strong> ${data.grupo || 'Sin grupo asignado'}</p>
-            <p><strong>Especialidad:</strong> ${data.especialidad || 'Sin especialidad'}</p>
-          `;
-        } else {
-          resultado.innerHTML = `<p class="error">${data.mensaje || 'Folio no encontrado'}</p>`;
-        }
-      } catch (err) {
-        resultado.style.display = 'block';
-        resultado.innerHTML = `<p class="error">Error al consultar. Intenta de nuevo más tarde.</p>`;
-      }
-    });
-  </script>
 </body>
 </html>
 
