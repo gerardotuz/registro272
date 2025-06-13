@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -5,16 +6,92 @@
   <title>Consulta de Grupo Asignado</title>
   <link rel="stylesheet" href="/style.css">
   <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f2f2f2;
+      margin: 0;
+      padding: 0;
+    }
+
+    .contenido {
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 90vh;
+    }
+
+    .card {
+      background-color: #ffffff;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+      max-width: 500px;
+      width: 100%;
+      text-align: center;
+    }
+
+    .card h2 {
+      margin-bottom: 20px;
+      color: #333;
+    }
+
+    .card input[type="text"] {
+      width: 90%;
+      padding: 10px;
+      margin-bottom: 20px;
+      font-size: 1.1em;
+      border-radius: 8px;
+      border: 1px solid #999;
+      text-transform: uppercase;
+    }
+
+    .card button {
+      background-color: #007BFF;
+      color: white;
+      padding: 10px 25px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1.1em;
+    }
+
+    .card button:hover {
+      background-color: #0056b3;
+    }
+
     .resultado {
       margin-top: 20px;
-      padding: 15px;
-      border: 1px solid #ccc;
+      text-align: left;
+      background-color: #fff;
+      padding: 20px;
       border-radius: 10px;
-      background-color: #f9f9f9;
-      display: none; /* Oculto hasta que haya un resultado */
+      color: #000;
+      font-weight: bold;
+      font-size: 1.1em;
     }
-    .error {
-      color: red;
+
+    nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 20px;
+      background-color: #333;
+    }
+
+    .nav-logo img {
+      height: 50px;
+    }
+
+    .nav-links a {
+      color: white;
+      margin-left: 20px;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    .nav-links a:hover {
+      text-decoration: underline;
     }
   </style>
 </head>
@@ -26,6 +103,7 @@
     </div>
     <div class="nav-links">
       <a href="index.html">Inicio</a>
+      <a href="formulario.html">Formulario</a>
       <a href="consultar-grupo.html">Consultar Grupo</a>
       <a href="login.html">Iniciar sesión</a>
     </div>
@@ -36,41 +114,37 @@
       <h2>Consulta tu Grupo Asignado</h2>
       <form id="consultaForm">
         <input type="text" id="folio" placeholder="Ingresa tu folio" required>
-        <br><br>
+        <br>
         <button type="submit">Consultar</button>
       </form>
-
       <div id="resultado" class="resultado"></div>
     </div>
   </div>
 
-<script>
-  document.getElementById('consultaForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const folio = document.getElementById('folio').value.trim();
+  <script>
+    document.getElementById('consultaForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const folio = document.getElementById('folio').value.trim();
 
-    const BASE_URL = window.location.origin.includes('localhost')
-      ? 'http://localhost:3001'
-      : 'https://registro272.onrender.com';
+      const BASE_URL = window.location.origin.includes('localhost')
+        ? 'http://localhost:3001'
+        : 'https://registro272.onrender.com';
 
-    const respuesta = await fetch(`${BASE_URL}/api/consultar-grupo/${folio}`);
-    const json = await respuesta.json();
-    const data = json.data || json; // ← soporte para ambas respuestas
-    const resultado = document.getElementById('resultado');
+      const respuesta = await fetch(`${BASE_URL}/api/consultar-grupo/${folio}`);
+      const data = await respuesta.json();
+      const resultado = document.getElementById('resultado');
 
-    if (respuesta.ok && data && data.nombres) {
-      resultado.innerHTML = `
-        <p><strong>Nombre:</strong> ${data.nombres} ${data.primer_apellido} ${data.segundo_apellido}</p>
-        <p><strong>Grupo:</strong> ${data.grupo}</p>
-        <p><strong>Especialidad:</strong> ${data.especialidad}</p>
-      `;
-    } else {
-      resultado.innerHTML = `<p style="color:red;">${json.mensaje || 'Folio no encontrado.'}</p>`;
-    }
-  });
-</script>
-
-
+      if (respuesta.ok && data && data.nombres) {
+        resultado.innerHTML = `
+          <p><strong>Nombre:</strong> ${data.nombres} ${data.primer_apellido} ${data.segundo_apellido}</p>
+          <p><strong>Grupo:</strong> ${data.grupo}</p>
+          <p><strong>Especialidad:</strong> ${data.especialidad}</p>
+        `;
+      } else {
+        resultado.innerHTML = `<p style="color:red;">${data.mensaje || 'Folio no encontrado.'}</p>`;
+      }
+    });
+  </script>
 </body>
 </html>
 
