@@ -1,18 +1,41 @@
-// backend/models/Grupo.js
-const mongoose = require('mongoose');
+// backend/routers/grupo.js
+const express = require('express');
+const router = express.Router();
+const Grupo = require('../models/Grupo');
+const multer = require('multer');
+const xlsx = require('xlsx');
+const fs = require('fs');
 
-const GrupoSchema = new mongoose.Schema({
-  folio: {
-    type: String,
-    required: true,
-    unique: true,
-    trim: true
-  },
-  nombres: { type: String, required: true },
-  primer_apellido: { type: String, required: true },
-  segundo_apellido: { type: String, required: true },
-  grupo: { type: String, required: true },
-  especialidad: { type: String, required: true }
-}, { timestamps: true });
+const upload = multer({ dest: 'uploads/' });
 
-module.exports = mongoose.model('Grupo', GrupoSchema);
+// GET /api/consultar-grupo/:folio
+router.get('/consultar-grupo/:folio', async (req, res) => {
+  try {
+    const grupo = await Grupo.findOne({ folio: req.params.folio });
+    if (!grupo) return res.status(404).json({ mensaje: 'Folio no encontrado' });
+    res.json(grupo); // ✅ RESPUESTA PLANA SIN .data
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ mensaje: 'Error del servidor' });
+  }
+});
+
+// POST /api/cargar-grupos
+router.post('/cargar-grupos', upload.single('archivo'), async (req, res) => {
+  try {
+    const workbook = xlsx.readFile(req.file.path);
+    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+    const datos = xlsx.utils.sheet_to_json(sheet);
+
+    await Grupo.deleteMany({});
+    await Grupo.insertMany(datos);
+
+    fs.unlinkSync(req.file.path);
+    res.json({ mensaje: 'Datos cargados correctamente' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ mensaje: 'Error al cargar los datos' });
+  }
+});
+
+module.exports = router;
