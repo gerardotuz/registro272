@@ -44,7 +44,7 @@
     </div>
   </div>
 
- <script>
+<script>
   document.getElementById('consultaForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const folio = document.getElementById('folio').value.trim();
@@ -53,27 +53,23 @@
       ? 'http://localhost:3001'
       : 'https://registro272.onrender.com';
 
-    const res = await fetch(`${BASE_URL}/api/consultar-grupo/${folio}`);
-    const data = await res.json();
+    const respuesta = await fetch(`${BASE_URL}/api/consultar-grupo/${folio}`);
+    const json = await respuesta.json();
+    const data = json.data || json; // ← soporte para ambas respuestas
     const resultado = document.getElementById('resultado');
 
-    console.log('Datos recibidos:', data); // depuración
-
-    if (res.ok) {
-      if (!data.nombres) {
-        resultado.innerHTML = `<p style="color:red;">⚠️ El folio fue encontrado, pero los datos están vacíos o incompletos.</p>`;
-        return;
-      }
+    if (respuesta.ok && data && data.nombres) {
       resultado.innerHTML = `
         <p><strong>Nombre:</strong> ${data.nombres} ${data.primer_apellido} ${data.segundo_apellido}</p>
         <p><strong>Grupo:</strong> ${data.grupo}</p>
         <p><strong>Especialidad:</strong> ${data.especialidad}</p>
       `;
     } else {
-      resultado.innerHTML = `<p style="color:red;">${data.mensaje}</p>`;
+      resultado.innerHTML = `<p style="color:red;">${json.mensaje || 'Folio no encontrado.'}</p>`;
     }
   });
 </script>
+
 
 </body>
 </html>
