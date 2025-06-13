@@ -81,6 +81,12 @@ function generarPDF(datos, nombreArchivo = 'formulario_paginado.pdf') {
   y = drawBox('Grupo', alumno.grupo, marginX + 260, y);
   y += GAP_Y;
   y = drawBox('Turno', alumno.turno, marginX, y);
+  
+  y = drawBox('1era opción', generales.primera_opcion, marginX, y);
+  y = drawBox('2da opción', generales.segunda_opcion, marginX + 260, y);
+  y = drawBox('3era opción', generales.tercera_opcion, marginX, y);
+  y = drawBox('4ta opción', generales.cuarta_opcion, marginX + 260, y);
+
   y = drawBox('Fecha de Nacimiento', alumno.fecha_nacimiento, marginX + 260, y);
   y += GAP_Y;
   y = drawBox('Edad', alumno.edad, marginX, y);
