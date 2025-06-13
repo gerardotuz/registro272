@@ -124,7 +124,9 @@
   <script>
     document.getElementById('consultaForm').addEventListener('submit', async (e) => {
       e.preventDefault();
-      const folio = document.getElementById('folio').value.trim();
+      const folio = document.getElementById('folio').value.trim().toUpperCase(); // <--- aquí el cambio
+
+      console.log("Consultando folio:", folio);
 
       const BASE_URL = window.location.origin.includes('localhost')
         ? 'http://localhost:3001'
