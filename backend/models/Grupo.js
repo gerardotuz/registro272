@@ -1,7 +1,6 @@
-
 const express = require('express');
 const router = express.Router();
-const Grupo = require('../models/Grupo');
+const Grupo = require('../models/Grupo'); // ✅ Importación corregida
 const multer = require('multer');
 const xlsx = require('xlsx');
 const fs = require('fs');
