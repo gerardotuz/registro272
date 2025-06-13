@@ -195,3 +195,11 @@ html, body {
     width: 95%;
   }
 }
+legend,Add commentMore actions
+label,
+button,
+input::placeholder,
+select,
+textarea::placeholder {
+  text-transform: uppercase;
+}
