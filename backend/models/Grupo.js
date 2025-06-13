@@ -11,15 +11,23 @@ const upload = multer({ dest: 'uploads/' });
 // GET /api/consultar-grupo/:folio
 router.get('/consultar-grupo/:folio', async (req, res) => {
   try {
-    console.log("Buscando folio:", req.params.folio); // ← agrega esto
-    const grupo = await Grupo.findOne({ folio: req.params.folio });
-    if (!grupo) return res.status(404).json({ mensaje: 'Folio no encontrado' });
-    res.json(grupo); // ✅ RESPUESTA PLANA SIN .data
+    const folio = req.params.folio.trim().toUpperCase();
+    console.log("📌 Consultando folio:", folio);
+    
+    const grupo = await Grupo.findOne({ folio: folio });
+    if (!grupo) {
+      console.log("❌ Folio no encontrado en MongoDB");
+      return res.status(404).json({ mensaje: 'Folio no encontrado' });
+    }
+
+    console.log("✅ Grupo encontrado:", grupo);
+    res.json(grupo);
   } catch (err) {
-    console.error(err);
+    console.error("❌ Error en el backend al buscar grupo:", err);
     res.status(500).json({ mensaje: 'Error del servidor' });
   }
 });
+
 
 // POST /api/cargar-grupos
 router.post('/cargar-grupos', upload.single('archivo'), async (req, res) => {
