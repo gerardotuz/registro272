@@ -72,7 +72,13 @@ document.getElementById('registroForm').addEventListener('submit', async (e) => 
         telefono: formData.get('responsable_emergencia_telefono'),
         parentesco: formData.get('responsable_emergencia_parentesco')
       },
-      carta_poder: formData.get('carta_poder')
+      carta_poder: formData.get('carta_poder'),
+      primera_opcion: formData.get('primera_opcion'),
+  segunda_opcion: formData.get('segunda_opcion'),
+  tercera_opcion: formData.get('tercera_opcion'),
+  cuarta_opcion: formData.get('cuarta_opcion')
+
+      
     },
     datos_medicos: {
       numero_seguro_social: formData.get('numero_seguro_social'),
