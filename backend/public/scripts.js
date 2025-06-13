@@ -1,5 +1,4 @@
-// scripts.js actualizado
-
+/// === scripts.js completo con las 4 opciones añadidas ===
 document.getElementById('registroForm').addEventListener('submit', async (e) => {
   e.preventDefault();
 
@@ -9,13 +8,13 @@ document.getElementById('registroForm').addEventListener('submit', async (e) => 
     'estado_nacimiento','municipio_nacimiento','ciudad_nacimiento','estado_civil',
     'colonia','domicilio','codigo_postal','telefono_alumno','correo_alumno',
     'tipo_sangre','contacto_emergencia_nombre','contacto_emergencia_telefono',
-    'habla_lengua_indigena_respuesta',
-    'numero_seguro_social','enfermedad_cronica_o_alergia_respuesta',
+    'habla_lengua_indigena_respuesta','numero_seguro_social','enfermedad_cronica_o_alergia_respuesta',
     'enfermedad_cronica_o_alergia_detalle','discapacidad','entrega_diagnostico',
     'detalle_enfermedad','nombre_secundaria','regimen','promedio_general','modalidad',
     'nombre_padre','telefono_padre','nombre_madre','telefono_madre',
     'vive_con','persona_emergencia_nombre','persona_emergencia_parentesco','persona_emergencia_telefono',
-    'responsable_emergencia_nombre','responsable_emergencia_telefono','responsable_emergencia_parentesco','carta_poder'
+    'responsable_emergencia_nombre','responsable_emergencia_telefono','responsable_emergencia_parentesco','carta_poder',
+    'primera_opcion','segunda_opcion','tercera_opcion','cuarta_opcion'
   ];
 
   for (const campo of camposObligatorios) {
@@ -74,11 +73,9 @@ document.getElementById('registroForm').addEventListener('submit', async (e) => 
       },
       carta_poder: formData.get('carta_poder'),
       primera_opcion: formData.get('primera_opcion'),
-  segunda_opcion: formData.get('segunda_opcion'),
-  tercera_opcion: formData.get('tercera_opcion'),
-  cuarta_opcion: formData.get('cuarta_opcion')
-
-      
+      segunda_opcion: formData.get('segunda_opcion'),
+      tercera_opcion: formData.get('tercera_opcion'),
+      cuarta_opcion: formData.get('cuarta_opcion')
     },
     datos_medicos: {
       numero_seguro_social: formData.get('numero_seguro_social'),
@@ -127,3 +124,4 @@ document.getElementById('registroForm').addEventListener('submit', async (e) => 
     alert(result.message || 'Error al guardar');
   }
 });
+
