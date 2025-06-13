@@ -1,4 +1,4 @@
-// backend/routers/grupo.js
+
 const express = require('express');
 const router = express.Router();
 const Grupo = require('../models/Grupo');
@@ -13,7 +13,7 @@ router.get('/consultar-grupo/:folio', async (req, res) => {
   try {
     const folio = req.params.folio.trim().toUpperCase();
     console.log("📌 Consultando folio:", folio);
-    
+
     const grupo = await Grupo.findOne({ folio: folio });
     if (!grupo) {
       console.log("❌ Folio no encontrado en MongoDB");
@@ -28,7 +28,6 @@ router.get('/consultar-grupo/:folio', async (req, res) => {
   }
 });
 
-
 // POST /api/cargar-grupos
 router.post('/cargar-grupos', upload.single('archivo'), async (req, res) => {
   try {
@@ -42,7 +41,7 @@ router.post('/cargar-grupos', upload.single('archivo'), async (req, res) => {
     fs.unlinkSync(req.file.path);
     res.json({ mensaje: 'Datos cargados correctamente' });
   } catch (err) {
-    console.error(err);
+    console.error("❌ Error al cargar grupos:", err);
     res.status(500).json({ mensaje: 'Error al cargar los datos' });
   }
 });
