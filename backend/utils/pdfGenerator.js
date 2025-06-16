@@ -18,6 +18,7 @@ function generarPDF(datos, nombreArchivo = 'formulario_paginado.pdf') {
   const footerPath = path.join(__dirname, '../public/images/firma_footer.png');
 
   const PAGE_HEIGHT = doc.page.height;
+  const PAGE_WIDTH = doc.page.width;
   const BOTTOM_MARGIN = 80;
   const START_Y = 50;
   const BOX_HEIGHT = 30;
@@ -35,20 +36,6 @@ function generarPDF(datos, nombreArchivo = 'formulario_paginado.pdf') {
     doc.fontSize(8).fillColor('#333').text(label, x + 5, y + 2);
     doc.fontSize(10).fillColor('#000').text(value || '', x + 5, y + 14, { width: width - 10 });
     return y;
-  };
-
-  const drawMultilineBox = (label, value, x, y, width = 240) => {
-    const text = value || '';
-    const textHeight = doc.heightOfString(text, { width: width - 10 });
-    const height = textHeight + 24;
-    if (y + height + BOTTOM_MARGIN > PAGE_HEIGHT) {
-      doc.addPage();
-      y = START_Y;
-    }
-    doc.lineWidth(0.5).strokeColor('#000').rect(x, y, width, height).stroke();
-    doc.fontSize(8).fillColor('#333').text(label, x + 5, y + 2);
-    doc.fontSize(10).fillColor('#000').text(text, x + 5, y + 14, { width: width - 10 });
-    return y + height + 5;
   };
 
   const drawSectionTitle = (title, y) => {
@@ -115,7 +102,7 @@ function generarPDF(datos, nombreArchivo = 'formulario_paginado.pdf') {
   y = drawBox('¿Cuál?', generales.habla_lengua_indigena?.cual, marginX + 260, y);
   y += GAP_Y;
   y = drawBox('¿Entrega Diagnóstico?', generales.entrega_diagnostico, marginX, y);
-  y = drawMultilineBox('Detalle Enfermedad', generales.detalle_enfermedad, marginX + 260, y);  // ← caja más alta
+  y = drawBox('Detalle Enfermedad', generales.detalle_enfermedad, marginX + 260, y);
   y += GAP_Y;
 
   y = drawSectionTitle('Datos Médicos', y);
@@ -123,7 +110,8 @@ function generarPDF(datos, nombreArchivo = 'formulario_paginado.pdf') {
   y = drawBox('Unidad Médica', medicos.unidad_medica_familiar, marginX + 260, y);
   y += GAP_Y;
   y = drawBox('¿Alergia o Enfermedad?', medicos.enfermedad_cronica_o_alergia?.respuesta, marginX, y);
-  y = drawMultilineBox('Detalle', medicos.enfermedad_cronica_o_alergia?.detalle, marginX + 260, y);
+  y = drawBox('Detalle', medicos.enfermedad_cronica_o_alergia?.detalle, marginX + 260, y);
+  y += GAP_Y;
   y = drawBox('Discapacidad', medicos.discapacidad, marginX, y);
   y += GAP_Y;
 
