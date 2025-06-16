@@ -106,4 +106,3 @@ router.get('/pdf/:folio', async (req, res) => {
 });
 
 module.exports = router;
-
