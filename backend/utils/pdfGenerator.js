@@ -3,7 +3,32 @@ const PDFDocument = require('pdfkit');
 const fs = require('fs');
 const path = require('path');
 
-const catalogo = require(path.join(__dirname, '../public/data/catalogo.json'));
+const catalogo = require('../public/catalogo.json');
+
+function obtenerNombreDesdeCatalogo(tipo, codigo) {
+  if (!codigo) return '---';
+  switch (tipo) {
+    case 'estado':
+      const estado = catalogo.estados.find(e => e.clave === codigo);
+      return estado ? estado.nombre : '---';
+    case 'municipio':
+      for (const estado of catalogo.estados) {
+        const municipio = estado.municipios.find(m => m.clave === codigo);
+        if (municipio) return municipio.nombre;
+      }
+      return '---';
+    case 'ciudad':
+      for (const estado of catalogo.estados) {
+        for (const municipio of estado.municipios) {
+          const ciudad = municipio.localidades.find(l => l.clave === codigo);
+          if (ciudad) return ciudad.nombre;
+        }
+      }
+      return '---';
+    default:
+      return '---';
+  }
+}
 
 function generarPDF(datos, nombreArchivo = 'formulario_completo.pdf') {
   const doc = new PDFDocument({ margin: 50, size: 'LETTER' });
@@ -17,76 +42,99 @@ function generarPDF(datos, nombreArchivo = 'formulario_completo.pdf') {
   const secundaria = datos.secundaria_origen || {};
   const tutor = datos.tutor_responsable || {};
 
-  const estado = catalogo.estados.find(e => e.clave === alumno.estado_nacimiento);
-  const municipio = estado?.municipios.find(m => m.clave === alumno.municipio_nacimiento);
-  const ciudad = municipio?.localidades.find(c => c.clave === alumno.ciudad_nacimiento);
+  const emergExtra = tutor.responsable_emergencia || {};
+  const lengua = generales.habla_lengua_indigena || {};
+  const alergia = medicos.enfermedad_cronica_o_alergia || {};
+  const personaEmergencia = tutor.persona_emergencia || {};
 
-  const getSafe = (val, fallback = '---') => (val !== undefined && val !== null && val !== '' ? val : fallback);
+  let y = 50;
+  const GAP_Y = 20;
+  const marginX = 50;
 
-  function linea(titulo, valor) {
-    doc.font('Helvetica-Bold').text(`${titulo}: `, { continued: true });
-    doc.font('Helvetica').text(getSafe(valor));
-  }
+  const drawLine = () => {
+    doc.moveTo(marginX, y).lineTo(550, y).stroke();
+    y += 10;
+  };
 
-  doc.fontSize(14).text('Formulario de Registro de Alumno', { align: 'center' }).moveDown();
+  const drawField = (label, value, indent = 0) => {
+    doc.text(`${label}: ${value || '---'}`, marginX + indent, y);
+    y += 16;
+  };
 
-  linea('Folio', datos.folio);
-  linea('Nombre completo', `${alumno.nombres} ${alumno.primer_apellido} ${alumno.segundo_apellido}`);
-  linea('CURP', alumno.curp);
-  linea('Carrera', alumno.carrera);
-  linea('Semestre', alumno.semestre);
-  linea('Turno', alumno.turno);
-  linea('Fecha de nacimiento', alumno.fecha_nacimiento);
-  linea('Edad', alumno.edad);
-  linea('Sexo', alumno.sexo);
-  linea('Estado de nacimiento', estado?.nombre || alumno.estado_nacimiento);
-  linea('Municipio de nacimiento', municipio?.nombre || alumno.municipio_nacimiento);
-  linea('Ciudad de nacimiento', ciudad?.nombre || alumno.ciudad_nacimiento);
-  linea('Estado civil', alumno.estado_civil);
-  doc.moveDown();
+  doc.fontSize(14).text('CÉDULA DE INSCRIPCIÓN', { align: 'center' });
+  y += 30;
+  drawLine();
 
-  linea('Colonia', generales.colonia);
-  linea('Domicilio', generales.domicilio);
-  linea('Código Postal', generales.codigo_postal);
-  linea('Teléfono del alumno', generales.telefono_alumno);
-  linea('Correo del alumno', generales.correo_alumno);
-  linea('Paraescolar', generales.paraescolar);
-  linea('Tipo de sangre', generales.tipo_sangre);
-  linea('Contacto de emergencia', generales.contacto_emergencia_nombre);
-  linea('Tel. de emergencia', generales.contacto_emergencia_telefono);
-  linea('¿Habla lengua indígena?', generales.habla_lengua_indigena?.respuesta);
-  linea('¿Cuál lengua?', generales.habla_lengua_indigena?.cual);
-  doc.moveDown();
+  doc.fontSize(12).text('DATOS DEL ALUMNO', marginX, y); y += 20;
+  drawField('Nombre', `${alumno.nombres || ''} ${alumno.primer_apellido || ''} ${alumno.segundo_apellido || ''}`);
+  drawField('CURP', alumno.curp);
+  drawField('Carrera', alumno.carrera);
+  drawField('Periodo Semestral', alumno.periodo_semestral);
+  drawField('Semestre', alumno.semestre);
+  drawField('Grupo', alumno.grupo);
+  drawField('Turno', alumno.turno);
+  drawField('Fecha de Nacimiento', alumno.fecha_nacimiento);
+  drawField('Edad', alumno.edad);
+  drawField('Sexo', alumno.sexo);
+  drawField('Nacionalidad', generales.nacionalidad || '---');
+  drawField('País (si extranjero)', generales.pais_extranjero || '---');
+  drawField('Estado de Nacimiento', obtenerNombreDesdeCatalogo('estado', alumno.estado_nacimiento));
+  drawField('Municipio de Nacimiento', obtenerNombreDesdeCatalogo('municipio', alumno.municipio_nacimiento));
+  drawField('Ciudad de Nacimiento', obtenerNombreDesdeCatalogo('ciudad', alumno.ciudad_nacimiento));
+  drawField('Estado Civil', alumno.estado_civil);
+  drawLine();
 
-  linea('Número de seguro social', medicos.numero_seguro_social);
-  linea('Unidad médica familiar', medicos.unidad_medica_familiar);
-  linea('¿Tiene enfermedad o alergia?', medicos.enfermedad_cronica_o_alergia?.respuesta);
-  linea('Detalle enfermedad o alergia', medicos.enfermedad_cronica_o_alergia?.detalle);
-  linea('Discapacidad', medicos.discapacidad);
-  doc.moveDown();
+  doc.text('DATOS GENERALES', marginX, y); y += 20;
+  drawField('Colonia', generales.colonia);
+  drawField('Domicilio', generales.domicilio);
+  drawField('Código Postal', generales.codigo_postal);
+  drawField('Teléfono del Alumno', generales.telefono_alumno);
+  drawField('Correo Electrónico', generales.correo_alumno);
+  drawField('Paraescolar', generales.paraescolar);
+  drawField('Tipo de Sangre', generales.tipo_sangre);
+  drawField('Contacto de Emergencia', generales.contacto_emergencia_nombre);
+  drawField('Teléfono Emergencia', generales.contacto_emergencia_telefono);
+  drawField('¿Habla lengua indígena?', lengua.respuesta);
+  drawField('¿Cuál?', lengua.cual);
+  drawLine();
 
-  linea('Nombre secundaria', secundaria.nombre_secundaria);
-  linea('Régimen', secundaria.regimen);
-  linea('Promedio general', secundaria.promedio_general);
-  linea('Modalidad', secundaria.modalidad);
-  doc.moveDown();
+  doc.text('DATOS MÉDICOS', marginX, y); y += 20;
+  drawField('NSS', medicos.numero_seguro_social);
+  drawField('Unidad Médica', medicos.unidad_medica_familiar);
+  drawField('¿Tiene enfermedad o alergia?', alergia.respuesta);
+  drawField('Detalle enfermedad o alergia', alergia.detalle);
+  drawField('Discapacidad', medicos.discapacidad);
+  drawField('¿Entrega diagnóstico?', generales.entrega_diagnostico || '---');
+  drawField('Detalle enfermedad', generales.detalle_enfermedad || '---');
+  drawLine();
 
-  linea('Nombre del padre', tutor.nombre_padre);
-  linea('Teléfono del padre', tutor.telefono_padre);
-  linea('Nombre de la madre', tutor.nombre_madre);
-  linea('Teléfono de la madre', tutor.telefono_madre);
-  linea('Vive con', tutor.vive_con);
-  linea('Persona emergencia nombre', tutor.persona_emergencia?.nombre);
-  linea('Persona emergencia parentesco', tutor.persona_emergencia?.parentesco);
-  linea('Persona emergencia teléfono', tutor.persona_emergencia?.telefono);
+  doc.text('SECUNDARIA DE ORIGEN', marginX, y); y += 20;
+  drawField('Nombre', secundaria.nombre_secundaria);
+  drawField('Régimen', secundaria.regimen);
+  drawField('Promedio', secundaria.promedio_general);
+  drawField('Modalidad', secundaria.modalidad);
+  drawLine();
 
-  linea('Responsable emergencia adicional', tutor.responsable_emergencia_nombre);
-  linea('Teléfono adicional', tutor.responsable_emergencia_telefono);
-  linea('Parentesco adicional', tutor.responsable_emergencia_parentesco);
-  linea('¿Entregó carta poder?', tutor.carta_poder);
-  doc.moveDown();
+  doc.text('TUTOR RESPONSABLE', marginX, y); y += 20;
+  drawField('Padre', tutor.nombre_padre);
+  drawField('Teléfono Padre', tutor.telefono_padre);
+  drawField('Madre', tutor.nombre_madre);
+  drawField('Teléfono Madre', tutor.telefono_madre);
+  drawField('Vive con', tutor.vive_con);
+  drawField('Persona Emergencia', personaEmergencia.nombre);
+  drawField('Tel. Emergencia', personaEmergencia.telefono);
+  drawField('Parentesco Emergencia', personaEmergencia.parentesco);
+  drawLine();
+
+  doc.text('RESPONSABLE DE EMERGENCIA ADICIONAL', marginX, y); y += 20;
+  drawField('Nombre', emergExtra.nombre);
+  drawField('Teléfono', emergExtra.telefono);
+  drawField('Parentesco', emergExtra.parentesco);
+  drawField('Carta Poder', emergExtra.carta_poder);
+  drawLine();
 
   doc.end();
 }
 
 module.exports = generarPDF;
+
