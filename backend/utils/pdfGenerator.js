@@ -2,7 +2,34 @@ const PDFDocument = require('pdfkit');
 const fs = require('fs');
 const path = require('path');
 
-function generarPDF(datos, nombreArchivo = 'formulario_paginado.pdf') {
+const catalogo = require('../public/catalogo.json');
+
+function obtenerNombreDesdeCatalogo(tipo, codigo) {
+  if (!codigo) return '---';
+  switch (tipo) {
+    case 'estado':
+      const estado = catalogo.estados.find(e => e.clave === codigo);
+      return estado ? estado.nombre : '---';
+    case 'municipio':
+      for (const estado of catalogo.estados) {
+        const municipio = estado.municipios.find(m => m.clave === codigo);
+        if (municipio) return municipio.nombre;
+      }
+      return '---';
+    case 'ciudad':
+      for (const estado of catalogo.estados) {
+        for (const municipio of estado.municipios) {
+          const ciudad = municipio.localidades.find(l => l.clave === codigo);
+          if (ciudad) return ciudad.nombre;
+        }
+      }
+      return '---';
+    default:
+      return '---';
+  }
+}
+
+function generarPDF(datos, nombreArchivo = 'formulario_completo.pdf') {
   const doc = new PDFDocument({ margin: 50, size: 'LETTER' });
   const rutaPDF = path.join(__dirname, '../public/pdfs', nombreArchivo);
   const stream = fs.createWriteStream(rutaPDF);
@@ -14,163 +41,98 @@ function generarPDF(datos, nombreArchivo = 'formulario_paginado.pdf') {
   const secundaria = datos.secundaria_origen || {};
   const tutor = datos.tutor_responsable || {};
 
-  const logoPath = path.join(__dirname, '../public/images/logo.png');
-  const footerPath = path.join(__dirname, '../public/images/firma_footer.png');
+  const emergExtra = tutor.responsable_emergencia || {};
+  const lengua = generales.habla_lengua_indigena || {};
+  const alergia = medicos.enfermedad_cronica_o_alergia || {};
+  const personaEmergencia = tutor.persona_emergencia || {};
 
-  const PAGE_HEIGHT = doc.page.height;
-  const BOTTOM_MARGIN = 80;
-  const START_Y = 50;
-  const BOX_HEIGHT = 30;
-  const GAP_Y = 35;
+  let y = 50;
+  const GAP_Y = 20;
   const marginX = 50;
 
-  let y = START_Y;
-
-  const drawBox = (label, value, x, y, width = 240, height = BOX_HEIGHT) => {
-    if (y + height + BOTTOM_MARGIN > PAGE_HEIGHT) {
-      doc.addPage();
-      y = START_Y;
-    }
-    doc.lineWidth(0.5).strokeColor('#000').rect(x, y, width, height).stroke();
-    doc.fontSize(8).fillColor('#333').text(label, x + 5, y + 2);
-    doc.fontSize(10).fillColor('#000').text(value || '', x + 5, y + 14, { width: width - 10 });
-    return y;
+  const drawLine = () => {
+    doc.moveTo(marginX, y).lineTo(550, y).stroke();
+    y += 10;
   };
 
-  const drawMultilineBox = (label, value, x, y, width = 240) => {
-    const text = value || '';
-    const textHeight = doc.heightOfString(text, { width: width - 10 });
-    const height = textHeight + 24;
-    if (y + height + BOTTOM_MARGIN > PAGE_HEIGHT) {
-      doc.addPage();
-      y = START_Y;
-    }
-    doc.lineWidth(0.5).strokeColor('#000').rect(x, y, width, height).stroke();
-    doc.fontSize(8).fillColor('#333').text(label, x + 5, y + 2);
-    doc.fontSize(10).fillColor('#000').text(text, x + 5, y + 14, { width: width - 10 });
-    return y + height + 5;
+  const drawField = (label, value, indent = 0) => {
+    doc.text(`${label}: ${value || '---'}`, marginX + indent, y);
+    y += 16;
   };
 
-  const drawSectionTitle = (title, y) => {
-    if (y + 30 + BOTTOM_MARGIN > PAGE_HEIGHT) {
-      doc.addPage();
-      y = START_Y;
-    }
-    doc.rect(marginX, y, 500, 20).fill('#89042e');
-    doc.fillColor('white').fontSize(12).text('  ' + title.toUpperCase(), marginX + 5, y + 5);
-    doc.fillColor('black');
-    return y + 30;
-  };
+  doc.fontSize(14).text('CÉDULA DE INSCRIPCIÓN', { align: 'center' });
+  y += 30;
+  drawLine();
 
-  if (fs.existsSync(logoPath)) {
-    doc.image(logoPath, 50, y, { width: 500 });
-    y += 80;
-  }
+  doc.fontSize(12).text('DATOS DEL ALUMNO', marginX, y); y += 20;
+  drawField('Nombre', `${alumno.nombres || ''} ${alumno.primer_apellido || ''} ${alumno.segundo_apellido || ''}`);
+  drawField('CURP', alumno.curp);
+  drawField('Carrera', alumno.carrera);
+  drawField('Periodo Semestral', alumno.periodo_semestral);
+  drawField('Semestre', alumno.semestre);
+  drawField('Grupo', alumno.grupo);
+  drawField('Turno', alumno.turno);
+  drawField('Fecha de Nacimiento', alumno.fecha_nacimiento);
+  drawField('Edad', alumno.edad);
+  drawField('Sexo', alumno.sexo);
+  drawField('Nacionalidad', generales.nacionalidad || '---');
+  drawField('País (si extranjero)', generales.pais_extranjero || '---');
+  drawField('Estado de Nacimiento', obtenerNombreDesdeCatalogo('estado', alumno.estado_nacimiento));
+  drawField('Municipio de Nacimiento', obtenerNombreDesdeCatalogo('municipio', alumno.municipio_nacimiento));
+  drawField('Ciudad de Nacimiento', obtenerNombreDesdeCatalogo('ciudad', alumno.ciudad_nacimiento));
+  drawField('Estado Civil', alumno.estado_civil);
+  drawLine();
 
-  y = drawSectionTitle('Datos del Alumno', y);
-  y = drawBox('Nombres', alumno.nombres, marginX, y);
-  y = drawBox('Primer Apellido', alumno.primer_apellido, marginX + 260, y);
-  y += GAP_Y;
-  y = drawBox('Segundo Apellido', alumno.segundo_apellido, marginX, y);
-  y = drawBox('CURP', alumno.curp, marginX + 260, y);
-  y += GAP_Y;
-  y = drawBox('Carrera', alumno.carrera, marginX, y);
-  y = drawBox('Periodo Semestral', alumno.periodo_semestral, marginX + 260, y);
-  y += GAP_Y;
-  y = drawBox('Semestre', alumno.semestre, marginX, y);
-  y = drawBox('Grupo', alumno.grupo, marginX + 260, y);
-  y += GAP_Y;
-  y = drawBox('Turno', alumno.turno, marginX, y);
-  y = drawBox('Fecha de Nacimiento', alumno.fecha_nacimiento, marginX + 260, y);
-  y += GAP_Y;
-  y = drawBox('Edad', alumno.edad, marginX, y);
-  y = drawBox('Sexo', alumno.sexo, marginX + 260, y);
-  y += GAP_Y;
-  y = drawBox('Estado Nacimiento', alumno.estado_nacimiento, marginX, y);
-  y = drawBox('Municipio Nac.', alumno.municipio_nacimiento, marginX + 260, y);
-  y += GAP_Y;
-  y = drawBox('Ciudad Nac.', alumno.ciudad_nacimiento, marginX, y);
-  y = drawBox('Estado Civil', alumno.estado_civil, marginX + 260, y);
-  y += GAP_Y;
-  y = drawBox('Nacionalidad', alumno.nacionalidad, marginX, y);
-  y = drawBox('País Extranjero', alumno.pais_extranjero, marginX + 260, y);
-  y += GAP_Y;
+  doc.text('DATOS GENERALES', marginX, y); y += 20;
+  drawField('Colonia', generales.colonia);
+  drawField('Domicilio', generales.domicilio);
+  drawField('Código Postal', generales.codigo_postal);
+  drawField('Teléfono del Alumno', generales.telefono_alumno);
+  drawField('Correo Electrónico', generales.correo_alumno);
+  drawField('Paraescolar', generales.paraescolar);
+  drawField('Tipo de Sangre', generales.tipo_sangre);
+  drawField('Contacto de Emergencia', generales.contacto_emergencia_nombre);
+  drawField('Teléfono Emergencia', generales.contacto_emergencia_telefono);
+  drawField('¿Habla lengua indígena?', lengua.respuesta);
+  drawField('¿Cuál?', lengua.cual);
+  drawLine();
 
-  y = drawSectionTitle('Datos Generales', y);
-  y = drawBox('Colonia', generales.colonia, marginX, y);
-  y = drawBox('Domicilio', generales.domicilio, marginX + 260, y);
-  y += GAP_Y;
-  y = drawBox('Código Postal', generales.codigo_postal, marginX, y);
-  y = drawBox('Teléfono', generales.telefono_alumno, marginX + 260, y);
-  y += GAP_Y;
-  y = drawBox('Correo Electrónico', generales.correo_alumno, marginX, y, 500);
-  y += GAP_Y;
-  y = drawBox('Tipo Sangre', generales.tipo_sangre, marginX, y);
-  y = drawBox('Paraescolar', generales.paraescolar, marginX + 260, y);
-  y += GAP_Y;
-  y = drawBox('Contacto Emergencia', generales.contacto_emergencia_nombre, marginX, y);
-  y = drawBox('Tel. Emergencia', generales.contacto_emergencia_telefono, marginX + 260, y);
-  y += GAP_Y;
-  y = drawBox('Lengua Indígena', generales.habla_lengua_indigena?.respuesta, marginX, y);
-  y = drawBox('¿Cuál?', generales.habla_lengua_indigena?.cual, marginX + 260, y);
-  y += GAP_Y;
-  y = drawBox('¿Entrega Diagnóstico?', generales.entrega_diagnostico, marginX, y);
-  y = drawMultilineBox('Detalle Enfermedad', generales.detalle_enfermedad, marginX + 260, y);  // ← caja más alta
-  y += GAP_Y;
+  doc.text('DATOS MÉDICOS', marginX, y); y += 20;
+  drawField('NSS', medicos.numero_seguro_social);
+  drawField('Unidad Médica', medicos.unidad_medica_familiar);
+  drawField('¿Tiene enfermedad o alergia?', alergia.respuesta);
+  drawField('Detalle enfermedad o alergia', alergia.detalle);
+  drawField('Discapacidad', medicos.discapacidad);
+  drawField('¿Entrega diagnóstico?', generales.entrega_diagnostico || '---');
+  drawField('Detalle enfermedad', generales.detalle_enfermedad || '---');
+  drawLine();
 
-  y = drawSectionTitle('Datos Médicos', y);
-  y = drawBox('Número Seguro Social', medicos.numero_seguro_social, marginX, y);
-  y = drawBox('Unidad Médica', medicos.unidad_medica_familiar, marginX + 260, y);
-  y += GAP_Y;
-  y = drawBox('¿Alergia o Enfermedad?', medicos.enfermedad_cronica_o_alergia?.respuesta, marginX, y);
-  y = drawMultilineBox('Detalle', medicos.enfermedad_cronica_o_alergia?.detalle, marginX + 260, y);
-  y = drawBox('Discapacidad', medicos.discapacidad, marginX, y);
-  y += GAP_Y;
+  doc.text('SECUNDARIA DE ORIGEN', marginX, y); y += 20;
+  drawField('Nombre', secundaria.nombre_secundaria);
+  drawField('Régimen', secundaria.regimen);
+  drawField('Promedio', secundaria.promedio_general);
+  drawField('Modalidad', secundaria.modalidad);
+  drawLine();
 
-  y = drawSectionTitle('Secundaria de Origen', y);
-  y = drawBox('Nombre Secundaria', secundaria.nombre_secundaria, marginX, y);
-  y = drawBox('Régimen', secundaria.regimen, marginX + 260, y);
-  y += GAP_Y;
-  y = drawBox('Promedio', secundaria.promedio_general, marginX, y);
-  y = drawBox('Modalidad', secundaria.modalidad, marginX + 260, y);
-  y += GAP_Y;
+  doc.text('TUTOR RESPONSABLE', marginX, y); y += 20;
+  drawField('Padre', tutor.nombre_padre);
+  drawField('Teléfono Padre', tutor.telefono_padre);
+  drawField('Madre', tutor.nombre_madre);
+  drawField('Teléfono Madre', tutor.telefono_madre);
+  drawField('Vive con', tutor.vive_con);
+  drawField('Persona Emergencia', personaEmergencia.nombre);
+  drawField('Tel. Emergencia', personaEmergencia.telefono);
+  drawField('Parentesco Emergencia', personaEmergencia.parentesco);
+  drawLine();
 
-  y = drawSectionTitle('Tutor Responsable', y);
-  y = drawBox('Nombre del Padre', tutor.nombre_padre, marginX, y);
-  y = drawBox('Tel. Padre', tutor.telefono_padre, marginX + 260, y);
-  y += GAP_Y;
-  y = drawBox('Nombre de la Madre', tutor.nombre_madre, marginX, y);
-  y = drawBox('Tel. Madre', tutor.telefono_madre, marginX + 260, y);
-  y += GAP_Y;
-  y = drawBox('Vive con', tutor.vive_con, marginX, y);
-  y += GAP_Y;
-  y = drawBox('Persona Emergencia', tutor.persona_emergencia?.nombre, marginX, y);
-  y = drawBox('Parentesco', tutor.persona_emergencia?.parentesco, marginX + 260, y);
-  y += GAP_Y;
-  y = drawBox('Tel. Persona Emergencia', tutor.persona_emergencia?.telefono, marginX, y);
-  y += GAP_Y;
-
-  y = drawSectionTitle('Emergencia Adicional', y);
-  y = drawBox('Nombre Emergencia Adic.', generales.responsable_emergencia?.nombre, marginX, y);
-  y = drawBox('Tel. Emergencia Adic.', generales.responsable_emergencia?.telefono, marginX + 260, y);
-  y += GAP_Y;
-  y = drawBox('Parentesco Emergencia', generales.responsable_emergencia?.parentesco, marginX, y);
-  y = drawBox('¿Carta Poder?', generales.carta_poder, marginX + 260, y);
-  y += GAP_Y;
-
-  if (fs.existsSync(footerPath)) {
-    if (y + 100 > PAGE_HEIGHT) {
-      doc.addPage();
-      y = START_Y;
-    }
-    doc.image(footerPath, 50, y, { width: 500 });
-  }
+  doc.text('RESPONSABLE DE EMERGENCIA ADICIONAL', marginX, y); y += 20;
+  drawField('Nombre', emergExtra.nombre);
+  drawField('Teléfono', emergExtra.telefono);
+  drawField('Parentesco', emergExtra.parentesco);
+  drawField('Carta Poder', emergExtra.carta_poder);
+  drawLine();
 
   doc.end();
-  return new Promise((resolve, reject) => {
-    stream.on('finish', () => resolve(`/pdfs/${nombreArchivo}`));
-    stream.on('error', reject);
-  });
 }
 
 module.exports = generarPDF;
