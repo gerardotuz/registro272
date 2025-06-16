@@ -3,7 +3,7 @@ const PDFDocument = require('pdfkit');
 const fs = require('fs');
 const path = require('path');
 
-const catalogo = require('../public/catalogo.json');
+const catalogo = require('../public/data/catalogo.json');
 
 function obtenerNombreDesdeCatalogo(tipo, codigo) {
   if (!codigo) return '---';
