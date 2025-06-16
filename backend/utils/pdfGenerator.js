@@ -5,7 +5,8 @@ const path = require('path');
 const catalogo = require('../public/data/catalogo.json');
 
 function obtenerNombreDesdeCatalogo(tipo, codigo) {
-  if (!codigo) return '---';
+  if (!codigo || !catalogo || !catalogo.estados) return '---';
+
   switch (tipo) {
     case 'estado': {
       const estado = catalogo.estados.find(e => e.clave === codigo);
@@ -13,15 +14,15 @@ function obtenerNombreDesdeCatalogo(tipo, codigo) {
     }
     case 'municipio': {
       for (const estado of catalogo.estados) {
-        const municipio = estado.municipios.find(m => m.clave === codigo);
+        const municipio = estado.municipios?.find(m => m.clave === codigo);
         if (municipio) return municipio.nombre;
       }
       return '---';
     }
     case 'ciudad': {
       for (const estado of catalogo.estados) {
-        for (const municipio of estado.municipios) {
-          const ciudad = municipio.localidades.find(l => l.clave === codigo);
+        for (const municipio of estado.municipios || []) {
+          const ciudad = municipio.localidades?.find(l => l.clave === codigo);
           if (ciudad) return ciudad.nombre;
         }
       }
@@ -43,7 +44,6 @@ function generarPDF(datos, nombreArchivo = 'formulario_completo.pdf') {
   const medicos = datos.datos_medicos || {};
   const secundaria = datos.secundaria_origen || {};
   const tutor = datos.tutor_responsable || {};
-
   const emergExtra = tutor.responsable_emergencia || {};
   const lengua = generales.habla_lengua_indigena || {};
   const alergia = medicos.enfermedad_cronica_o_alergia || {};
