@@ -107,44 +107,20 @@
     <option value="masculino">Masculino</option>
   </select>
 
-  <select name="estado_nacimiento" required>
-    <option value="">Selecciona estado</option>
-    <option value="1">1 - AGUASCALIENTES</option>
-    <option value="2">2 - BAJA CALIFORNIA</option>
-    <option value="3">3 - BAJA CALIFORNIA SUR</option>
-    <option value="4">4 - CAMPECHE</option>
-    <option value="5">5 - COAHUILA</option>
-    <option value="6">6 - COLIMA</option>
-    <option value="7">7 - CHIAPAS</option>
-    <option value="8">8 - CHIHUAHUA</option>
-    <option value="9">9 - CIUDAD DE MEXICO</option>
-    <option value="10">10 - DURANGO</option>
-    <option value="11">11 - GUANAJUATO</option>
-    <option value="12">12 - GUERRERO</option>
-    <option value="13">13 - HIDALGO</option>
-    <option value="14">14 - JALISCO</option>
-    <option value="15">15 - MEXICO</option>
-    <option value="16">16 - MICHOACAN</option>
-    <option value="17">17 - MORELOS</option>
-    <option value="18">18 - NAYARIT</option>
-    <option value="19">19 - NUEVO LEON</option>
-    <option value="20">20 - OAXACA</option>
-    <option value="21">21 - PUEBLA</option>
-    <option value="22">22 - QUERETARO</option>
-    <option value="23">23 - QUINTANA ROO</option>
-    <option value="24">24 - SAN LUIS POTOSI</option>
-    <option value="25">25 - SINALOA</option>
-    <option value="26">26 - SONORA</option>
-    <option value="27">27 - TABASCO</option>
-    <option value="28">28 - TAMAULIPAS</option>
-    <option value="29">29 - TLAXCALA</option>
-    <option value="30">30 - VERACRUZ</option>
-    <option value="31">31 - YUCATAN</option>
-    <option value="32">32 - ZACATECAS</option>
-  </select>
+<!-- Por los siguientes: -->
+<label for="estadoSelect">Estado de Nacimiento:</label>
+<select id="estadoSelect" required></select>
 
-  <input type="text" name="municipio_nacimiento" placeholder="Municipio de Nacimiento">
-  <input type="text" name="ciudad_nacimiento" placeholder="Ciudad de Nacimiento">
+<label for="municipioSelect">Municipio de Nacimiento:</label>
+<select id="municipioSelect" required disabled></select>
+
+<label for="ciudadSelect">Ciudad de Nacimiento:</label>
+<select id="ciudadSelect" required disabled></select>
+
+<!-- Inputs ocultos para MongoDB -->
+<input type="hidden" name="estado_codigo">
+<input type="hidden" name="municipio_codigo">
+<input type="hidden" name="ciudad_codigo">
   
 </fieldset>
 
