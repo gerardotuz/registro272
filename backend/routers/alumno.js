@@ -3,10 +3,9 @@ const router = express.Router();
 const Alumno = require('../models/Alumno');
 const multer = require('multer');
 const xlsx = require('xlsx');
-const PDFDocument = require('pdfkit');
+const generarPDF = require('../utils/pdfGenerator');
 const flattenToNested = require('../utils/flattenToNested');
-const generarPDF = require('../utils/pdfGenerator'); // NUEVO
-const path = require('path'); // NUEVO
+const path = require('path');
 
 const upload = multer({ storage: multer.memoryStorage() });
 const MAX_PARAESCOLAR = 40;
@@ -38,7 +37,6 @@ router.post('/guardar', async (req, res) => {
 
     if (paraescolar) {
       const count = await Alumno.countDocuments({ "datos_generales.paraescolar": paraescolar.toUpperCase() });
-
       const paraescolarPrevio = yaRegistrado?.datos_generales?.paraescolar;
       const estaCambiando = paraescolarPrevio && paraescolarPrevio.toUpperCase() !== paraescolar.toUpperCase();
 
@@ -53,11 +51,17 @@ router.post('/guardar', async (req, res) => {
 
     await Alumno.findOneAndUpdate({ folio: data.folio }, upperCaseData, { upsert: true });
 
+    // Generar PDF automáticamente después de guardar
+    const datosAnidados = flattenToNested(upperCaseData);
+    const nombreArchivo = `${datosAnidados.datos_alumno?.curp || 'formulario'}.pdf`;
+    generarPDF(datosAnidados, nombreArchivo);
+
     res.status(200).json({
-      message: 'Registro exitoso',
-      pdf_url: `/api/pdf/${data.folio}`
+      message: 'Registro exitoso y PDF generado',
+      pdf_url: `/pdfs/${nombreArchivo}`
     });
   } catch (err) {
+    console.error('Error al guardar o generar PDF:', err);
     res.status(500).json({ message: err.message });
   }
 });
@@ -87,21 +91,6 @@ router.post('/cargar-excel', upload.single('archivo'), async (req, res) => {
   } catch (err) {
     console.error('Error al procesar Excel:', err);
     res.status(500).json({ message: err.message });
-  }
-});
-
-router.get('/pdf/:folio', async (req, res) => {
-  try {
-    const alumno = await Alumno.findOne({ folio: req.params.folio });
-    if (!alumno) return res.status(404).send('Folio no encontrado');
-
-    const nombrePDF = `${alumno.datos_alumno?.curp || 'alumno'}.pdf`;
-    const rutaPDF = await generarPDF(alumno, nombrePDF);
-
-    res.redirect(rutaPDF); // redirige a /pdfs/<archivo>.pdf
-  } catch (err) {
-    console.error('Error generando PDF con diseño:', err);
-    res.status(500).send('Error generando el PDF');
   }
 });
 
