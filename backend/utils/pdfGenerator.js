@@ -7,16 +7,18 @@ const catalogo = require('../public/data/catalogo.json');
 function obtenerNombreDesdeCatalogo(tipo, codigo) {
   if (!codigo) return '---';
   switch (tipo) {
-    case 'estado':
+    case 'estado': {
       const estado = catalogo.estados.find(e => e.clave === codigo);
       return estado ? estado.nombre : '---';
-    case 'municipio':
+    }
+    case 'municipio': {
       for (const estado of catalogo.estados) {
         const municipio = estado.municipios.find(m => m.clave === codigo);
         if (municipio) return municipio.nombre;
       }
       return '---';
-    case 'ciudad':
+    }
+    case 'ciudad': {
       for (const estado of catalogo.estados) {
         for (const municipio of estado.municipios) {
           const ciudad = municipio.localidades.find(l => l.clave === codigo);
@@ -24,6 +26,7 @@ function obtenerNombreDesdeCatalogo(tipo, codigo) {
         }
       }
       return '---';
+    }
     default:
       return '---';
   }
