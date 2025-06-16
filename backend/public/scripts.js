@@ -124,4 +124,65 @@ document.getElementById('registroForm').addEventListener('submit', async (e) => 
     alert(result.message || 'Error al guardar');
   }
 });
+async function cargarCatalogo() {
+  const response = await fetch('/data/catalogo.json');
+  const catalogo = await response.json();
+
+  const estadoSelect = document.getElementById('estadoSelect');
+  const municipioSelect = document.getElementById('municipioSelect');
+  const ciudadSelect = document.getElementById('ciudadSelect');
+
+  const estadoCodigoInput = document.querySelector('input[name="estado_codigo"]');
+  const municipioCodigoInput = document.querySelector('input[name="municipio_codigo"]');
+  const ciudadCodigoInput = document.querySelector('input[name="ciudad_codigo"]');
+
+  estadoSelect.innerHTML = '<option value="">Seleccione estado</option>';
+  catalogo.forEach(estado => {
+    const opt = document.createElement('option');
+    opt.value = estado.clave;
+    opt.textContent = estado.nombre;
+    estadoSelect.appendChild(opt);
+  });
+
+  estadoSelect.addEventListener('change', () => {
+    const estado = catalogo.find(e => e.clave === estadoSelect.value);
+    estadoCodigoInput.value = estado.clave;
+    municipioSelect.innerHTML = '<option value="">Seleccione municipio</option>';
+    ciudadSelect.innerHTML = '<option value="">Seleccione ciudad</option>';
+    municipioSelect.disabled = true;
+    ciudadSelect.disabled = true;
+
+    if (estado) {
+      municipioSelect.disabled = false;
+      estado.municipios.forEach(mun => {
+        const opt = document.createElement('option');
+        opt.value = mun.clave;
+        opt.textContent = mun.nombre;
+        municipioSelect.appendChild(opt);
+      });
+    }
+  });
+
+  municipioSelect.addEventListener('change', () => {
+    const estado = catalogo.find(e => e.clave === estadoSelect.value);
+    const municipio = estado.municipios.find(m => m.clave === municipioSelect.value);
+    municipioCodigoInput.value = municipio.clave;
+    ciudadSelect.innerHTML = '<option value="">Seleccione ciudad</option>';
+    ciudadSelect.disabled = true;
+
+    if (municipio) {
+      ciudadSelect.disabled = false;
+      municipio.localidades.forEach(loc => {
+        const opt = document.createElement('option');
+        opt.value = loc.clave;
+        opt.textContent = loc.nombre;
+        ciudadSelect.appendChild(opt);
+      });
+    }
+  });
+
+  ciudadSelect.addEventListener('change', () => {
+    ciudadCodigoInput.value = ciudadSelect.value;
+  });
+}
 
