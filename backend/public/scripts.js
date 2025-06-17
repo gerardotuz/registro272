@@ -178,6 +178,8 @@ function consultarFolioYAutocompletar() {
 
 function cargarCatalogo() {
   fetch('/data/catalogo.json')
+    console.log('🚀 Ejecutando cargarCatalogo()');
+
     .then(res => res.json())
     .then(data => {
       const estadoSelect = document.getElementById('estado_nacimiento');
@@ -229,3 +231,7 @@ function cargarCatalogo() {
       console.error('❌ Error cargando catálogo:', err);
     });
 }
+window.onload = () => {
+  if (typeof cargarCatalogo === 'function') cargarCatalogo();
+  consultarFolioYAutocompletar(); // si ya la tienes
+};
