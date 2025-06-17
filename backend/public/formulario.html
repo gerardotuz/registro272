@@ -6,7 +6,9 @@
   <link rel="icon" href="/favicon.ico" type="image/x-icon">
   <meta charset="UTF-8">
   <title>Formulario de Alumno</title>
- <script defer src="scripts.js"></script>
+ <script src="scripts.js"></script>
+ <script>cargarCatalogo();</script>
+
 </head>
 <body>
  <nav>
@@ -80,11 +82,10 @@
   <input type="text" name="pais_extranjero" placeholder="País (si es extranjero)">
   <select name="estado_civil" required>
     <option value="">Estado Civil</option>
-   <option value="1">Soltero</option>
-<option value="2">Casado</option>
-<option value="3">Unión libre</option>
-<option value="4">Otro</option>
-
+    <option value="Soltero">Soltero</option>
+    <option value="Casado">Casado</option>
+    <option value="Unión libre">Unión libre</option>
+    <option value="Otro">Otro</option>
   </select>
   <select name="turno" required>
     <option value="">Selecciona turno</option>
@@ -397,11 +398,99 @@
     }
   });
 
+async function cargarCatalogo() {
+  try {
+    const response = await fetch('./data/catalogo.json');
+    const catalogo = await response.json();
+    const estados = catalogo.estados;
 
+    const estadoSelect = document.getElementById('estadoSelect');
+    const municipioSelect = document.getElementById('municipioSelect');
+    const ciudadSelect = document.getElementById('ciudadSelect');
+
+    estadoSelect.innerHTML = '<option value="">Seleccione un estado</option>';
+    municipioSelect.innerHTML = '<option value="">Seleccione un municipio</option>';
+    ciudadSelect.innerHTML = '<option value="">Seleccione una ciudad</option>';
+
+    estados.forEach(estado => {
+      const option = document.createElement('option');
+      option.value = estado.clave;
+      option.textContent = estado.nombre;
+      estadoSelect.appendChild(option);
+    });
+
+    estadoSelect.addEventListener('change', () => {
+      const estadoSeleccionado = estados.find(e => e.clave === estadoSelect.value);
+      municipioSelect.disabled = false;
+      municipioSelect.innerHTML = '<option value="">Seleccione un municipio</option>';
+      ciudadSelect.innerHTML = '<option value="">Seleccione una ciudad</option>';
+      ciudadSelect.disabled = true;
+
+      if (estadoSeleccionado) {
+        estadoSeleccionado.municipios.forEach(municipio => {
+          const option = document.createElement('option');
+          option.value = municipio.clave;
+          option.textContent = municipio.nombre;
+          municipioSelect.appendChild(option);
+        });
+      }
+    });
+
+    municipioSelect.addEventListener('change', () => {
+      const estadoSeleccionado = estados.find(e => e.clave === estadoSelect.value);
+      const municipioSeleccionado = estadoSeleccionado?.municipios.find(m => m.clave === municipioSelect.value);
+      ciudadSelect.disabled = false;
+      ciudadSelect.innerHTML = '<option value="">Seleccione una ciudad</option>';
+
+      if (municipioSeleccionado) {
+        municipioSeleccionado.localidades.forEach(localidad => {
+          const option = document.createElement('option');
+          option.value = localidad.clave;
+          option.textContent = localidad.nombre;
+          ciudadSelect.appendChild(option);
+        });
+      }
+    });
+  } catch (error) {
+    console.error('Error al cargar el catálogo:', error);
+  }
+}
+
+window.onload = cargarCatalogo;
 
  
 </script>
 
 
+
+<script>
+  window.onload = () => {
+    const datos = JSON.parse(localStorage.getItem('datosPrecargados'));
+    if (!datos) return;
+
+    const set = (name, value) => {
+      const input = document.querySelector(`[name="${name}"]`);
+      if (input && value != null && value !== '') input.value = value;
+    };
+
+    const mappings = {
+      ...datos.datos_alumno,
+      ...datos.datos_generales,
+      ...datos.datos_medicos,
+      ...datos.secundaria_origen,
+      ...datos.tutor_responsable,
+      'habla_lengua_indigena_respuesta': datos.datos_generales?.habla_lengua_indigena?.respuesta,
+      'habla_lengua_indigena_cual': datos.datos_generales?.habla_lengua_indigena?.cual,
+      'enfermedad_cronica_o_alergia_respuesta': datos.datos_medicos?.enfermedad_cronica_o_alergia?.respuesta,
+      'enfermedad_cronica_o_alergia_detalle': datos.datos_medicos?.enfermedad_cronica_o_alergia?.detalle,
+      'persona_emergencia_nombre': datos.persona_emergencia?.nombre,
+      'persona_emergencia_parentesco': datos.persona_emergencia?.parentesco,
+      'persona_emergencia_telefono': datos.persona_emergencia?.telefono
+    };
+
+    Object.entries(mappings).forEach(([k, v]) => set(k, v));
+  };
+</script>
 </body>
+
 </html>
