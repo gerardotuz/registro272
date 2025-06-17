@@ -106,6 +106,26 @@ document.getElementById('registroForm').addEventListener('submit', async (e) => 
       telefono: formData.get('persona_emergencia_telefono')
     }
   };
+      persona_emergencia: {
+      nombre: formData.get('persona_emergencia_nombre'),
+      parentesco: formData.get('persona_emergencia_parentesco'),
+      telefono: formData.get('persona_emergencia_telefono')
+    }
+  };
+
+  const estadoCivilMap = {
+    'soltero': 1,
+    'casado': 2,
+    'union_libre': 3,
+    'otro': 4
+  };
+  nuevoRegistro.datos_alumno.estado_civil =
+    estadoCivilMap[nuevoRegistro.datos_alumno.estado_civil?.toLowerCase()] || 0;
+
+  const BASE_URL = window.location.origin.includes('localhost')
+    ? 'http://localhost:3001'
+    : 'https://registro272.onrender.com';
+
 
   const BASE_URL = window.location.origin.includes('localhost')
     ? 'http://localhost:3001'
