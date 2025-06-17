@@ -1,3 +1,4 @@
+
 const PDFDocument = require('pdfkit');
 const fs = require('fs');
 const path = require('path');
@@ -44,6 +45,13 @@ function generarPDF(datos, nombreArchivo = 'formulario_completo.pdf') {
   const alergia = medicos.enfermedad_cronica_o_alergia || {};
   const extra = generales.responsable_emergencia || {};
 
+  const estadoCivilTexto = {
+    1: 'Soltero',
+    2: 'Casado',
+    3: 'Unión libre',
+    4: 'Otro'
+  };
+
   let y = 50;
   const GAP_Y = 16;
   const marginX = 50;
@@ -67,7 +75,7 @@ function generarPDF(datos, nombreArchivo = 'formulario_completo.pdf') {
   drawField('Fecha Nacimiento', alumno.fecha_nacimiento);
   drawField('Edad', alumno.edad);
   drawField('Sexo', alumno.sexo);
-  drawField('Estado Civil (código)', alumno.estado_civil);
+  drawField('Estado Civil', estadoCivilTexto[alumno.estado_civil] || alumno.estado_civil);
   drawField('Nacionalidad', alumno.nacionalidad);
   drawField('País extranjero', alumno.pais_extranjero);
   drawField('Estado nacimiento', obtenerNombreDesdeCatalogo('estado', alumno.estado_nacimiento));
