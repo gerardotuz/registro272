@@ -1,8 +1,6 @@
-
 const PDFDocument = require('pdfkit');
 const fs = require('fs');
 const path = require('path');
-
 const catalogo = require('../public/data/catalogo.json');
 
 function obtenerNombreDesdeCatalogo(tipo, codigo) {
@@ -41,100 +39,102 @@ function generarPDF(datos, nombreArchivo = 'formulario_completo.pdf') {
   const medicos = datos.datos_medicos || {};
   const secundaria = datos.secundaria_origen || {};
   const tutor = datos.tutor_responsable || {};
-
-  const emergExtra = tutor.responsable_emergencia || {};
+  const personaEmergencia = datos.persona_emergencia || {};
   const lengua = generales.habla_lengua_indigena || {};
   const alergia = medicos.enfermedad_cronica_o_alergia || {};
-  const personaEmergencia = tutor.persona_emergencia || {};
+  const extra = generales.responsable_emergencia || {};
 
   let y = 50;
-  const GAP_Y = 20;
+  const GAP_Y = 16;
   const marginX = 50;
 
-  const drawLine = () => {
-    doc.moveTo(marginX, y).lineTo(550, y).stroke();
-    y += 10;
+  const drawField = (label, value) => {
+    doc.text(`${label}: ${value || '---'}`, marginX, y);
+    y += GAP_Y;
   };
 
-  const drawField = (label, value, indent = 0) => {
-    doc.text(`${label}: ${value || '---'}`, marginX + indent, y);
-    y += 16;
-  };
+  doc.fontSize(14).text('📄 CÉDULA DE REGISTRO ESCOLAR COMPLETA', marginX, y); y += GAP_Y * 2;
+  doc.fontSize(11);
 
-  doc.fontSize(14).text('CÉDULA DE INSCRIPCIÓN', { align: 'center' });
-  y += 30;
-  drawLine();
-
-  doc.fontSize(12).text('DATOS DEL ALUMNO', marginX, y); y += 20;
-  drawField('Nombre', `${alumno.nombres || ''} ${alumno.primer_apellido || ''} ${alumno.segundo_apellido || ''}`);
+  drawField('Folio', datos.folio);
+  drawField('Nombre', `${alumno.nombres} ${alumno.primer_apellido} ${alumno.segundo_apellido}`);
   drawField('CURP', alumno.curp);
   drawField('Carrera', alumno.carrera);
-  drawField('Periodo Semestral', alumno.periodo_semestral);
+  drawField('Periodo', alumno.periodo_semestral);
   drawField('Semestre', alumno.semestre);
-  drawField('Grupo', alumno.grupo);
   drawField('Turno', alumno.turno);
-  drawField('Fecha de Nacimiento', alumno.fecha_nacimiento);
+  drawField('Grupo', alumno.grupo);
+  drawField('Fecha Nacimiento', alumno.fecha_nacimiento);
   drawField('Edad', alumno.edad);
   drawField('Sexo', alumno.sexo);
-  drawField('Nacionalidad', generales.nacionalidad || '---');
-  drawField('País (si extranjero)', generales.pais_extranjero || '---');
-  drawField('Estado de Nacimiento', obtenerNombreDesdeCatalogo('estado', alumno.estado_nacimiento));
-  drawField('Municipio de Nacimiento', obtenerNombreDesdeCatalogo('municipio', alumno.municipio_nacimiento));
-  drawField('Ciudad de Nacimiento', obtenerNombreDesdeCatalogo('ciudad', alumno.ciudad_nacimiento));
-  drawField('Estado Civil', alumno.estado_civil);
-  drawLine();
+  drawField('Estado Civil (código)', alumno.estado_civil);
+  drawField('Nacionalidad', alumno.nacionalidad);
+  drawField('País extranjero', alumno.pais_extranjero);
+  drawField('Estado nacimiento', obtenerNombreDesdeCatalogo('estado', alumno.estado_nacimiento));
+  drawField('Municipio nacimiento', obtenerNombreDesdeCatalogo('municipio', alumno.municipio_nacimiento));
+  drawField('Ciudad nacimiento', obtenerNombreDesdeCatalogo('ciudad', alumno.ciudad_nacimiento));
 
-  doc.text('DATOS GENERALES', marginX, y); y += 20;
+  y += 10;
+  doc.fontSize(12).text('🧑‍🎓 Especialidades preferidas:', marginX, y); y += GAP_Y;
+  doc.fontSize(11);
+  drawField('1ra opción', alumno.primera_opcion);
+  drawField('2da opción', alumno.segunda_opcion);
+  drawField('3ra opción', alumno.tercera_opcion);
+  drawField('4ta opción', alumno.cuarta_opcion);
+
+  y += 10;
+  doc.fontSize(12).text('🏠 Datos Generales:', marginX, y); y += GAP_Y;
+  doc.fontSize(11);
   drawField('Colonia', generales.colonia);
   drawField('Domicilio', generales.domicilio);
   drawField('Código Postal', generales.codigo_postal);
-  drawField('Teléfono del Alumno', generales.telefono_alumno);
-  drawField('Correo Electrónico', generales.correo_alumno);
-  drawField('Paraescolar', generales.paraescolar);
-  drawField('Tipo de Sangre', generales.tipo_sangre);
-  drawField('Contacto de Emergencia', generales.contacto_emergencia_nombre);
-  drawField('Teléfono Emergencia', generales.contacto_emergencia_telefono);
+  drawField('Teléfono', generales.telefono_alumno);
+  drawField('Correo', generales.correo_alumno);
+  drawField('Tipo de sangre', generales.tipo_sangre);
+  drawField('Paraescolar asignado', generales.paraescolar);
+  drawField('Contacto emergencia - nombre', generales.contacto_emergencia_nombre);
+  drawField('Contacto emergencia - teléfono', generales.contacto_emergencia_telefono);
   drawField('¿Habla lengua indígena?', lengua.respuesta);
   drawField('¿Cuál?', lengua.cual);
-  drawLine();
+  drawField('¿Entrega diagnóstico?', generales.entrega_diagnostico);
+  drawField('Detalle enfermedad', generales.detalle_enfermedad);
+  drawField('Responsable adicional - nombre', extra.nombre);
+  drawField('Responsable adicional - teléfono', extra.telefono);
+  drawField('Responsable adicional - parentesco', extra.parentesco);
+  drawField('¿Entregó carta poder?', generales.carta_poder);
 
-  doc.text('DATOS MÉDICOS', marginX, y); y += 20;
-  drawField('NSS', medicos.numero_seguro_social);
-  drawField('Unidad Médica', medicos.unidad_medica_familiar);
-  drawField('¿Tiene enfermedad o alergia?', alergia.respuesta);
-  drawField('Detalle enfermedad o alergia', alergia.detalle);
+  y += 10;
+  doc.fontSize(12).text('🏥 Datos Médicos:', marginX, y); y += GAP_Y;
+  doc.fontSize(11);
+  drawField('Número Seguro Social', medicos.numero_seguro_social);
+  drawField('Unidad Médica Familiar', medicos.unidad_medica_familiar);
+  drawField('¿Tiene alergias o enfermedades?', alergia.respuesta);
+  drawField('Detalle', alergia.detalle);
   drawField('Discapacidad', medicos.discapacidad);
-  drawField('¿Entrega diagnóstico?', generales.entrega_diagnostico || '---');
-  drawField('Detalle enfermedad', generales.detalle_enfermedad || '---');
-  drawLine();
 
-  doc.text('SECUNDARIA DE ORIGEN', marginX, y); y += 20;
-  drawField('Nombre', secundaria.nombre_secundaria);
+  y += 10;
+  doc.fontSize(12).text('🏫 Secundaria de Origen:', marginX, y); y += GAP_Y;
+  doc.fontSize(11);
+  drawField('Nombre secundaria', secundaria.nombre_secundaria);
   drawField('Régimen', secundaria.regimen);
   drawField('Promedio', secundaria.promedio_general);
   drawField('Modalidad', secundaria.modalidad);
-  drawLine();
 
-  doc.text('TUTOR RESPONSABLE', marginX, y); y += 20;
-  drawField('Padre', tutor.nombre_padre);
-  drawField('Teléfono Padre', tutor.telefono_padre);
-  drawField('Madre', tutor.nombre_madre);
-  drawField('Teléfono Madre', tutor.telefono_madre);
-  drawField('Vive con', tutor.vive_con);
-  drawField('Persona Emergencia', personaEmergencia.nombre);
-  drawField('Tel. Emergencia', personaEmergencia.telefono);
-  drawField('Parentesco Emergencia', personaEmergencia.parentesco);
-  drawLine();
+  y += 10;
+  doc.fontSize(12).text('👨‍👩‍👧 Tutor Responsable:', marginX, y); y += GAP_Y;
+  doc.fontSize(11);
+  drawField('Padre', `${tutor.nombre_padre} - ${tutor.telefono_padre}`);
+  drawField('Madre', `${tutor.nombre_madre} - ${tutor.telefono_madre}`);
+  drawField('¿Con quién vive?', tutor.vive_con);
 
-  doc.text('RESPONSABLE DE EMERGENCIA ADICIONAL', marginX, y); y += 20;
-  drawField('Nombre', emergExtra.nombre);
-  drawField('Teléfono', emergExtra.telefono);
-  drawField('Parentesco', emergExtra.parentesco);
-  drawField('Carta Poder', emergExtra.carta_poder);
-  drawLine();
+  y += 10;
+  doc.fontSize(12).text('📞 Persona de Emergencia:', marginX, y); y += GAP_Y;
+  doc.fontSize(11);
+  drawField('Nombre', personaEmergencia.nombre);
+  drawField('Teléfono', personaEmergencia.telefono);
+  drawField('Parentesco', personaEmergencia.parentesco);
 
   doc.end();
 }
 
 module.exports = generarPDF;
-
