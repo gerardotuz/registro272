@@ -120,7 +120,7 @@ document.getElementById('registroForm').addEventListener('submit', async (e) => 
   const result = await res.json();
   if (res.ok) {
     alert('Registro guardado con éxito');
-    window.open(`${BASE_URL}${result.pdf_url}`, '_blank');
+    window.open(`${BASE_URL}/api/pdf/${folio}`, '_blank');
   } else {
     alert(result.message || 'Error al guardar');
   }
