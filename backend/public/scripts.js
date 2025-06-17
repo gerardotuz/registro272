@@ -106,12 +106,6 @@ document.getElementById('registroForm').addEventListener('submit', async (e) => 
       telefono: formData.get('persona_emergencia_telefono')
     }
   };
-      persona_emergencia: {
-      nombre: formData.get('persona_emergencia_nombre'),
-      parentesco: formData.get('persona_emergencia_parentesco'),
-      telefono: formData.get('persona_emergencia_telefono')
-    }
-  };
 
   const estadoCivilMap = {
     'soltero': 1,
@@ -121,11 +115,6 @@ document.getElementById('registroForm').addEventListener('submit', async (e) => 
   };
   nuevoRegistro.datos_alumno.estado_civil =
     estadoCivilMap[nuevoRegistro.datos_alumno.estado_civil?.toLowerCase()] || 0;
-
-  const BASE_URL = window.location.origin.includes('localhost')
-    ? 'http://localhost:3001'
-    : 'https://registro272.onrender.com';
-
 
   const BASE_URL = window.location.origin.includes('localhost')
     ? 'http://localhost:3001'
@@ -146,9 +135,61 @@ document.getElementById('registroForm').addEventListener('submit', async (e) => 
   }
 });
 
-
-// Solo conservamos esta línea de carga si el catalogo.js ya tiene su propia función:
 window.onload = () => {
   if (typeof cargarCatalogo === 'function') cargarCatalogo();
-  consultarFolioYAutocompletar();
+  consultarFolioYAutocompletar?.();
 };
+
+function cargarCatalogo() {
+  fetch('/data/catalogo.json')
+    .then(res => res.json())
+    .then(data => {
+      const estadoSelect = document.getElementById('estado_nacimiento');
+      const municipioSelect = document.getElementById('municipio_nacimiento');
+      const ciudadSelect = document.getElementById('ciudad_nacimiento');
+
+      estadoSelect.innerHTML = '<option value="">-- Selecciona Estado --</option>';
+      municipioSelect.innerHTML = '<option value="">-- Selecciona Municipio --</option>';
+      ciudadSelect.innerHTML = '<option value="">-- Selecciona Ciudad --</option>';
+
+      data.estados.forEach(estado => {
+        const opt = document.createElement('option');
+        opt.value = estado.clave;
+        opt.textContent = estado.nombre;
+        estadoSelect.appendChild(opt);
+      });
+
+      estadoSelect.addEventListener('change', () => {
+        const estado = data.estados.find(e => e.clave === estadoSelect.value);
+        municipioSelect.innerHTML = '<option value="">-- Selecciona Municipio --</option>';
+        ciudadSelect.innerHTML = '<option value="">-- Selecciona Ciudad --</option>';
+        if (!estado) return;
+
+        estado.municipios.forEach(mun => {
+          const opt = document.createElement('option');
+          opt.value = mun.clave;
+          opt.textContent = mun.nombre;
+          municipioSelect.appendChild(opt);
+        });
+      });
+
+      municipioSelect.addEventListener('change', () => {
+        const estado = data.estados.find(e => e.clave === estadoSelect.value);
+        if (!estado) return;
+
+        const municipio = estado.municipios.find(m => m.clave === municipioSelect.value);
+        ciudadSelect.innerHTML = '<option value="">-- Selecciona Ciudad --</option>';
+        if (!municipio) return;
+
+        municipio.localidades.forEach(ciudad => {
+          const opt = document.createElement('option');
+          opt.value = ciudad.clave;
+          opt.textContent = ciudad.nombre;
+          ciudadSelect.appendChild(opt);
+        });
+      });
+    })
+    .catch(err => {
+      console.error('❌ Error cargando catálogo:', err);
+    });
+}
