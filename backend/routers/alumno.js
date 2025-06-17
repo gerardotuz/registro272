@@ -48,6 +48,10 @@ router.post('/guardar', async (req, res) => {
         return res.status(400).json({ message: `No se puede cambiar a ${paraescolar}, ya alcanzó su límite.` });
       }
     }
+const estadoCivilNum = parseInt(data.datos_alumno?.estado_civil);
+if (!isNaN(estadoCivilNum)) {
+  data.datos_alumno.estado_civil = estadoCivilNum;
+}
 
     await Alumno.findOneAndUpdate({ folio: data.folio }, upperCaseData, { upsert: true });
 
