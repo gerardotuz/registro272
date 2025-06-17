@@ -177,8 +177,9 @@ function consultarFolioYAutocompletar() {
 }
 
 function cargarCatalogo() {
+  console.log('🚀 Ejecutando cargarCatalogo()');
   fetch('/data/catalogo.json')
-    console.log('🚀 Ejecutando cargarCatalogo()');
+    
 
     .then(res => res.json())
     .then(data => {
