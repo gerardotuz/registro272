@@ -128,3 +128,64 @@ document.getElementById('registroForm').addEventListener('submit', async (e) => 
 
 
 window.onload = cargarCatalogo;
+
+
+async function cargarCatalogo() {
+  try {
+    const response = await fetch('./data/catalogo.json');
+    const catalogo = await response.json();
+    const estados = catalogo.estados;
+
+    const estadoSelect = document.getElementById('estadoSelect');
+    const municipioSelect = document.getElementById('municipioSelect');
+    const ciudadSelect = document.getElementById('ciudadSelect');
+
+    estadoSelect.innerHTML = '<option value="">Seleccione un estado</option>';
+    municipioSelect.innerHTML = '<option value="">Seleccione un municipio</option>';
+    ciudadSelect.innerHTML = '<option value="">Seleccione una ciudad</option>';
+
+    estados.forEach(estado => {
+      const option = document.createElement('option');
+      option.value = estado.clave;
+      option.textContent = estado.nombre;
+      estadoSelect.appendChild(option);
+    });
+
+    estadoSelect.addEventListener('change', () => {
+      const estadoSeleccionado = estados.find(e => e.clave === estadoSelect.value);
+      municipioSelect.disabled = false;
+      municipioSelect.innerHTML = '<option value="">Seleccione un municipio</option>';
+      ciudadSelect.innerHTML = '<option value="">Seleccione una ciudad</option>';
+      ciudadSelect.disabled = true;
+
+      if (estadoSeleccionado) {
+        estadoSeleccionado.municipios.forEach(municipio => {
+          const option = document.createElement('option');
+          option.value = municipio.clave;
+          option.textContent = municipio.nombre;
+          municipioSelect.appendChild(option);
+        });
+      }
+    });
+
+    municipioSelect.addEventListener('change', () => {
+      const estadoSeleccionado = estados.find(e => e.clave === estadoSelect.value);
+      const municipioSeleccionado = estadoSeleccionado?.municipios.find(m => m.clave === municipioSelect.value);
+      ciudadSelect.disabled = false;
+      ciudadSelect.innerHTML = '<option value="">Seleccione una ciudad</option>';
+
+      if (municipioSeleccionado) {
+        municipioSeleccionado.localidades.forEach(localidad => {
+          const option = document.createElement('option');
+          option.value = localidad.clave;
+          option.textContent = localidad.nombre;
+          ciudadSelect.appendChild(option);
+        });
+      }
+    });
+  } catch (error) {
+    console.error('Error al cargar el catálogo:', error);
+  }
+}
+
+window.onload = cargarCatalogo;
