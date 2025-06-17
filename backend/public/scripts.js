@@ -189,3 +189,107 @@ async function cargarCatalogo() {
 }
 
 window.onload = cargarCatalogo;
+
+
+async function consultarFolioYAutocompletar() {
+  const folio = localStorage.getItem('alumnoFolio');
+  if (!folio) return;
+
+  const BASE_URL = window.location.origin.includes('localhost')
+    ? 'http://localhost:3001'
+    : 'https://registro272.onrender.com';
+
+  try {
+    const res = await fetch(`${BASE_URL}/api/folio/${folio}`);
+    if (!res.ok) throw new Error('Folio no encontrado');
+
+    const datos = await res.json();
+
+    const set = (name, value) => {
+      const input = document.querySelector(`[name="${name}"]`);
+      if (input) input.value = value;
+    };
+
+    const alumno = datos.datos_alumno || {};
+    const generales = datos.datos_generales || {};
+    const medicos = datos.datos_medicos || {};
+    const secundaria = datos.secundaria_origen || {};
+    const tutor = datos.tutor_responsable || {};
+    const emergencia = datos.persona_emergencia || {};
+    const habla = generales.habla_lengua_indigena || {};
+    const enfermedad = medicos.enfermedad_cronica_o_alergia || {};
+    const responsableEmergencia = generales.responsable_emergencia || {};
+
+    // datos_alumno
+    set('nombres', alumno.nombres);
+    set('primer_apellido', alumno.primer_apellido);
+    set('segundo_apellido', alumno.segundo_apellido);
+    set('curp', alumno.curp);
+    set('carrera', alumno.carrera);
+    set('periodo_semestral', alumno.periodo_semestral);
+    set('semestre', alumno.semestre);
+    set('grupo', alumno.grupo);
+    set('turno', alumno.turno);
+    set('fecha_nacimiento', alumno.fecha_nacimiento);
+    set('edad', alumno.edad);
+    set('sexo', alumno.sexo);
+    set('estado_nacimiento', alumno.estado_nacimiento);
+    set('municipio_nacimiento', alumno.municipio_nacimiento);
+    set('ciudad_nacimiento', alumno.ciudad_nacimiento);
+    set('estado_civil', alumno.estado_civil);
+    set('primera_opcion', alumno.primera_opcion);
+    set('segunda_opcion', alumno.segunda_opcion);
+    set('tercera_opcion', alumno.tercera_opcion);
+    set('cuarta_opcion', alumno.cuarta_opcion);
+
+    // datos_generales
+    set('colonia', generales.colonia);
+    set('domicilio', generales.domicilio);
+    set('codigo_postal', generales.codigo_postal);
+    set('telefono_alumno', generales.telefono_alumno);
+    set('correo_alumno', generales.correo_alumno);
+    set('paraescolar', generales.paraescolar);
+    set('tipo_sangre', generales.tipo_sangre);
+    set('contacto_emergencia_nombre', generales.contacto_emergencia_nombre);
+    set('contacto_emergencia_telefono', generales.contacto_emergencia_telefono);
+    set('habla_lengua_indigena_respuesta', habla.respuesta);
+    set('habla_lengua_indigena_cual', habla.cual);
+    set('entrega_diagnostico', generales.entrega_diagnostico);
+    set('detalle_enfermedad', generales.detalle_enfermedad);
+    set('responsable_emergencia_nombre', responsableEmergencia.nombre);
+    set('responsable_emergencia_telefono', responsableEmergencia.telefono);
+    set('responsable_emergencia_parentesco', responsableEmergencia.parentesco);
+    set('carta_poder', generales.carta_poder);
+
+    // datos_medicos
+    set('numero_seguro_social', medicos.numero_seguro_social);
+    set('unidad_medica_familiar', medicos.unidad_medica_familiar);
+    set('enfermedad_cronica_o_alergia_respuesta', enfermedad.respuesta);
+    set('enfermedad_cronica_o_alergia_detalle', enfermedad.detalle);
+    set('discapacidad', medicos.discapacidad);
+
+    // secundaria_origen
+    set('nombre_secundaria', secundaria.nombre_secundaria);
+    set('regimen', secundaria.regimen);
+    set('promedio_general', secundaria.promedio_general);
+    set('modalidad', secundaria.modalidad);
+
+    // tutor_responsable
+    set('nombre_padre', tutor.nombre_padre);
+    set('telefono_padre', tutor.telefono_padre);
+    set('nombre_madre', tutor.nombre_madre);
+    set('telefono_madre', tutor.telefono_madre);
+    set('vive_con', tutor.vive_con);
+
+    // persona_emergencia
+    set('persona_emergencia_nombre', emergencia.nombre);
+    set('persona_emergencia_parentesco', emergencia.parentesco);
+    set('persona_emergencia_telefono', emergencia.telefono);
+
+  } catch (err) {
+    console.error('Error al cargar datos del folio:', err);
+  }
+}
+
+
+window.onload = () => { cargarCatalogo(); consultarFolioYAutocompletar(); };
