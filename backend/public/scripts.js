@@ -1,4 +1,3 @@
-
 const BASE_URL = window.location.origin.includes('localhost')
   ? 'http://localhost:3001'
   : 'https://registro272.onrender.com';
@@ -156,7 +155,7 @@ function consultarFolioYAutocompletar() {
           }
         } else {
           const input = document.querySelector(`[name="${seccion}"]`);
-          if (input) input.value = seccion;
+          if (input) input.value = valores;
         }
       }
 
@@ -189,6 +188,8 @@ function cargarCatalogo() {
       estadoSelect.innerHTML = '<option value="">-- Selecciona Estado --</option>';
       municipioSelect.innerHTML = '<option value="">-- Selecciona Municipio --</option>';
       ciudadSelect.innerHTML = '<option value="">-- Selecciona Ciudad --</option>';
+      municipioSelect.disabled = true;
+      ciudadSelect.disabled = true;
 
       data.estados.forEach(estado => {
         const opt = document.createElement('option');
@@ -198,9 +199,12 @@ function cargarCatalogo() {
       });
 
       estadoSelect.addEventListener('change', () => {
-        const estado = data.estados.find(e => e.clave === estadoSelect.value);
         municipioSelect.innerHTML = '<option value="">-- Selecciona Municipio --</option>';
         ciudadSelect.innerHTML = '<option value="">-- Selecciona Ciudad --</option>';
+        const estado = data.estados.find(e => e.clave === estadoSelect.value);
+        municipioSelect.disabled = !estado;
+        ciudadSelect.disabled = true;
+
         if (!estado) return;
 
         estado.municipios.forEach(mun => {
@@ -212,11 +216,11 @@ function cargarCatalogo() {
       });
 
       municipioSelect.addEventListener('change', () => {
-        const estado = data.estados.find(e => e.clave === estadoSelect.value);
-        if (!estado) return;
-
-        const municipio = estado.municipios.find(m => m.clave === municipioSelect.value);
         ciudadSelect.innerHTML = '<option value="">-- Selecciona Ciudad --</option>';
+        const estado = data.estados.find(e => e.clave === estadoSelect.value);
+        const municipio = estado?.municipios.find(m => m.clave === municipioSelect.value);
+        ciudadSelect.disabled = !municipio;
+
         if (!municipio) return;
 
         municipio.localidades.forEach(ciudad => {
@@ -231,4 +235,3 @@ function cargarCatalogo() {
       console.error('❌ Error cargando catálogo:', err);
     });
 }
-
