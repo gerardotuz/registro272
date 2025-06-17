@@ -1,4 +1,3 @@
-/// === scripts.js completo con las 4 opciones añadidas ===
 document.getElementById('registroForm').addEventListener('submit', async (e) => {
   e.preventDefault();
 
@@ -6,15 +5,17 @@ document.getElementById('registroForm').addEventListener('submit', async (e) => 
     'nombres','primer_apellido','segundo_apellido','curp','carrera',
     'periodo_semestral','semestre','turno','fecha_nacimiento','edad','sexo',
     'estado_nacimiento','municipio_nacimiento','ciudad_nacimiento','estado_civil',
+    'primera_opcion','segunda_opcion','tercera_opcion','cuarta_opcion',
     'colonia','domicilio','codigo_postal','telefono_alumno','correo_alumno',
     'tipo_sangre','contacto_emergencia_nombre','contacto_emergencia_telefono',
-    'habla_lengua_indigena_respuesta','numero_seguro_social','enfermedad_cronica_o_alergia_respuesta',
-    'enfermedad_cronica_o_alergia_detalle','discapacidad','entrega_diagnostico',
-    'detalle_enfermedad','nombre_secundaria','regimen','promedio_general','modalidad',
+    'habla_lengua_indigena_respuesta','numero_seguro_social','unidad_medica_familiar',
+    'enfermedad_cronica_o_alergia_respuesta','enfermedad_cronica_o_alergia_detalle',
+    'discapacidad','entrega_diagnostico','detalle_enfermedad',
+    'nombre_secundaria','regimen','promedio_general','modalidad',
     'nombre_padre','telefono_padre','nombre_madre','telefono_madre',
     'vive_con','persona_emergencia_nombre','persona_emergencia_parentesco','persona_emergencia_telefono',
     'responsable_emergencia_nombre','responsable_emergencia_telefono','responsable_emergencia_parentesco','carta_poder',
-    'primera_opcion','segunda_opcion','tercera_opcion','cuarta_opcion'
+    'paraescolar'
   ];
 
   for (const campo of camposObligatorios) {
@@ -48,7 +49,11 @@ document.getElementById('registroForm').addEventListener('submit', async (e) => 
       estado_nacimiento: formData.get('estado_nacimiento'),
       municipio_nacimiento: formData.get('municipio_nacimiento'),
       ciudad_nacimiento: formData.get('ciudad_nacimiento'),
-      estado_civil: formData.get('estado_civil')
+      estado_civil: formData.get('estado_civil'),
+      primera_opcion: formData.get('primera_opcion'),
+      segunda_opcion: formData.get('segunda_opcion'),
+      tercera_opcion: formData.get('tercera_opcion'),
+      cuarta_opcion: formData.get('cuarta_opcion')
     },
     datos_generales: {
       colonia: formData.get('colonia'),
@@ -71,11 +76,7 @@ document.getElementById('registroForm').addEventListener('submit', async (e) => 
         telefono: formData.get('responsable_emergencia_telefono'),
         parentesco: formData.get('responsable_emergencia_parentesco')
       },
-      carta_poder: formData.get('carta_poder'),
-      primera_opcion: formData.get('primera_opcion'),
-      segunda_opcion: formData.get('segunda_opcion'),
-      tercera_opcion: formData.get('tercera_opcion'),
-      cuarta_opcion: formData.get('cuarta_opcion')
+      carta_poder: formData.get('carta_poder')
     },
     datos_medicos: {
       numero_seguro_social: formData.get('numero_seguro_social'),
@@ -97,12 +98,12 @@ document.getElementById('registroForm').addEventListener('submit', async (e) => 
       telefono_padre: formData.get('telefono_padre'),
       nombre_madre: formData.get('nombre_madre'),
       telefono_madre: formData.get('telefono_madre'),
-      vive_con: formData.get('vive_con'),
-      persona_emergencia: {
-        nombre: formData.get('persona_emergencia_nombre'),
-        parentesco: formData.get('persona_emergencia_parentesco'),
-        telefono: formData.get('persona_emergencia_telefono')
-      }
+      vive_con: formData.get('vive_con')
+    },
+    persona_emergencia: {
+      nombre: formData.get('persona_emergencia_nombre'),
+      parentesco: formData.get('persona_emergencia_parentesco'),
+      telefono: formData.get('persona_emergencia_telefono')
     }
   };
 
@@ -124,65 +125,3 @@ document.getElementById('registroForm').addEventListener('submit', async (e) => 
     alert(result.message || 'Error al guardar');
   }
 });
-async function cargarCatalogo() {
-  const response = await fetch('/data/catalogo.json');
-  const catalogo = await response.json();
-
-  const estadoSelect = document.getElementById('estadoSelect');
-  const municipioSelect = document.getElementById('municipioSelect');
-  const ciudadSelect = document.getElementById('ciudadSelect');
-
-  const estadoCodigoInput = document.querySelector('input[name="estado_codigo"]');
-  const municipioCodigoInput = document.querySelector('input[name="municipio_codigo"]');
-  const ciudadCodigoInput = document.querySelector('input[name="ciudad_codigo"]');
-
-  estadoSelect.innerHTML = '<option value="">Seleccione estado</option>';
-  catalogo.forEach(estado => {
-    const opt = document.createElement('option');
-    opt.value = estado.clave;
-    opt.textContent = estado.nombre;
-    estadoSelect.appendChild(opt);
-  });
-
-  estadoSelect.addEventListener('change', () => {
-    const estado = catalogo.find(e => e.clave === estadoSelect.value);
-    estadoCodigoInput.value = estado.clave;
-    municipioSelect.innerHTML = '<option value="">Seleccione municipio</option>';
-    ciudadSelect.innerHTML = '<option value="">Seleccione ciudad</option>';
-    municipioSelect.disabled = true;
-    ciudadSelect.disabled = true;
-
-    if (estado) {
-      municipioSelect.disabled = false;
-      estado.municipios.forEach(mun => {
-        const opt = document.createElement('option');
-        opt.value = mun.clave;
-        opt.textContent = mun.nombre;
-        municipioSelect.appendChild(opt);
-      });
-    }
-  });
-
-  municipioSelect.addEventListener('change', () => {
-    const estado = catalogo.find(e => e.clave === estadoSelect.value);
-    const municipio = estado.municipios.find(m => m.clave === municipioSelect.value);
-    municipioCodigoInput.value = municipio.clave;
-    ciudadSelect.innerHTML = '<option value="">Seleccione ciudad</option>';
-    ciudadSelect.disabled = true;
-
-    if (municipio) {
-      ciudadSelect.disabled = false;
-      municipio.localidades.forEach(loc => {
-        const opt = document.createElement('option');
-        opt.value = loc.clave;
-        opt.textContent = loc.nombre;
-        ciudadSelect.appendChild(opt);
-      });
-    }
-  });
-
-  ciudadSelect.addEventListener('change', () => {
-    ciudadCodigoInput.value = ciudadSelect.value;
-  });
-}
-
