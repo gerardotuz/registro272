@@ -232,7 +232,4 @@ function cargarCatalogo() {
       console.error('❌ Error cargando catálogo:', err);
     });
 }
-window.onload = () => {
-  if (typeof cargarCatalogo === 'function') cargarCatalogo();
-  consultarFolioYAutocompletar(); // si ya la tienes
-};
+
