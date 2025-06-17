@@ -11,10 +11,10 @@ const alumnoSchema = new mongoose.Schema({
     grupo: String,
     turno: String,
     carrera: String,
-     primera_opcion: String,
-  segunda_opcion: String,
-  tercera_opcion: String,
-  cuarta_opcion: String,
+    primera_opcion: String,
+    segunda_opcion: String,
+    tercera_opcion: String,
+    cuarta_opcion: String,
     curp: String,
     fecha_nacimiento: String,
     edad: Number,
@@ -22,7 +22,7 @@ const alumnoSchema = new mongoose.Schema({
     estado_nacimiento: String,
     municipio_nacimiento: String,
     ciudad_nacimiento: String,
-    estado_civil: String,
+    estado_civil: Number, // CAMBIADO A NÚMERO
     nacionalidad: String,
     pais_extranjero: String
   },
@@ -40,7 +40,7 @@ const alumnoSchema = new mongoose.Schema({
       telefono: String,
       parentesco: String
     },
-    carta_poder: String, // 👈 COMA aquí
+    carta_poder: String,
     tipo_sangre: String,
     contacto_emergencia_nombre: String,
     contacto_emergencia_telefono: String,
@@ -69,13 +69,16 @@ const alumnoSchema = new mongoose.Schema({
     telefono_padre: String,
     nombre_madre: String,
     telefono_madre: String,
-    vive_con: String,
-    persona_emergencia: {
-      nombre: String,
-      parentesco: String,
-      telefono: String
-    }
+    vive_con: String
+  },
+  persona_emergencia: {
+    nombre: String,
+    parentesco: String,
+    telefono: String
   }
+}, {
+  timestamps: true,
+  collection: 'alumnos'
 });
 
 module.exports = mongoose.model('Alumno', alumnoSchema);
