@@ -1,3 +1,4 @@
+
 const BASE_URL = window.location.origin.includes('localhost')
   ? 'http://localhost:3001'
   : 'https://registro272.onrender.com';
@@ -155,7 +156,7 @@ function consultarFolioYAutocompletar() {
           }
         } else {
           const input = document.querySelector(`[name="${seccion}"]`);
-          if (input) input.value = valores;
+          if (input) input.value = seccion;
         }
       }
 
@@ -179,8 +180,6 @@ function consultarFolioYAutocompletar() {
 function cargarCatalogo() {
   console.log('🚀 Ejecutando cargarCatalogo()');
   fetch('/data/catalogo.json')
-    
-
     .then(res => res.json())
     .then(data => {
       const estadoSelect = document.getElementById('estado_nacimiento');
