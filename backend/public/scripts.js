@@ -178,11 +178,10 @@ function consultarFolioYAutocompletar() {
 
 function cargarCatalogo() {
   console.log('🚀 Ejecutando cargarCatalogo()');
+
   fetch('/data/catalogo.json')
     .then(res => res.json())
     .then(data => {
-      // Crea sets únicos
-      const estadosSet = new Set(data.map(r => r.estado));
       const estadoSelect = document.getElementById('estado_nacimiento');
       const municipioSelect = document.getElementById('municipio_nacimiento');
       const ciudadSelect = document.getElementById('ciudad_nacimiento');
@@ -190,56 +189,58 @@ function cargarCatalogo() {
       estadoSelect.innerHTML = '<option value="">-- Selecciona Estado --</option>';
       municipioSelect.innerHTML = '<option value="">-- Selecciona Municipio --</option>';
       ciudadSelect.innerHTML = '<option value="">-- Selecciona Ciudad --</option>';
-      municipioSelect.disabled = true; ciudadSelect.disabled = true;
+      municipioSelect.disabled = true;
+      ciudadSelect.disabled = true;
 
-      estadosSet.forEach(est => {
+      // Llenar estados
+      data.forEach(estado => {
         const option = document.createElement('option');
-        option.value = est;
-        option.textContent = est;
+        option.value = estado.nombre;
+        option.textContent = estado.nombre;
+        option.dataset.municipios = JSON.stringify(estado.municipios || []);
         estadoSelect.appendChild(option);
       });
 
-      estadoSelect.addEventListener('change', () => {
+      estadoSelect.addEventListener('change', function () {
         municipioSelect.innerHTML = '<option value="">-- Selecciona Municipio --</option>';
         ciudadSelect.innerHTML = '<option value="">-- Selecciona Ciudad --</option>';
-        municipioSelect.disabled = true; ciudadSelect.disabled = true;
+        municipioSelect.disabled = true;
+        ciudadSelect.disabled = true;
 
-        const munSet = new Set(
-          data
-            .filter(r => r.estado === estadoSelect.value)
-            .map(r => r.municipio)
-        );
+        const selectedOption = this.options[this.selectedIndex];
+        const municipios = JSON.parse(selectedOption.dataset.municipios || '[]');
 
-        munSet.forEach(mun => {
-          const opt = document.createElement('option');
-          opt.value = mun;
-          opt.textContent = mun;
-          municipioSelect.appendChild(opt);
+        municipios.forEach(municipio => {
+          const option = document.createElement('option');
+          option.value = municipio.nombre;
+          option.textContent = municipio.nombre;
+          option.dataset.localidades = JSON.stringify(municipio.localidades || []);
+          municipioSelect.appendChild(option);
         });
 
-        municipioSelect.disabled = false;
+        if (municipios.length > 0) municipioSelect.disabled = false;
       });
 
-      municipioSelect.addEventListener('change', () => {
+      municipioSelect.addEventListener('change', function () {
         ciudadSelect.innerHTML = '<option value="">-- Selecciona Ciudad --</option>';
         ciudadSelect.disabled = true;
 
-        const locSet = new Set(
-          data
-            .filter(r => r.estado === estadoSelect.value && r.municipio === municipioSelect.value)
-            .map(r => r.localidad)  // O "ciudad" según el JSON
-        );
+        const selectedOption = this.options[this.selectedIndex];
+        const localidades = JSON.parse(selectedOption.dataset.localidades || '[]');
 
-        locSet.forEach(loc => {
-          const opt = document.createElement('option');
-          opt.value = loc;
-          opt.textContent = loc;
-          ciudadSelect.appendChild(opt);
+        localidades.forEach(localidad => {
+          const option = document.createElement('option');
+          option.value = localidad.nombre;
+          option.textContent = localidad.nombre;
+          ciudadSelect.appendChild(option);
         });
 
-        ciudadSelect.disabled = false;
+        if (localidades.length > 0) ciudadSelect.disabled = false;
       });
     })
-    .catch(err => console.error('❌ Error cargando catálogo:', err));
+    .catch(err => {
+      console.error('❌ Error cargando catálogo:', err);
+    });
 }
+
 
