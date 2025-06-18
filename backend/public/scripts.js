@@ -1,3 +1,4 @@
+
 const BASE_URL = window.location.origin.includes('localhost')
   ? 'http://localhost:3001'
   : 'https://registro272.onrender.com';
@@ -192,7 +193,6 @@ function cargarCatalogo() {
       municipioSelect.disabled = true;
       ciudadSelect.disabled = true;
 
-      // Llenar estados
       data.forEach(estado => {
         const option = document.createElement('option');
         option.value = estado.nombre;
@@ -242,5 +242,3 @@ function cargarCatalogo() {
       console.error('❌ Error cargando catálogo:', err);
     });
 }
-
-
