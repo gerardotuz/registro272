@@ -1,4 +1,3 @@
-
 const BASE_URL = window.location.origin.includes('localhost')
   ? 'http://localhost:3001'
   : 'https://registro272.onrender.com';
@@ -134,7 +133,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const result = await res.json();
     if (res.ok) {
       alert('Registro guardado con éxito');
-      window.open(`${BASE_URL}/api/pdf/${folio}`, '_blank');
+      window.open(result.pdf_url, '_blank'); // ✅ Usa la URL real del PDF
     } else {
       alert(result.message || 'Error al guardar');
     }
