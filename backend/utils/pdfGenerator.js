@@ -1,25 +1,30 @@
 const PDFDocument = require('pdfkit');
 const fs = require('fs');
 const path = require('path');
+const catalogo = require('../../public/data/catalogo.json');
 
-const catalogoPath = path.resolve(__dirname, '../../public/data/catalogo.json');
-const catalogo = JSON.parse(fs.readFileSync(catalogoPath, 'utf8'));
-
-function obtenerNombresDesdeCatalogo(estadoClave, municipioClave, ciudadClave) {
-  const estado = catalogo.find(e => e.clave === estadoClave);
-  if (!estado) return { estado: '', municipio: '', ciudad: '' };
-
-  const municipio = estado.municipios.find(m => m.nombre === municipioClave || m.clave === municipioClave);
-  const localidad = municipio?.localidades?.find(l => l.nombre === ciudadClave || l.clave === ciudadClave);
-
+function obtenerTextoDesdeCatalogo(claveEstado, claveMunicipio, claveCiudad) {
+  const estado = catalogo.find(e => e.clave === claveEstado);
+  const municipio = estado?.municipios?.find(m => m.clave === claveMunicipio);
+  const ciudad = municipio?.localidades?.find(c => c.clave === claveCiudad);
   return {
-    estado: estado.nombre || '',
+    estado: estado?.nombre || '',
     municipio: municipio?.nombre || '',
-    ciudad: localidad?.nombre || ''
+    ciudad: ciudad?.nombre || ''
   };
 }
 
-function generarPDF(datos, nombreArchivo = 'formulario.pdf') {
+function convertirEstadoCivil(numero) {
+  const mapa = {
+    1: 'Soltero',
+    2: 'Casado',
+    3: 'Unión libre',
+    4: 'Otro'
+  };
+  return mapa[numero] || '';
+}
+
+function generarPDF(datos, nombreArchivo = 'formulario_paginado.pdf') {
   const doc = new PDFDocument({ margin: 50, size: 'LETTER' });
   const rutaPDF = path.join(__dirname, '../public/pdfs', nombreArchivo);
   const stream = fs.createWriteStream(rutaPDF);
@@ -30,6 +35,7 @@ function generarPDF(datos, nombreArchivo = 'formulario.pdf') {
   const medicos = datos.datos_medicos || {};
   const secundaria = datos.secundaria_origen || {};
   const tutor = datos.tutor_responsable || {};
+  const emergencia = datos.persona_emergencia || {};
 
   const logoPath = path.join(__dirname, '../public/images/logo.png');
   const footerPath = path.join(__dirname, '../public/images/firma_footer.png');
@@ -40,12 +46,6 @@ function generarPDF(datos, nombreArchivo = 'formulario.pdf') {
   const BOX_HEIGHT = 30;
   const GAP_Y = 35;
   const marginX = 50;
-
-  const { estado, municipio, ciudad } = obtenerNombresDesdeCatalogo(
-    alumno.estado_nacimiento,
-    alumno.municipio_nacimiento,
-    alumno.ciudad_nacimiento
-  );
 
   let y = START_Y;
 
@@ -90,6 +90,12 @@ function generarPDF(datos, nombreArchivo = 'formulario.pdf') {
     y += 80;
   }
 
+  const nombresCatalogo = obtenerTextoDesdeCatalogo(
+    alumno.estado_nacimiento,
+    alumno.municipio_nacimiento,
+    alumno.ciudad_nacimiento
+  );
+
   y = drawSectionTitle('Datos del Alumno', y);
   y = drawBox('Nombres', alumno.nombres, marginX, y);
   y = drawBox('Primer Apellido', alumno.primer_apellido, marginX + 260, y);
@@ -104,16 +110,16 @@ function generarPDF(datos, nombreArchivo = 'formulario.pdf') {
   y = drawBox('Grupo', alumno.grupo, marginX + 260, y);
   y += GAP_Y;
   y = drawBox('Turno', alumno.turno, marginX, y);
-  y = drawBox('Estado Civil', alumno.estado_civil, marginX + 260, y);
+  y = drawBox('Fecha de Nacimiento', alumno.fecha_nacimiento, marginX + 260, y);
   y += GAP_Y;
-  y = drawBox('Fecha de Nacimiento', alumno.fecha_nacimiento, marginX, y);
-  y = drawBox('Edad', alumno.edad, marginX + 260, y);
+  y = drawBox('Edad', alumno.edad, marginX, y);
+  y = drawBox('Sexo', alumno.sexo, marginX + 260, y);
   y += GAP_Y;
-  y = drawBox('Sexo', alumno.sexo, marginX, y);
-  y = drawBox('Estado de Nacimiento', estado, marginX + 260, y);
+  y = drawBox('Estado Nacimiento', nombresCatalogo.estado, marginX, y);
+  y = drawBox('Municipio Nac.', nombresCatalogo.municipio, marginX + 260, y);
   y += GAP_Y;
-  y = drawBox('Municipio de Nacimiento', municipio, marginX, y);
-  y = drawBox('Ciudad de Nacimiento', ciudad, marginX + 260, y);
+  y = drawBox('Ciudad Nac.', nombresCatalogo.ciudad, marginX, y);
+  y = drawBox('Estado Civil', convertirEstadoCivil(alumno.estado_civil), marginX + 260, y);
   y += GAP_Y;
 
   y = drawSectionTitle('Datos Generales', y);
@@ -125,24 +131,21 @@ function generarPDF(datos, nombreArchivo = 'formulario.pdf') {
   y += GAP_Y;
   y = drawBox('Correo Electrónico', generales.correo_alumno, marginX, y, 500);
   y += GAP_Y;
-  y = drawBox('Tipo de Sangre', generales.tipo_sangre, marginX, y);
+  y = drawBox('Tipo Sangre', generales.tipo_sangre, marginX, y);
   y = drawBox('Paraescolar', generales.paraescolar, marginX + 260, y);
   y += GAP_Y;
-  y = drawBox('Primera Opción', generales.primera_opcion, marginX, y);
-  y = drawBox('Segunda Opción', generales.segunda_opcion, marginX + 260, y);
-  y += GAP_Y;
-  y = drawBox('Tercera Opción', generales.tercera_opcion, marginX, y);
-  y = drawBox('Cuarta Opción', generales.cuarta_opcion, marginX + 260, y);
-  y += GAP_Y;
-  y = drawBox('¿Entrega Diagnóstico?', generales.entrega_diagnostico, marginX, y);
-  y = drawMultilineBox('Detalle Enfermedad', generales.detalle_enfermedad, marginX + 260, y);
+  y = drawBox('Contacto Emergencia', generales.contacto_emergencia_nombre, marginX, y);
+  y = drawBox('Tel. Emergencia', generales.contacto_emergencia_telefono, marginX + 260, y);
   y += GAP_Y;
   y = drawBox('Lengua Indígena', generales.habla_lengua_indigena?.respuesta, marginX, y);
   y = drawBox('¿Cuál?', generales.habla_lengua_indigena?.cual, marginX + 260, y);
   y += GAP_Y;
+  y = drawBox('¿Entrega Diagnóstico?', generales.entrega_diagnostico, marginX, y);
+  y = drawMultilineBox('Detalle Enfermedad', generales.detalle_enfermedad, marginX + 260, y);
+  y += GAP_Y;
 
   y = drawSectionTitle('Datos Médicos', y);
-  y = drawBox('NSS', medicos.numero_seguro_social, marginX, y);
+  y = drawBox('Número Seguro Social', medicos.numero_seguro_social, marginX, y);
   y = drawBox('Unidad Médica', medicos.unidad_medica_familiar, marginX + 260, y);
   y += GAP_Y;
   y = drawBox('¿Alergia o Enfermedad?', medicos.enfermedad_cronica_o_alergia?.respuesta, marginX, y);
@@ -151,7 +154,7 @@ function generarPDF(datos, nombreArchivo = 'formulario.pdf') {
   y += GAP_Y;
 
   y = drawSectionTitle('Secundaria de Origen', y);
-  y = drawBox('Nombre', secundaria.nombre_secundaria, marginX, y);
+  y = drawBox('Nombre Secundaria', secundaria.nombre_secundaria, marginX, y);
   y = drawBox('Régimen', secundaria.regimen, marginX + 260, y);
   y += GAP_Y;
   y = drawBox('Promedio', secundaria.promedio_general, marginX, y);
@@ -159,18 +162,25 @@ function generarPDF(datos, nombreArchivo = 'formulario.pdf') {
   y += GAP_Y;
 
   y = drawSectionTitle('Tutor Responsable', y);
-  y = drawBox('Padre', tutor.nombre_padre, marginX, y);
+  y = drawBox('Nombre del Padre', tutor.nombre_padre, marginX, y);
   y = drawBox('Tel. Padre', tutor.telefono_padre, marginX + 260, y);
   y += GAP_Y;
-  y = drawBox('Madre', tutor.nombre_madre, marginX, y);
+  y = drawBox('Nombre de la Madre', tutor.nombre_madre, marginX, y);
   y = drawBox('Tel. Madre', tutor.telefono_madre, marginX + 260, y);
   y += GAP_Y;
   y = drawBox('Vive con', tutor.vive_con, marginX, y);
   y += GAP_Y;
-  y = drawBox('Emergencia Adicional', generales.responsable_emergencia?.nombre, marginX, y);
-  y = drawBox('Teléfono', generales.responsable_emergencia?.telefono, marginX + 260, y);
+  y = drawBox('Persona Emergencia', emergencia.nombre, marginX, y);
+  y = drawBox('Parentesco', emergencia.parentesco, marginX + 260, y);
   y += GAP_Y;
-  y = drawBox('Parentesco', generales.responsable_emergencia?.parentesco, marginX, y);
+  y = drawBox('Tel. Persona Emergencia', emergencia.telefono, marginX, y);
+  y += GAP_Y;
+
+  y = drawSectionTitle('Emergencia Adicional', y);
+  y = drawBox('Nombre Emergencia Adic.', generales.responsable_emergencia?.nombre, marginX, y);
+  y = drawBox('Tel. Emergencia Adic.', generales.responsable_emergencia?.telefono, marginX + 260, y);
+  y += GAP_Y;
+  y = drawBox('Parentesco Emergencia', generales.responsable_emergencia?.parentesco, marginX, y);
   y = drawBox('¿Carta Poder?', generales.carta_poder, marginX + 260, y);
   y += GAP_Y;
 
