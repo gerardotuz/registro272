@@ -2,7 +2,7 @@ const PDFDocument = require('pdfkit');
 const fs = require('fs');
 const path = require('path');
 
-const catalogoPath = path.resolve(__dirname, '../../public/data/catalogo.json');
+const catalogoPath = path.resolve(__dirname, './catalogo.json');
 const catalogo = JSON.parse(fs.readFileSync(catalogoPath, 'utf8'));
 
 function obtenerNombresDesdeCatalogo(estadoClave, municipioClave, ciudadClave) {
