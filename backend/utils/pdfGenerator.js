@@ -2,7 +2,8 @@ const PDFDocument = require('pdfkit');
 const fs = require('fs');
 const path = require('path');
 
-const catalogoPath = path.resolve(__dirname, '../../public/data/catalogo.json');
+// Cargar el catálogo desde la misma carpeta 'utils'
+const catalogoPath = path.resolve(__dirname, './catalogo.json');
 const catalogo = JSON.parse(fs.readFileSync(catalogoPath, 'utf8'));
 
 function obtenerNombresDesdeCatalogo(estadoClave, municipioClave, ciudadClave) {
@@ -185,7 +186,7 @@ function generarPDF(datos, nombreArchivo = 'formulario.pdf') {
   y = drawBox('¿Carta Poder?', generales.carta_poder, marginX + 260, y);
   y += GAP_Y;
 
-   if (fs.existsSync(footerPath)) {
+  if (fs.existsSync(footerPath)) {
     if (y + 100 > PAGE_HEIGHT) {
       doc.addPage();
       y = START_Y;
