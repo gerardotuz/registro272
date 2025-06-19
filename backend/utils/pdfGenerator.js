@@ -1,8 +1,28 @@
-// backend/utils/pdfGenerator.js
-
 const PDFDocument = require('pdfkit');
 const fs = require('fs');
 const path = require('path');
+const catalogo = require('../../public/data/catalogo.json');
+
+function obtenerTextoDesdeCatalogo(claveEstado, claveMunicipio, claveCiudad) {
+  const estado = catalogo.find(e => e.clave === claveEstado);
+  const municipio = estado?.municipios?.find(m => m.clave === claveMunicipio);
+  const ciudad = municipio?.localidades?.find(c => c.clave === claveCiudad);
+  return {
+    estado: estado?.nombre || '',
+    municipio: municipio?.nombre || '',
+    ciudad: ciudad?.nombre || ''
+  };
+}
+
+function convertirEstadoCivil(numero) {
+  const mapa = {
+    1: 'Soltero',
+    2: 'Casado',
+    3: 'Unión libre',
+    4: 'Otro'
+  };
+  return mapa[numero] || '';
+}
 
 function generarPDF(datos, nombreArchivo = 'formulario_paginado.pdf') {
   const doc = new PDFDocument({ margin: 50, size: 'LETTER' });
@@ -65,13 +85,17 @@ function generarPDF(datos, nombreArchivo = 'formulario_paginado.pdf') {
     return y + 30;
   };
 
-  // Logo
   if (fs.existsSync(logoPath)) {
     doc.image(logoPath, 50, y, { width: 500 });
     y += 80;
   }
 
-  // DATOS DEL ALUMNO
+  const nombresCatalogo = obtenerTextoDesdeCatalogo(
+    alumno.estado_nacimiento,
+    alumno.municipio_nacimiento,
+    alumno.ciudad_nacimiento
+  );
+
   y = drawSectionTitle('Datos del Alumno', y);
   y = drawBox('Nombres', alumno.nombres, marginX, y);
   y = drawBox('Primer Apellido', alumno.primer_apellido, marginX + 260, y);
@@ -86,25 +110,18 @@ function generarPDF(datos, nombreArchivo = 'formulario_paginado.pdf') {
   y = drawBox('Grupo', alumno.grupo, marginX + 260, y);
   y += GAP_Y;
   y = drawBox('Turno', alumno.turno, marginX, y);
-  y = drawBox('Fecha Nacimiento', alumno.fecha_nacimiento, marginX + 260, y);
+  y = drawBox('Fecha de Nacimiento', alumno.fecha_nacimiento, marginX + 260, y);
   y += GAP_Y;
   y = drawBox('Edad', alumno.edad, marginX, y);
   y = drawBox('Sexo', alumno.sexo, marginX + 260, y);
   y += GAP_Y;
-  y = drawBox('Estado Nacimiento', alumno.estado_nacimiento, marginX, y);
-  y = drawBox('Municipio Nacimiento', alumno.municipio_nacimiento, marginX + 260, y);
+  y = drawBox('Estado Nacimiento', nombresCatalogo.estado, marginX, y);
+  y = drawBox('Municipio Nac.', nombresCatalogo.municipio, marginX + 260, y);
   y += GAP_Y;
-  y = drawBox('Ciudad Nacimiento', alumno.ciudad_nacimiento, marginX, y);
-  y = drawBox('Estado Civil', alumno.estado_civil, marginX + 260, y);
-  y += GAP_Y;
-  y = drawBox('1ª opción', alumno.primera_opcion, marginX, y);
-  y = drawBox('2ª opción', alumno.segunda_opcion, marginX + 260, y);
-  y += GAP_Y;
-  y = drawBox('3ª opción', alumno.tercera_opcion, marginX, y);
-  y = drawBox('4ª opción', alumno.cuarta_opcion, marginX + 260, y);
+  y = drawBox('Ciudad Nac.', nombresCatalogo.ciudad, marginX, y);
+  y = drawBox('Estado Civil', convertirEstadoCivil(alumno.estado_civil), marginX + 260, y);
   y += GAP_Y;
 
-  // DATOS GENERALES
   y = drawSectionTitle('Datos Generales', y);
   y = drawBox('Colonia', generales.colonia, marginX, y);
   y = drawBox('Domicilio', generales.domicilio, marginX + 260, y);
@@ -114,11 +131,11 @@ function generarPDF(datos, nombreArchivo = 'formulario_paginado.pdf') {
   y += GAP_Y;
   y = drawBox('Correo Electrónico', generales.correo_alumno, marginX, y, 500);
   y += GAP_Y;
-  y = drawBox('Tipo de Sangre', generales.tipo_sangre, marginX, y);
+  y = drawBox('Tipo Sangre', generales.tipo_sangre, marginX, y);
   y = drawBox('Paraescolar', generales.paraescolar, marginX + 260, y);
   y += GAP_Y;
   y = drawBox('Contacto Emergencia', generales.contacto_emergencia_nombre, marginX, y);
-  y = drawBox('Teléfono Emergencia', generales.contacto_emergencia_telefono, marginX + 260, y);
+  y = drawBox('Tel. Emergencia', generales.contacto_emergencia_telefono, marginX + 260, y);
   y += GAP_Y;
   y = drawBox('Lengua Indígena', generales.habla_lengua_indigena?.respuesta, marginX, y);
   y = drawBox('¿Cuál?', generales.habla_lengua_indigena?.cual, marginX + 260, y);
@@ -127,54 +144,46 @@ function generarPDF(datos, nombreArchivo = 'formulario_paginado.pdf') {
   y = drawMultilineBox('Detalle Enfermedad', generales.detalle_enfermedad, marginX + 260, y);
   y += GAP_Y;
 
-  // DATOS MÉDICOS
   y = drawSectionTitle('Datos Médicos', y);
-  y = drawBox('NSS', medicos.numero_seguro_social, marginX, y);
-  y = drawBox('Unidad Médica Familiar', medicos.unidad_medica_familiar, marginX + 260, y);
+  y = drawBox('Número Seguro Social', medicos.numero_seguro_social, marginX, y);
+  y = drawBox('Unidad Médica', medicos.unidad_medica_familiar, marginX + 260, y);
   y += GAP_Y;
-  y = drawBox('¿Tiene enfermedad o alergia?', medicos.enfermedad_cronica_o_alergia?.respuesta, marginX, y);
-  y = drawMultilineBox('Detalle enfermedad o alergia', medicos.enfermedad_cronica_o_alergia?.detalle, marginX + 260, y);
+  y = drawBox('¿Alergia o Enfermedad?', medicos.enfermedad_cronica_o_alergia?.respuesta, marginX, y);
+  y = drawMultilineBox('Detalle', medicos.enfermedad_cronica_o_alergia?.detalle, marginX + 260, y);
   y = drawBox('Discapacidad', medicos.discapacidad, marginX, y);
   y += GAP_Y;
 
-  // SECUNDARIA DE ORIGEN
   y = drawSectionTitle('Secundaria de Origen', y);
-  y = drawBox('Nombre de la secundaria', secundaria.nombre_secundaria, marginX, y);
+  y = drawBox('Nombre Secundaria', secundaria.nombre_secundaria, marginX, y);
   y = drawBox('Régimen', secundaria.regimen, marginX + 260, y);
   y += GAP_Y;
-  y = drawBox('Promedio general', secundaria.promedio_general, marginX, y);
+  y = drawBox('Promedio', secundaria.promedio_general, marginX, y);
   y = drawBox('Modalidad', secundaria.modalidad, marginX + 260, y);
   y += GAP_Y;
 
-  // TUTOR RESPONSABLE
   y = drawSectionTitle('Tutor Responsable', y);
-  y = drawBox('Nombre del padre', tutor.nombre_padre, marginX, y);
-  y = drawBox('Teléfono del padre', tutor.telefono_padre, marginX + 260, y);
+  y = drawBox('Nombre del Padre', tutor.nombre_padre, marginX, y);
+  y = drawBox('Tel. Padre', tutor.telefono_padre, marginX + 260, y);
   y += GAP_Y;
-  y = drawBox('Nombre de la madre', tutor.nombre_madre, marginX, y);
-  y = drawBox('Teléfono de la madre', tutor.telefono_madre, marginX + 260, y);
+  y = drawBox('Nombre de la Madre', tutor.nombre_madre, marginX, y);
+  y = drawBox('Tel. Madre', tutor.telefono_madre, marginX + 260, y);
   y += GAP_Y;
-  y = drawBox('¿Con quién vive?', tutor.vive_con, marginX, y);
+  y = drawBox('Vive con', tutor.vive_con, marginX, y);
   y += GAP_Y;
-
-  // PERSONA DE EMERGENCIA
-  y = drawSectionTitle('Persona de Emergencia', y);
-  y = drawBox('Nombre', emergencia.nombre, marginX, y);
+  y = drawBox('Persona Emergencia', emergencia.nombre, marginX, y);
   y = drawBox('Parentesco', emergencia.parentesco, marginX + 260, y);
   y += GAP_Y;
-  y = drawBox('Teléfono', emergencia.telefono, marginX, y);
+  y = drawBox('Tel. Persona Emergencia', emergencia.telefono, marginX, y);
   y += GAP_Y;
 
-  // RESPONSABLE DE EMERGENCIA ADICIONAL
-  y = drawSectionTitle('Responsable de Emergencia Adicional', y);
-  y = drawBox('Nombre', generales.responsable_emergencia?.nombre, marginX, y);
-  y = drawBox('Teléfono', generales.responsable_emergencia?.telefono, marginX + 260, y);
+  y = drawSectionTitle('Emergencia Adicional', y);
+  y = drawBox('Nombre Emergencia Adic.', generales.responsable_emergencia?.nombre, marginX, y);
+  y = drawBox('Tel. Emergencia Adic.', generales.responsable_emergencia?.telefono, marginX + 260, y);
   y += GAP_Y;
-  y = drawBox('Parentesco', generales.responsable_emergencia?.parentesco, marginX, y);
+  y = drawBox('Parentesco Emergencia', generales.responsable_emergencia?.parentesco, marginX, y);
   y = drawBox('¿Carta Poder?', generales.carta_poder, marginX + 260, y);
   y += GAP_Y;
 
-  // Footer
   if (fs.existsSync(footerPath)) {
     if (y + 100 > PAGE_HEIGHT) {
       doc.addPage();
@@ -184,7 +193,6 @@ function generarPDF(datos, nombreArchivo = 'formulario_paginado.pdf') {
   }
 
   doc.end();
-
   return new Promise((resolve, reject) => {
     stream.on('finish', () => resolve(`/pdfs/${nombreArchivo}`));
     stream.on('error', reject);
