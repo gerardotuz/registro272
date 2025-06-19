@@ -1,22 +1,10 @@
+// backend/utils/pdfGenerator.js
+
 const PDFDocument = require('pdfkit');
 const fs = require('fs');
 const path = require('path');
-const catalogo = require('../../public/data/catalogo.json');
 
-function obtenerNombreDesdeCatalogo(claveEstado, claveMunicipio, claveLocalidad) {
-  const estado = catalogo.find(e => e.nombre === claveEstado);
-  if (!estado) return { municipio: '', localidad: '' };
-
-  const municipio = estado.municipios.find(m => m.nombre === claveMunicipio);
-  const localidad = municipio?.localidades?.find(l => l.nombre === claveLocalidad);
-
-  return {
-    municipio: municipio?.nombre || '',
-    localidad: localidad?.nombre || ''
-  };
-}
-
-function generarPDF(datos, nombreArchivo = 'formulario.pdf') {
+function generarPDF(datos, nombreArchivo = 'formulario_paginado.pdf') {
   const doc = new PDFDocument({ margin: 50, size: 'LETTER' });
   const rutaPDF = path.join(__dirname, '../public/pdfs', nombreArchivo);
   const stream = fs.createWriteStream(rutaPDF);
@@ -29,28 +17,178 @@ function generarPDF(datos, nombreArchivo = 'formulario.pdf') {
   const tutor = datos.tutor_responsable || {};
   const emergencia = datos.persona_emergencia || {};
 
-  const { municipio, localidad } = obtenerNombreDesdeCatalogo(
-    alumno.estado_nacimiento,
-    alumno.municipio_nacimiento,
-    alumno.ciudad_nacimiento
-  );
+  const logoPath = path.join(__dirname, '../public/images/logo.png');
+  const footerPath = path.join(__dirname, '../public/images/firma_footer.png');
 
-  doc.fontSize(12).text('CÉDULA DE INSCRIPCIÓN SEMESTRAL', { align: 'center' });
-  doc.moveDown();
+  const PAGE_HEIGHT = doc.page.height;
+  const BOTTOM_MARGIN = 80;
+  const START_Y = 50;
+  const BOX_HEIGHT = 30;
+  const GAP_Y = 35;
+  const marginX = 50;
 
-  doc.text(`Nombre: ${alumno.nombres} ${alumno.primer_apellido} ${alumno.segundo_apellido}`);
-  doc.text(`CURP: ${alumno.curp}`);
-  doc.text(`Carrera: ${alumno.carrera}`);
-  doc.text(`Estado de nacimiento: ${alumno.estado_nacimiento}`);
-  doc.text(`Municipio: ${municipio}`);
-  doc.text(`Ciudad: ${localidad}`);
-  doc.text(`Correo: ${generales.correo_alumno}`);
-  doc.text(`Teléfono: ${generales.telefono_alumno}`);
-  doc.text(`Paraescolar: ${generales.paraescolar}`);
-  doc.text(`Unidad Médica: ${medicos.unidad_medica_familiar}`);
-  doc.text(`Contacto emergencia: ${emergencia.nombre} (${emergencia.parentesco}) - ${emergencia.telefono}`);
+  let y = START_Y;
+
+  const drawBox = (label, value, x, y, width = 240, height = BOX_HEIGHT) => {
+    if (y + height + BOTTOM_MARGIN > PAGE_HEIGHT) {
+      doc.addPage();
+      y = START_Y;
+    }
+    doc.lineWidth(0.5).strokeColor('#000').rect(x, y, width, height).stroke();
+    doc.fontSize(8).fillColor('#333').text(label, x + 5, y + 2);
+    doc.fontSize(10).fillColor('#000').text(value || '', x + 5, y + 14, { width: width - 10 });
+    return y;
+  };
+
+  const drawMultilineBox = (label, value, x, y, width = 240) => {
+    const text = value || '';
+    const textHeight = doc.heightOfString(text, { width: width - 10 });
+    const height = textHeight + 24;
+    if (y + height + BOTTOM_MARGIN > PAGE_HEIGHT) {
+      doc.addPage();
+      y = START_Y;
+    }
+    doc.lineWidth(0.5).strokeColor('#000').rect(x, y, width, height).stroke();
+    doc.fontSize(8).fillColor('#333').text(label, x + 5, y + 2);
+    doc.fontSize(10).fillColor('#000').text(text, x + 5, y + 14, { width: width - 10 });
+    return y + height + 5;
+  };
+
+  const drawSectionTitle = (title, y) => {
+    if (y + 30 + BOTTOM_MARGIN > PAGE_HEIGHT) {
+      doc.addPage();
+      y = START_Y;
+    }
+    doc.rect(marginX, y, 500, 20).fill('#89042e');
+    doc.fillColor('white').fontSize(12).text('  ' + title.toUpperCase(), marginX + 5, y + 5);
+    doc.fillColor('black');
+    return y + 30;
+  };
+
+  // Logo
+  if (fs.existsSync(logoPath)) {
+    doc.image(logoPath, 50, y, { width: 500 });
+    y += 80;
+  }
+
+  // DATOS DEL ALUMNO
+  y = drawSectionTitle('Datos del Alumno', y);
+  y = drawBox('Nombres', alumno.nombres, marginX, y);
+  y = drawBox('Primer Apellido', alumno.primer_apellido, marginX + 260, y);
+  y += GAP_Y;
+  y = drawBox('Segundo Apellido', alumno.segundo_apellido, marginX, y);
+  y = drawBox('CURP', alumno.curp, marginX + 260, y);
+  y += GAP_Y;
+  y = drawBox('Carrera', alumno.carrera, marginX, y);
+  y = drawBox('Periodo Semestral', alumno.periodo_semestral, marginX + 260, y);
+  y += GAP_Y;
+  y = drawBox('Semestre', alumno.semestre, marginX, y);
+  y = drawBox('Grupo', alumno.grupo, marginX + 260, y);
+  y += GAP_Y;
+  y = drawBox('Turno', alumno.turno, marginX, y);
+  y = drawBox('Fecha Nacimiento', alumno.fecha_nacimiento, marginX + 260, y);
+  y += GAP_Y;
+  y = drawBox('Edad', alumno.edad, marginX, y);
+  y = drawBox('Sexo', alumno.sexo, marginX + 260, y);
+  y += GAP_Y;
+  y = drawBox('Estado Nacimiento', alumno.estado_nacimiento, marginX, y);
+  y = drawBox('Municipio Nacimiento', alumno.municipio_nacimiento, marginX + 260, y);
+  y += GAP_Y;
+  y = drawBox('Ciudad Nacimiento', alumno.ciudad_nacimiento, marginX, y);
+  y = drawBox('Estado Civil', alumno.estado_civil, marginX + 260, y);
+  y += GAP_Y;
+  y = drawBox('1ª opción', alumno.primera_opcion, marginX, y);
+  y = drawBox('2ª opción', alumno.segunda_opcion, marginX + 260, y);
+  y += GAP_Y;
+  y = drawBox('3ª opción', alumno.tercera_opcion, marginX, y);
+  y = drawBox('4ª opción', alumno.cuarta_opcion, marginX + 260, y);
+  y += GAP_Y;
+
+  // DATOS GENERALES
+  y = drawSectionTitle('Datos Generales', y);
+  y = drawBox('Colonia', generales.colonia, marginX, y);
+  y = drawBox('Domicilio', generales.domicilio, marginX + 260, y);
+  y += GAP_Y;
+  y = drawBox('Código Postal', generales.codigo_postal, marginX, y);
+  y = drawBox('Teléfono', generales.telefono_alumno, marginX + 260, y);
+  y += GAP_Y;
+  y = drawBox('Correo Electrónico', generales.correo_alumno, marginX, y, 500);
+  y += GAP_Y;
+  y = drawBox('Tipo de Sangre', generales.tipo_sangre, marginX, y);
+  y = drawBox('Paraescolar', generales.paraescolar, marginX + 260, y);
+  y += GAP_Y;
+  y = drawBox('Contacto Emergencia', generales.contacto_emergencia_nombre, marginX, y);
+  y = drawBox('Teléfono Emergencia', generales.contacto_emergencia_telefono, marginX + 260, y);
+  y += GAP_Y;
+  y = drawBox('Lengua Indígena', generales.habla_lengua_indigena?.respuesta, marginX, y);
+  y = drawBox('¿Cuál?', generales.habla_lengua_indigena?.cual, marginX + 260, y);
+  y += GAP_Y;
+  y = drawBox('¿Entrega Diagnóstico?', generales.entrega_diagnostico, marginX, y);
+  y = drawMultilineBox('Detalle Enfermedad', generales.detalle_enfermedad, marginX + 260, y);
+  y += GAP_Y;
+
+  // DATOS MÉDICOS
+  y = drawSectionTitle('Datos Médicos', y);
+  y = drawBox('NSS', medicos.numero_seguro_social, marginX, y);
+  y = drawBox('Unidad Médica Familiar', medicos.unidad_medica_familiar, marginX + 260, y);
+  y += GAP_Y;
+  y = drawBox('¿Tiene enfermedad o alergia?', medicos.enfermedad_cronica_o_alergia?.respuesta, marginX, y);
+  y = drawMultilineBox('Detalle enfermedad o alergia', medicos.enfermedad_cronica_o_alergia?.detalle, marginX + 260, y);
+  y = drawBox('Discapacidad', medicos.discapacidad, marginX, y);
+  y += GAP_Y;
+
+  // SECUNDARIA DE ORIGEN
+  y = drawSectionTitle('Secundaria de Origen', y);
+  y = drawBox('Nombre de la secundaria', secundaria.nombre_secundaria, marginX, y);
+  y = drawBox('Régimen', secundaria.regimen, marginX + 260, y);
+  y += GAP_Y;
+  y = drawBox('Promedio general', secundaria.promedio_general, marginX, y);
+  y = drawBox('Modalidad', secundaria.modalidad, marginX + 260, y);
+  y += GAP_Y;
+
+  // TUTOR RESPONSABLE
+  y = drawSectionTitle('Tutor Responsable', y);
+  y = drawBox('Nombre del padre', tutor.nombre_padre, marginX, y);
+  y = drawBox('Teléfono del padre', tutor.telefono_padre, marginX + 260, y);
+  y += GAP_Y;
+  y = drawBox('Nombre de la madre', tutor.nombre_madre, marginX, y);
+  y = drawBox('Teléfono de la madre', tutor.telefono_madre, marginX + 260, y);
+  y += GAP_Y;
+  y = drawBox('¿Con quién vive?', tutor.vive_con, marginX, y);
+  y += GAP_Y;
+
+  // PERSONA DE EMERGENCIA
+  y = drawSectionTitle('Persona de Emergencia', y);
+  y = drawBox('Nombre', emergencia.nombre, marginX, y);
+  y = drawBox('Parentesco', emergencia.parentesco, marginX + 260, y);
+  y += GAP_Y;
+  y = drawBox('Teléfono', emergencia.telefono, marginX, y);
+  y += GAP_Y;
+
+  // RESPONSABLE DE EMERGENCIA ADICIONAL
+  y = drawSectionTitle('Responsable de Emergencia Adicional', y);
+  y = drawBox('Nombre', generales.responsable_emergencia?.nombre, marginX, y);
+  y = drawBox('Teléfono', generales.responsable_emergencia?.telefono, marginX + 260, y);
+  y += GAP_Y;
+  y = drawBox('Parentesco', generales.responsable_emergencia?.parentesco, marginX, y);
+  y = drawBox('¿Carta Poder?', generales.carta_poder, marginX + 260, y);
+  y += GAP_Y;
+
+  // Footer
+  if (fs.existsSync(footerPath)) {
+    if (y + 100 > PAGE_HEIGHT) {
+      doc.addPage();
+      y = START_Y;
+    }
+    doc.image(footerPath, 50, y, { width: 500 });
+  }
 
   doc.end();
+
+  return new Promise((resolve, reject) => {
+    stream.on('finish', () => resolve(`/pdfs/${nombreArchivo}`));
+    stream.on('error', reject);
+  });
 }
 
 module.exports = generarPDF;
