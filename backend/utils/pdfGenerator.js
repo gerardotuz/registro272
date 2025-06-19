@@ -70,6 +70,5 @@ function generarPDF(datos, nombreArchivo = 'formulario.pdf') {
 module.exports = generarPDF;
 
 
-// ✅ server.js (solo línea clave de pdfs)
-app.use('/pdfs', express.static(path.join(__dirname, 'public/pdfs')));
+
 
