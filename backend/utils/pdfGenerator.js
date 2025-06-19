@@ -1,7 +1,7 @@
 const PDFDocument = require('pdfkit');
 const fs = require('fs');
 const path = require('path');
-const catalogo = require('../../public/data/catalogo.json');
+const catalogo = require('./catalogo.json');
 
 function obtenerTextoDesdeCatalogo(claveEstado, claveMunicipio, claveCiudad) {
   const estado = catalogo.find(e => e.clave === claveEstado);
