@@ -2,7 +2,7 @@ const PDFDocument = require('pdfkit');
 const fs = require('fs');
 const path = require('path');
 
-const catalogoPath = path.resolve(__dirname, './catalogo.json');
+const catalogoPath = path.resolve(__dirname, '../../public/data/catalogo.json');
 const catalogo = JSON.parse(fs.readFileSync(catalogoPath, 'utf8'));
 
 function obtenerNombresDesdeCatalogo(estadoClave, municipioClave, ciudadClave) {
@@ -18,13 +18,7 @@ function obtenerNombresDesdeCatalogo(estadoClave, municipioClave, ciudadClave) {
     ciudad: localidad?.nombre || ''
   };
 }
-// ✅ Estado civil legible
-const estadosCiviles = {
-  "1": "SOLTERO(A)",
-  "2": "CASADO(A)",
-  "3": "DIVORCIADO(A)",
-  "4": "VIUDO(A)"
-};
+
 function generarPDF(datos, nombreArchivo = 'formulario.pdf') {
   const doc = new PDFDocument({ margin: 50, size: 'LETTER' });
   const rutaPDF = path.join(__dirname, '../public/pdfs', nombreArchivo);
@@ -52,7 +46,6 @@ function generarPDF(datos, nombreArchivo = 'formulario.pdf') {
     alumno.municipio_nacimiento,
     alumno.ciudad_nacimiento
   );
-  const estadoCivilTexto = estadosCiviles[String(alumno.estado_civil)] || alumno.estado_civil;
 
   let y = START_Y;
 
