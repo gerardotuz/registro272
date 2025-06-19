@@ -2,7 +2,7 @@ const PDFDocument = require('pdfkit');
 const fs = require('fs');
 const path = require('path');
 
-// Cargar el catálogo desde la misma carpeta 'utils'
+// ✅ Ruta segura para Render
 const catalogoPath = path.resolve(__dirname, './catalogo.json');
 const catalogo = JSON.parse(fs.readFileSync(catalogoPath, 'utf8'));
 
@@ -20,6 +20,7 @@ function obtenerNombresDesdeCatalogo(estadoClave, municipioClave, ciudadClave) {
   };
 }
 
+// ✅ Estado civil legible
 const estadosCiviles = {
   "1": "SOLTERO(A)",
   "2": "CASADO(A)",
