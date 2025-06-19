@@ -28,10 +28,15 @@ router.post('/guardar', async (req, res) => {
       return res.status(400).json({ message: 'Faltan datos obligatorios' });
     }
 
-    const upperCaseData = JSON.parse(JSON.stringify(data), (key, value) =>
-      typeof value === 'string' ? value.toUpperCase() : value
-    );
+    // Convertimos a mayúsculas excepto claves que deben mantenerse
+    const upperCaseData = JSON.parse(JSON.stringify(data), (key, value) => {
+      if (['estado_nacimiento', 'municipio_nacimiento', 'ciudad_nacimiento'].includes(key)) {
+        return value; // No convertir claves
+      }
+      return typeof value === 'string' ? value.toUpperCase() : value;
+    });
 
+    // Validación de paraescolar
     const paraescolar = data.datos_generales?.paraescolar;
     const yaRegistrado = await Alumno.findOne({ folio: data.folio });
 
@@ -49,21 +54,25 @@ router.post('/guardar', async (req, res) => {
       }
     }
 
+    // Convertir estado_civil a número
     const estadoCivilNum = parseInt(data.datos_alumno?.estado_civil);
     if (!isNaN(estadoCivilNum)) {
-      data.datos_alumno.estado_civil = estadoCivilNum;
+      upperCaseData.datos_alumno.estado_civil = estadoCivilNum;
     }
 
+    // Guardar en base de datos
     await Alumno.findOneAndUpdate({ folio: data.folio }, upperCaseData, { upsert: true });
 
+    // Generar PDF
     const datosAnidados = flattenToNested(upperCaseData);
     const nombreArchivo = `${datosAnidados.datos_alumno?.curp || 'formulario'}.pdf`;
-    generarPDF(datosAnidados, nombreArchivo);
+    await generarPDF(datosAnidados, nombreArchivo);
 
     res.status(200).json({
       message: 'Registro exitoso y PDF generado',
       pdf_url: `/pdfs/${nombreArchivo}`
     });
+
   } catch (err) {
     console.error('Error al guardar o generar PDF:', err);
     res.status(500).json({ message: err.message });
@@ -71,3 +80,4 @@ router.post('/guardar', async (req, res) => {
 });
 
 module.exports = router;
+
