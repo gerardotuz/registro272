@@ -19,6 +19,13 @@ function obtenerNombresDesdeCatalogo(estadoClave, municipioClave, ciudadClave) {
   };
 }
 
+const estadosCiviles = {
+  "1": "SOLTERO(A)",
+  "2": "CASADO(A)",
+  "3": "DIVORCIADO(A)",
+  "4": "VIUDO(A)"
+};
+
 function generarPDF(datos, nombreArchivo = 'formulario.pdf') {
   const doc = new PDFDocument({ margin: 50, size: 'LETTER' });
   const rutaPDF = path.join(__dirname, '../public/pdfs', nombreArchivo);
@@ -46,6 +53,8 @@ function generarPDF(datos, nombreArchivo = 'formulario.pdf') {
     alumno.municipio_nacimiento,
     alumno.ciudad_nacimiento
   );
+
+  const estadoCivilTexto = estadosCiviles[String(alumno.estado_civil)] || alumno.estado_civil;
 
   let y = START_Y;
 
@@ -104,7 +113,7 @@ function generarPDF(datos, nombreArchivo = 'formulario.pdf') {
   y = drawBox('Grupo', alumno.grupo, marginX + 260, y);
   y += GAP_Y;
   y = drawBox('Turno', alumno.turno, marginX, y);
-  y = drawBox('Estado Civil', alumno.estado_civil, marginX + 260, y);
+  y = drawBox('Estado Civil', estadoCivilTexto, marginX + 260, y);
   y += GAP_Y;
   y = drawBox('Fecha de Nacimiento', alumno.fecha_nacimiento, marginX, y);
   y = drawBox('Edad', alumno.edad, marginX + 260, y);
@@ -115,6 +124,8 @@ function generarPDF(datos, nombreArchivo = 'formulario.pdf') {
   y = drawBox('Municipio de Nacimiento', municipio, marginX, y);
   y = drawBox('Ciudad de Nacimiento', ciudad, marginX + 260, y);
   y += GAP_Y;
+
+  
 
   y = drawSectionTitle('Datos Generales', y);
   y = drawBox('Colonia', generales.colonia, marginX, y);
@@ -174,7 +185,7 @@ function generarPDF(datos, nombreArchivo = 'formulario.pdf') {
   y = drawBox('¿Carta Poder?', generales.carta_poder, marginX + 260, y);
   y += GAP_Y;
 
-  if (fs.existsSync(footerPath)) {
+   if (fs.existsSync(footerPath)) {
     if (y + 100 > PAGE_HEIGHT) {
       doc.addPage();
       y = START_Y;
