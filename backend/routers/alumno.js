@@ -58,7 +58,7 @@ router.post('/guardar', async (req, res) => {
 
     const datosAnidados = flattenToNested(upperCaseData);
     const nombreArchivo = `${datosAnidados.datos_alumno?.curp || 'formulario'}.pdf`;
-    await generarPDF(datosAnidados, nombreArchivo);
+    generarPDF(datosAnidados, nombreArchivo);
 
     res.status(200).json({
       message: 'Registro exitoso y PDF generado',
@@ -66,34 +66,6 @@ router.post('/guardar', async (req, res) => {
     });
   } catch (err) {
     console.error('Error al guardar o generar PDF:', err);
-    res.status(500).json({ message: err.message });
-  }
-});
-
-router.get('/validar-paraescolar/:nombre', async (req, res) => {
-  try {
-    const nombre = req.params.nombre.toUpperCase();
-    const count = await Alumno.countDocuments({ "datos_generales.paraescolar": nombre });
-    res.json({ count });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
-
-router.post('/cargar-excel', upload.single('archivo'), async (req, res) => {
-  try {
-    const workbook = xlsx.read(req.file.buffer, { type: 'buffer' });
-    const sheetName = workbook.SheetNames[0];
-    const data = xlsx.utils.sheet_to_json(workbook.Sheets[sheetName]);
-
-    for (let row of data) {
-      const alumno = flattenToNested(row);
-      await Alumno.findOneAndUpdate({ folio: alumno.folio }, { $set: alumno }, { upsert: true });
-    }
-
-    res.status(200).json({ message: 'Carga exitosa' });
-  } catch (err) {
-    console.error('Error al procesar Excel:', err);
     res.status(500).json({ message: err.message });
   }
 });
