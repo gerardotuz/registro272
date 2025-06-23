@@ -54,11 +54,17 @@ router.post('/guardar', async (req, res) => {
       }
     }
 
-    // Convertir estado_civil a número
+    // Convertir estado_civil a número si es numérico
     const estadoCivilNum = parseInt(data.datos_alumno?.estado_civil);
     if (!isNaN(estadoCivilNum)) {
       upperCaseData.datos_alumno.estado_civil = estadoCivilNum;
     }
+
+    // Asegurar que las opciones estén definidas
+    upperCaseData.datos_generales.primera_opcion = data.datos_generales.primera_opcion || '';
+    upperCaseData.datos_generales.segunda_opcion = data.datos_generales.segunda_opcion || '';
+    upperCaseData.datos_generales.tercera_opcion = data.datos_generales.tercera_opcion || '';
+    upperCaseData.datos_generales.cuarta_opcion = data.datos_generales.cuarta_opcion || '';
 
     // Guardar en base de datos
     await Alumno.findOneAndUpdate({ folio: data.folio }, upperCaseData, { upsert: true });
@@ -80,4 +86,3 @@ router.post('/guardar', async (req, res) => {
 });
 
 module.exports = router;
-
