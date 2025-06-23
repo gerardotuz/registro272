@@ -47,6 +47,15 @@ function generarPDF(datos, nombreArchivo = 'formulario.pdf') {
     alumno.ciudad_nacimiento
   );
 
+  // 🔄 Corrección: Convertir estado civil numérico a texto si aplica
+  const estadoCivilTexto = {
+    "1": "Soltero",
+    "2": "Casado",
+    "3": "Unión Libre",
+    "4": "Divorciado",
+    "5": "Viudo"
+  }[alumno.estado_civil] || alumno.estado_civil;
+
   let y = START_Y;
 
   const drawBox = (label, value, x, y, width = 240, height = BOX_HEIGHT) => {
@@ -104,7 +113,7 @@ function generarPDF(datos, nombreArchivo = 'formulario.pdf') {
   y = drawBox('Grupo', alumno.grupo, marginX + 260, y);
   y += GAP_Y;
   y = drawBox('Turno', alumno.turno, marginX, y);
-  y = drawBox('Estado Civil', alumno.estado_civil, marginX + 260, y);
+  y = drawBox('Estado Civil', estadoCivilTexto, marginX + 260, y);  // ← aquí corregido
   y += GAP_Y;
   y = drawBox('Fecha de Nacimiento', alumno.fecha_nacimiento, marginX, y);
   y = drawBox('Edad', alumno.edad, marginX + 260, y);
