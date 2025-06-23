@@ -57,11 +57,7 @@ document.addEventListener('DOMContentLoaded', () => {
         estado_nacimiento: formData.get('estado_nacimiento'),
         municipio_nacimiento: formData.get('municipio_nacimiento'),
         ciudad_nacimiento: formData.get('ciudad_nacimiento'),
-        estado_civil: formData.get('estado_civil'),
-        primera_opcion: formData.get('primera_opcion'),
-        segunda_opcion: formData.get('segunda_opcion'),
-        tercera_opcion: formData.get('tercera_opcion'),
-        cuarta_opcion: formData.get('cuarta_opcion')
+        estado_civil: formData.get('estado_civil')
       },
       datos_generales: {
         colonia: formData.get('colonia'),
@@ -84,7 +80,11 @@ document.addEventListener('DOMContentLoaded', () => {
           telefono: formData.get('responsable_emergencia_telefono'),
           parentesco: formData.get('responsable_emergencia_parentesco')
         },
-        carta_poder: formData.get('carta_poder')
+        carta_poder: formData.get('carta_poder'),
+        primera_opcion: formData.get('primera_opcion'),
+        segunda_opcion: formData.get('segunda_opcion'),
+        tercera_opcion: formData.get('tercera_opcion'),
+        cuarta_opcion: formData.get('cuarta_opcion')
       },
       datos_medicos: {
         numero_seguro_social: formData.get('numero_seguro_social'),
@@ -133,7 +133,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const result = await res.json();
     if (res.ok) {
       alert('Registro guardado con éxito');
-      window.open(result.pdf_url, '_blank'); // ✅ Usa la URL real del PDF
+      window.open(result.pdf_url, '_blank');
     } else {
       alert(result.message || 'Error al guardar');
     }
@@ -177,8 +177,6 @@ function consultarFolioYAutocompletar() {
 }
 
 function cargarCatalogo() {
-  console.log('🚀 Ejecutando cargarCatalogo()');
-
   fetch('/data/catalogo.json')
     .then(res => res.json())
     .then(data => {
