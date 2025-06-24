@@ -157,7 +157,7 @@ function generarPDF(datos, nombreArchivo = 'formulario.pdf') {
   y += GAP_Y;
 
   // NUEVO BLOQUE
-  y = drawSectionTitle('Lugar de Nacimiento en Datos Generales', y);
+  y = drawSectionTitle('Estado de Residencia', y);
   y = drawBox('Estado (General)', lugarGeneral.estado, marginX, y);
   y = drawBox('Municipio (General)', lugarGeneral.municipio, marginX + 260, y);
   y += GAP_Y;
