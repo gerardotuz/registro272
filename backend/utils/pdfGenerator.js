@@ -35,7 +35,8 @@ function generarPDF(datos, nombreArchivo = 'formulario.pdf') {
   const footerPath = path.join(__dirname, '../public/images/firma_footer.png');
 
   const PAGE_HEIGHT = doc.page.height;
-  const BOTTOM_MARGIN = 120;
+  const FOOTER_HEIGHT = 70;
+  const BOTTOM_MARGIN = 90;
   const START_Y = 50;
   const BOX_HEIGHT = 30;
   const GAP_Y = 35;
@@ -48,17 +49,14 @@ function generarPDF(datos, nombreArchivo = 'formulario.pdf') {
   );
 
   const estadoCivilTexto = {
-    "1": "Soltero",
-    "2": "Casado",
-    "3": "Unión Libre",
-    "4": "Divorciado",
-    "5": "Viudo"
+    "1": "Soltero", "2": "Casado", "3": "Unión Libre", "4": "Divorciado", "5": "Viudo"
   }[alumno.estado_civil] || alumno.estado_civil;
 
   let y = START_Y;
 
   const drawBox = (label, value, x, y, width = 240, height = BOX_HEIGHT) => {
     if (y + height + BOTTOM_MARGIN > PAGE_HEIGHT) {
+      drawFooterAndPageNumber();
       doc.addPage();
       y = START_Y;
     }
@@ -73,6 +71,7 @@ function generarPDF(datos, nombreArchivo = 'formulario.pdf') {
     const textHeight = doc.heightOfString(text, { width: width - 10 });
     const height = textHeight + 24;
     if (y + height + BOTTOM_MARGIN > PAGE_HEIGHT) {
+      drawFooterAndPageNumber();
       doc.addPage();
       y = START_Y;
     }
@@ -84,6 +83,7 @@ function generarPDF(datos, nombreArchivo = 'formulario.pdf') {
 
   const drawSectionTitle = (title, y) => {
     if (y + 30 + BOTTOM_MARGIN > PAGE_HEIGHT) {
+      drawFooterAndPageNumber();
       doc.addPage();
       y = START_Y;
     }
@@ -93,115 +93,93 @@ function generarPDF(datos, nombreArchivo = 'formulario.pdf') {
     return y + 30;
   };
 
+  const drawFooterAndPageNumber = () => {
+    const footerY = PAGE_HEIGHT - FOOTER_HEIGHT + 10;
+    if (fs.existsSync(footerPath)) {
+      doc.image(footerPath, 50, footerY - 30, { width: 500 });
+    }
+  };
+
   if (fs.existsSync(logoPath)) {
     doc.image(logoPath, 50, y, { width: 500 });
     y += 80;
   }
 
-  // === SECCIONES DEL FORMULARIO ===
+  // ==== FORMULARIO ====
   y = drawSectionTitle('Datos del Alumno', y);
   y = drawBox('Nombres', alumno.nombres, marginX, y);
-  y = drawBox('Primer Apellido', alumno.primer_apellido, marginX + 260, y);
-  y += GAP_Y;
+  y = drawBox('Primer Apellido', alumno.primer_apellido, marginX + 260, y); y += GAP_Y;
   y = drawBox('Segundo Apellido', alumno.segundo_apellido, marginX, y);
-  y = drawBox('CURP', alumno.curp, marginX + 260, y);
-  y += GAP_Y;
+  y = drawBox('CURP', alumno.curp, marginX + 260, y); y += GAP_Y;
   y = drawBox('Carrera', alumno.carrera, marginX, y);
-  y = drawBox('Periodo Semestral', alumno.periodo_semestral, marginX + 260, y);
-  y += GAP_Y;
+  y = drawBox('Periodo Semestral', alumno.periodo_semestral, marginX + 260, y); y += GAP_Y;
   y = drawBox('Semestre', alumno.semestre, marginX, y);
-  y = drawBox('Grupo', alumno.grupo, marginX + 260, y);
-  y += GAP_Y;
+  y = drawBox('Grupo', alumno.grupo, marginX + 260, y); y += GAP_Y;
   y = drawBox('Turno', alumno.turno, marginX, y);
-  y = drawBox('Estado Civil', estadoCivilTexto, marginX + 260, y);
-  y += GAP_Y;
+  y = drawBox('Estado Civil', estadoCivilTexto, marginX + 260, y); y += GAP_Y;
   y = drawBox('Fecha de Nacimiento', alumno.fecha_nacimiento, marginX, y);
-  y = drawBox('Edad', alumno.edad, marginX + 260, y);
-  y += GAP_Y;
+  y = drawBox('Edad', alumno.edad, marginX + 260, y); y += GAP_Y;
   y = drawBox('Sexo', alumno.sexo, marginX, y);
-  y = drawBox('Estado de Nacimiento', estado, marginX + 260, y);
-  y += GAP_Y;
+  y = drawBox('Estado de Nacimiento', estado, marginX + 260, y); y += GAP_Y;
   y = drawBox('Municipio de Nacimiento', municipio, marginX, y);
-  y = drawBox('Ciudad de Nacimiento', ciudad, marginX + 260, y);
-  y += GAP_Y;
+  y = drawBox('Ciudad de Nacimiento', ciudad, marginX + 260, y); y += GAP_Y;
 
   y = drawSectionTitle('Datos Generales', y);
   y = drawBox('Colonia', generales.colonia, marginX, y);
-  y = drawBox('Domicilio', generales.domicilio, marginX + 260, y);
-  y += GAP_Y;
+  y = drawBox('Domicilio', generales.domicilio, marginX + 260, y); y += GAP_Y;
   y = drawBox('Código Postal', generales.codigo_postal, marginX, y);
-  y = drawBox('Teléfono', generales.telefono_alumno, marginX + 260, y);
-  y += GAP_Y;
-  y = drawBox('Correo Electrónico', generales.correo_alumno, marginX, y, 500);
-  y += GAP_Y;
+  y = drawBox('Teléfono', generales.telefono_alumno, marginX + 260, y); y += GAP_Y;
+  y = drawBox('Correo Electrónico', generales.correo_alumno, marginX, y, 500); y += GAP_Y;
   y = drawBox('Tipo de Sangre', generales.tipo_sangre, marginX, y);
-  y = drawBox('Paraescolar', generales.paraescolar, marginX + 260, y);
-  y += GAP_Y;
+  y = drawBox('Paraescolar', generales.paraescolar, marginX + 260, y); y += GAP_Y;
   y = drawBox('Primera Opción', generales.primera_opcion, marginX, y);
-  y = drawBox('Segunda Opción', generales.segunda_opcion, marginX + 260, y);
-  y += GAP_Y;
+  y = drawBox('Segunda Opción', generales.segunda_opcion, marginX + 260, y); y += GAP_Y;
   y = drawBox('Tercera Opción', generales.tercera_opcion, marginX, y);
-  y = drawBox('Cuarta Opción', generales.cuarta_opcion, marginX + 260, y);
-  y += GAP_Y;
+  y = drawBox('Cuarta Opción', generales.cuarta_opcion, marginX + 260, y); y += GAP_Y;
   y = drawBox('¿Entrega Diagnóstico?', generales.entrega_diagnostico, marginX, y);
-  y = drawMultilineBox('Detalle Enfermedad', generales.detalle_enfermedad, marginX + 260, y);
-  y += GAP_Y;
+  y = drawMultilineBox('Detalle Enfermedad', generales.detalle_enfermedad, marginX + 260, y); y += GAP_Y;
   y = drawBox('Lengua Indígena', generales.habla_lengua_indigena?.respuesta, marginX, y);
-  y = drawBox('¿Cuál?', generales.habla_lengua_indigena?.cual, marginX + 260, y);
-  y += GAP_Y;
+  y = drawBox('¿Cuál?', generales.habla_lengua_indigena?.cual, marginX + 260, y); y += GAP_Y;
 
   y = drawSectionTitle('Datos Médicos', y);
   y = drawBox('NSS', medicos.numero_seguro_social, marginX, y);
-  y = drawBox('Unidad Médica', medicos.unidad_medica_familiar, marginX + 260, y);
-  y += GAP_Y;
+  y = drawBox('Unidad Médica', medicos.unidad_medica_familiar, marginX + 260, y); y += GAP_Y;
   y = drawBox('¿Alergia o Enfermedad?', medicos.enfermedad_cronica_o_alergia?.respuesta, marginX, y);
   y = drawMultilineBox('Detalle', medicos.enfermedad_cronica_o_alergia?.detalle, marginX + 260, y);
-  y = drawBox('Discapacidad', medicos.discapacidad, marginX, y);
-  y += GAP_Y;
+  y = drawBox('Discapacidad', medicos.discapacidad, marginX, y); y += GAP_Y;
 
   y = drawSectionTitle('Secundaria de Origen', y);
   y = drawBox('Nombre', secundaria.nombre_secundaria, marginX, y);
-  y = drawBox('Régimen', secundaria.regimen, marginX + 260, y);
-  y += GAP_Y;
+  y = drawBox('Régimen', secundaria.regimen, marginX + 260, y); y += GAP_Y;
   y = drawBox('Promedio', secundaria.promedio_general, marginX, y);
-  y = drawBox('Modalidad', secundaria.modalidad, marginX + 260, y);
-  y += GAP_Y;
+  y = drawBox('Modalidad', secundaria.modalidad, marginX + 260, y); y += GAP_Y;
 
   y = drawSectionTitle('Tutor Responsable', y);
   y = drawBox('Padre', tutor.nombre_padre, marginX, y);
-  y = drawBox('Tel. Padre', tutor.telefono_padre, marginX + 260, y);
-  y += GAP_Y;
+  y = drawBox('Tel. Padre', tutor.telefono_padre, marginX + 260, y); y += GAP_Y;
   y = drawBox('Madre', tutor.nombre_madre, marginX, y);
-  y = drawBox('Tel. Madre', tutor.telefono_madre, marginX + 260, y);
-  y += GAP_Y;
-  y = drawBox('Vive con', tutor.vive_con, marginX, y);
-  y += GAP_Y;
+  y = drawBox('Tel. Madre', tutor.telefono_madre, marginX + 260, y); y += GAP_Y;
+  y = drawBox('Vive con', tutor.vive_con, marginX, y); y += GAP_Y;
   y = drawBox('Emergencia Adicional', generales.responsable_emergencia?.nombre, marginX, y);
-  y = drawBox('Teléfono', generales.responsable_emergencia?.telefono, marginX + 260, y);
-  y += GAP_Y;
+  y = drawBox('Teléfono', generales.responsable_emergencia?.telefono, marginX + 260, y); y += GAP_Y;
   y = drawBox('Parentesco', generales.responsable_emergencia?.parentesco, marginX, y);
-  y = drawBox('¿Carta Poder?', generales.carta_poder, marginX + 260, y);
-  y += GAP_Y;
+  y = drawBox('¿Carta Poder?', generales.carta_poder, marginX + 260, y); y += GAP_Y;
 
-  // === PIE DE PÁGINA CON FOOTER Y NÚMERO ===
-  const range = doc.bufferedPageRange();
-  for (let i = range.start; i < range.start + range.count; i++) {
+  // Último pie y paginación
+  drawFooterAndPageNumber();
+
+  const pageRange = doc.bufferedPageRange();
+  for (let i = 0; i < pageRange.count; i++) {
     doc.switchToPage(i);
-
-    if (fs.existsSync(footerPath)) {
-      doc.image(footerPath, 50, PAGE_HEIGHT - 90, { width: 500 });
-    }
-
     doc.fontSize(8)
       .fillColor('gray')
-      .text(`Página ${i + 1} de ${range.count}`, 0, PAGE_HEIGHT - 20, {
+      .text(`Página ${i + 1} de ${pageRange.count}`, 0, PAGE_HEIGHT - 10, {
         align: 'center',
         width: doc.page.width
       });
   }
 
   doc.end();
-
   return new Promise((resolve, reject) => {
     stream.on('finish', () => resolve(`/pdfs/${nombreArchivo}`));
     stream.on('error', reject);
