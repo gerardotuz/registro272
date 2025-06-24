@@ -9,8 +9,8 @@ function obtenerNombresDesdeCatalogo(estadoClave, municipioClave, ciudadClave) {
   const estado = catalogo.find(e => e.clave === estadoClave);
   if (!estado) return { estado: '', municipio: '', ciudad: '' };
 
-  const municipio = estado.municipios.find(m => m.nombre === municipioClave || m.clave === municipioClave);
-  const localidad = municipio?.localidades?.find(l => l.nombre === ciudadClave || l.clave === ciudadClave);
+  const municipio = estado.municipios.find(m => m.clave === municipioClave || m.nombre === municipioClave);
+  const localidad = municipio?.localidades?.find(l => l.clave === ciudadClave || l.nombre === ciudadClave);
 
   return {
     estado: estado.nombre || '',
@@ -48,7 +48,11 @@ function generarPDF(datos, nombreArchivo = 'formulario.pdf') {
   );
 
   const estadoCivilTexto = {
-    "1": "Soltero", "2": "Casado", "3": "Unión Libre", "4": "Divorciado", "5": "Viudo"
+    "1": "Soltero",
+    "2": "Casado",
+    "3": "Unión Libre",
+    "4": "Divorciado",
+    "5": "Viudo"
   }[alumno.estado_civil] || alumno.estado_civil;
 
   let y = START_Y;
@@ -94,7 +98,7 @@ function generarPDF(datos, nombreArchivo = 'formulario.pdf') {
     y += 80;
   }
 
-  // Secciones del PDF
+  // SECCIONES DEL FORMULARIO
   y = drawSectionTitle('Datos del Alumno', y);
   y = drawBox('Nombres', alumno.nombres, marginX, y);
   y = drawBox('Primer Apellido', alumno.primer_apellido, marginX + 260, y);
@@ -187,13 +191,13 @@ function generarPDF(datos, nombreArchivo = 'formulario.pdf') {
     doc.image(footerPath, 50, y, { width: 500 });
   }
 
-  // ✔ Pie de página con número de página
+  // PIE DE PÁGINA CON NÚMERO DE PÁGINA
   const totalPaginas = doc.bufferedPageRange().count;
   for (let i = 0; i < totalPaginas; i++) {
     doc.switchToPage(i);
     doc.fontSize(8)
        .fillColor('gray')
-       .text(`Página ${i + 1} de ${totalPaginas}`, 50, doc.page.height - 40, {
+       .text(`Página ${i + 1} de ${totalPaginas}`, 50, PAGE_HEIGHT - 30, {
          align: 'center',
          width: doc.page.width - 100
        });
