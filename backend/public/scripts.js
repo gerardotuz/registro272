@@ -39,14 +39,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!folio) return alert('Folio perdido');
 
     const formData = new FormData(e.target);
-
-    const estadoSelect = document.getElementById('estado_nacimiento');
-    const municipioSelect = document.getElementById('municipio_nacimiento');
-    const ciudadSelect = document.getElementById('ciudad_nacimiento');
-
-    const estadoClave = estadoSelect.selectedOptions[0]?.dataset.clave || formData.get('estado_nacimiento');
-    const municipioClave = municipioSelect.selectedOptions[0]?.dataset.clave || formData.get('municipio_nacimiento');
-    const ciudadClave = ciudadSelect.selectedOptions[0]?.dataset.clave || formData.get('ciudad_nacimiento');
+    const estadoClave = document.getElementById('estado_nacimiento').selectedOptions[0]?.dataset.clave;
+    const municipioClave = document.getElementById('municipio_nacimiento').selectedOptions[0]?.dataset.clave;
+    const ciudadClave = document.getElementById('ciudad_nacimiento').selectedOptions[0]?.dataset.clave;
 
     const nuevoRegistro = {
       folio,
@@ -142,11 +137,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const result = await res.json();
     if (res.ok) {
-      alert('Registro guardado con éxito');
+      alert('✅ Registro guardado con éxito');
       window.open(result.pdf_url, '_blank');
-      deshabilitarFormulario(); // 🔒 bloquear después del registro
+      deshabilitarFormulario();
     } else {
-      alert(result.message || 'Error al guardar');
+      alert(result.message || '❌ Error al guardar');
     }
   });
 });
@@ -156,9 +151,9 @@ function deshabilitarFormulario() {
   Array.from(form.elements).forEach(el => {
     el.disabled = true;
   });
-  const aviso = document.getElementById('registro-bloqueado');
-  if (aviso) aviso.style.display = 'block';
+  alert('🛑 Este folio ya tiene un registro completado. Solo puedes visualizarlo.');
 }
+
 function cargarCatalogo() {
   fetch('/data/catalogo.json')
     .then(res => res.json())
@@ -218,6 +213,7 @@ function cargarCatalogo() {
     })
     .catch(err => console.error('❌ Error cargando catálogo:', err));
 }
+
 function consultarFolioYAutocompletar() {
   const folio = localStorage.getItem('alumnoFolio');
   if (!folio) return;
@@ -231,20 +227,16 @@ function consultarFolioYAutocompletar() {
             const input = document.querySelector(`[name="${campo}"]`);
             if (input) input.value = valor;
           }
-        } else {
-          const input = document.querySelector(`[name="${seccion}"]`);
-          if (input) input.value = valores;
         }
       }
 
+      // Asegurar selección de estado → municipio → ciudad
       setTimeout(() => {
         document.getElementById('estado_nacimiento').value = data.datos_alumno.estado_nacimiento;
         document.getElementById('estado_nacimiento').dispatchEvent(new Event('change'));
-
         setTimeout(() => {
           document.getElementById('municipio_nacimiento').value = data.datos_alumno.municipio_nacimiento;
           document.getElementById('municipio_nacimiento').dispatchEvent(new Event('change'));
-
           setTimeout(() => {
             document.getElementById('ciudad_nacimiento').value = data.datos_alumno.ciudad_nacimiento;
           }, 300);
