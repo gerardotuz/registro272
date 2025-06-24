@@ -98,7 +98,7 @@ function generarPDF(datos, nombreArchivo = 'formulario.pdf') {
     y += 80;
   }
 
-  // SECCIONES DEL FORMULARIO
+  // Secciones del formulario
   y = drawSectionTitle('Datos del Alumno', y);
   y = drawBox('Nombres', alumno.nombres, marginX, y);
   y = drawBox('Primer Apellido', alumno.primer_apellido, marginX + 260, y);
@@ -183,6 +183,7 @@ function generarPDF(datos, nombreArchivo = 'formulario.pdf') {
   y = drawBox('¿Carta Poder?', generales.carta_poder, marginX + 260, y);
   y += GAP_Y;
 
+  // Pie con imagen si hay espacio
   if (fs.existsSync(footerPath)) {
     if (y + 100 > PAGE_HEIGHT) {
       doc.addPage();
@@ -191,21 +192,21 @@ function generarPDF(datos, nombreArchivo = 'formulario.pdf') {
     doc.image(footerPath, 50, y, { width: 500 });
   }
 
-// PIE DE PÁGINA CON NÚMERO DE PÁGINA
-const pageRange = doc.bufferedPageRange(); // { start: 0, count: N }
+  // === Pie de página con número de página ===
+  const pageRange = doc.bufferedPageRange(); // { start: 0, count: N }
 
-for (let i = pageRange.start; i < pageRange.start + pageRange.count; i++) {
-  doc.switchToPage(i);
-  doc.fontSize(8)
-    .fillColor('gray')
-    .text(`Página ${i + 1} de ${pageRange.count}`, 50, doc.page.height - 40, {
-      width: doc.page.width - 100,
-      align: 'center'
-    });
-}
-
+  for (let i = pageRange.start; i < pageRange.start + pageRange.count; i++) {
+    doc.switchToPage(i);
+    doc.fontSize(8)
+      .fillColor('gray')
+      .text(`Página ${i + 1} de ${pageRange.count}`, 50, doc.page.height - 40, {
+        align: 'center',
+        width: doc.page.width - 100
+      });
+  }
 
   doc.end();
+
   return new Promise((resolve, reject) => {
     stream.on('finish', () => resolve(`/pdfs/${nombreArchivo}`));
     stream.on('error', reject);
