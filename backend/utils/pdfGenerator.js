@@ -192,16 +192,18 @@ function generarPDF(datos, nombreArchivo = 'formulario.pdf') {
   }
 
   // PIE DE PÁGINA CON NÚMERO DE PÁGINA
-  const totalPaginas = doc.bufferedPageRange().count;
-  for (let i = 0; i < totalPaginas; i++) {
-    doc.switchToPage(i);
-    doc.fontSize(8)
-       .fillColor('gray')
-       .text(`Página ${i + 1} de ${totalPaginas}`, 50, PAGE_HEIGHT - 30, {
-         align: 'center',
-         width: doc.page.width - 100
-       });
-  }
+ const range = doc.bufferedPageRange(); // { start: 0, count: N }
+
+for (let i = range.start; i < range.start + range.count; i++) {
+  doc.switchToPage(i);
+  doc.fontSize(8)
+     .fillColor('gray')
+     .text(`Página ${i + 1} de ${range.count}`, 0, doc.page.height - 30, {
+       align: 'center',
+       width: doc.page.width
+     });
+}
+
 
   doc.end();
   return new Promise((resolve, reject) => {
