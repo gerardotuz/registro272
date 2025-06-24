@@ -6,42 +6,41 @@ require('dotenv').config();
 
 const app = express();
 
-// ✅ CORS con origen específico
+// ✅ CORS
 const corsOptions = {
-  origin: 'https://registro272.onrender.com', // sin la barra final
+  origin: 'https://registro272.onrender.com',
   methods: ['GET', 'POST'],
   credentials: true
 };
-app.use(cors(corsOptions)); // ✅ SÓLO este
+app.use(cors(corsOptions));
 
-// Middleware
+// ✅ Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// ✅ Archivos estáticos (debe ir antes que las rutas)
+app.use(express.static(path.join(__dirname, 'public')));
 app.use('/pdfs', express.static(path.join(__dirname, 'public/pdfs')));
 
-// Rutas
+// ✅ Rutas API
 app.use('/api', require('./routers/alumno.js'));
 app.use('/api', require('./routers/auth.js'));
-app.use('/api', require('./routers/grupo.js')); // ✅ NUEVA RUTA PARA GRUPOS
+app.use('/api', require('./routers/grupo.js'));
 
-// Conexión a MongoDB
+// ✅ MongoDB
 mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true
 }).then(() => console.log('✅ Conectado a MongoDB Atlas'))
   .catch(err => console.error('❌ Error en la conexión', err));
 
-// Middleware para servir archivos estáticos
-app.use(express.static(path.join(__dirname, 'public')));
-
-// Ruta por defecto
+// ✅ Catch-all final (debe ir al final)
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// Puerto
+// ✅ Puerto
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`🚀 Servidor escuchando en puerto ${PORT}`);
 });
-
