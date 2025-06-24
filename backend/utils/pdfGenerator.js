@@ -35,7 +35,7 @@ function generarPDF(datos, nombreArchivo = 'formulario.pdf') {
   const footerPath = path.join(__dirname, '../public/images/firma_footer.png');
 
   const PAGE_HEIGHT = doc.page.height;
-  const BOTTOM_MARGIN = 80;
+  const BOTTOM_MARGIN = 120;
   const START_Y = 50;
   const BOX_HEIGHT = 30;
   const GAP_Y = 35;
@@ -93,13 +93,12 @@ function generarPDF(datos, nombreArchivo = 'formulario.pdf') {
     return y + 30;
   };
 
-  // ENCABEZADO
   if (fs.existsSync(logoPath)) {
     doc.image(logoPath, 50, y, { width: 500 });
     y += 80;
   }
 
-  // SECCIONES
+  // === SECCIONES DEL FORMULARIO ===
   y = drawSectionTitle('Datos del Alumno', y);
   y = drawBox('Nombres', alumno.nombres, marginX, y);
   y = drawBox('Primer Apellido', alumno.primer_apellido, marginX + 260, y);
@@ -184,25 +183,20 @@ function generarPDF(datos, nombreArchivo = 'formulario.pdf') {
   y = drawBox('¿Carta Poder?', generales.carta_poder, marginX + 260, y);
   y += GAP_Y;
 
-  // PIE CON IMAGEN
-  if (fs.existsSync(footerPath)) {
-    if (y + 100 > PAGE_HEIGHT) {
-      doc.addPage();
-      y = START_Y;
-    }
-    doc.image(footerPath, 50, y, { width: 500 });
-  }
-
-  // === PIE DE PÁGINA CON NÚMERO DE PÁGINA ===
-  doc.flushPages(); // Asegura que se carguen todas las páginas
+  // === PIE DE PÁGINA CON FOOTER Y NÚMERO ===
   const range = doc.bufferedPageRange();
-
   for (let i = range.start; i < range.start + range.count; i++) {
     doc.switchToPage(i);
-    doc.fontSize(8).fillColor('gray')
-      .text(`Página ${i + 1} de ${range.count}`, 50, doc.page.height - 40, {
+
+    if (fs.existsSync(footerPath)) {
+      doc.image(footerPath, 50, PAGE_HEIGHT - 90, { width: 500 });
+    }
+
+    doc.fontSize(8)
+      .fillColor('gray')
+      .text(`Página ${i + 1} de ${range.count}`, 0, PAGE_HEIGHT - 20, {
         align: 'center',
-        width: doc.page.width - 100
+        width: doc.page.width
       });
   }
 
