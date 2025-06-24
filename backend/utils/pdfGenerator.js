@@ -20,7 +20,7 @@ function obtenerNombresDesdeCatalogo(estadoClave, municipioClave, ciudadClave) {
 }
 
 function generarPDF(datos, nombreArchivo = 'formulario.pdf') {
- const doc = new PDFDocument({ size: 'A4', margin: 50, bufferPages: true });
+  const doc = new PDFDocument({ size: 'A4', margin: 50, bufferPages: true });
   const rutaPDF = path.join(__dirname, '../public/pdfs', nombreArchivo);
   const stream = fs.createWriteStream(rutaPDF);
   doc.pipe(stream);
@@ -47,13 +47,8 @@ function generarPDF(datos, nombreArchivo = 'formulario.pdf') {
     alumno.ciudad_nacimiento
   );
 
-  // 🔄 Corrección: Convertir estado civil numérico a texto si aplica
   const estadoCivilTexto = {
-    "1": "Soltero",
-    "2": "Casado",
-    "3": "Unión Libre",
-    "4": "Divorciado",
-    "5": "Viudo"
+    "1": "Soltero", "2": "Casado", "3": "Unión Libre", "4": "Divorciado", "5": "Viudo"
   }[alumno.estado_civil] || alumno.estado_civil;
 
   let y = START_Y;
@@ -99,6 +94,7 @@ function generarPDF(datos, nombreArchivo = 'formulario.pdf') {
     y += 80;
   }
 
+  // Secciones del PDF
   y = drawSectionTitle('Datos del Alumno', y);
   y = drawBox('Nombres', alumno.nombres, marginX, y);
   y = drawBox('Primer Apellido', alumno.primer_apellido, marginX + 260, y);
@@ -113,7 +109,7 @@ function generarPDF(datos, nombreArchivo = 'formulario.pdf') {
   y = drawBox('Grupo', alumno.grupo, marginX + 260, y);
   y += GAP_Y;
   y = drawBox('Turno', alumno.turno, marginX, y);
-  y = drawBox('Estado Civil', estadoCivilTexto, marginX + 260, y);  // ← aquí corregido
+  y = drawBox('Estado Civil', estadoCivilTexto, marginX + 260, y);
   y += GAP_Y;
   y = drawBox('Fecha de Nacimiento', alumno.fecha_nacimiento, marginX, y);
   y = drawBox('Edad', alumno.edad, marginX + 260, y);
@@ -190,18 +186,18 @@ function generarPDF(datos, nombreArchivo = 'formulario.pdf') {
     }
     doc.image(footerPath, 50, y, { width: 500 });
   }
-// === Agregar pie de página con número de página ===
-const totalPaginas = doc.bufferedPageRange().count;
 
-for (let i = 0; i < totalPaginas; i++) {
-  doc.switchToPage(i);
-  doc.fontSize(8)
-     .fillColor('gray')
-     .text(`Página ${i + 1} de ${totalPaginas}`, 50, doc.page.height - 40, {
-       align: 'center',
-       width: doc.page.width - 100
-     });
-}
+  // ✔ Pie de página con número de página
+  const totalPaginas = doc.bufferedPageRange().count;
+  for (let i = 0; i < totalPaginas; i++) {
+    doc.switchToPage(i);
+    doc.fontSize(8)
+       .fillColor('gray')
+       .text(`Página ${i + 1} de ${totalPaginas}`, 50, doc.page.height - 40, {
+         align: 'center',
+         width: doc.page.width - 100
+       });
+  }
 
   doc.end();
   return new Promise((resolve, reject) => {
