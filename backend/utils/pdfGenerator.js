@@ -183,7 +183,7 @@ function generarPDF(datos, nombreArchivo = 'formulario.pdf') {
   y = drawBox('¿Carta Poder?', generales.carta_poder, marginX + 260, y);
   y += GAP_Y;
 
-  // Pie con imagen si hay espacio
+  // Firma o pie si hay espacio
   if (fs.existsSync(footerPath)) {
     if (y + 100 > PAGE_HEIGHT) {
       doc.addPage();
@@ -192,16 +192,15 @@ function generarPDF(datos, nombreArchivo = 'formulario.pdf') {
     doc.image(footerPath, 50, y, { width: 500 });
   }
 
-  // === Pie de página con número de página ===
-  const pageRange = doc.bufferedPageRange(); // { start: 0, count: N }
-
+  // === Pie de página con número de página (CENTRADO, SIN PÁGINAS EN BLANCO) ===
+  const pageRange = doc.bufferedPageRange();
   for (let i = pageRange.start; i < pageRange.start + pageRange.count; i++) {
     doc.switchToPage(i);
     doc.fontSize(8)
       .fillColor('gray')
-      .text(`Página ${i + 1} de ${pageRange.count}`, 50, doc.page.height - 40, {
+      .text(`Página ${i + 1} de ${pageRange.count}`, 0, doc.page.height - 30, {
         align: 'center',
-        width: doc.page.width - 100
+        width: doc.page.width
       });
   }
 
