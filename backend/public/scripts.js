@@ -9,7 +9,22 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('registroForm').addEventListener('submit', async (e) => {
     e.preventDefault();
 
-    const camposObligatorios = [/* lista igual a la que tú usas */];
+    const camposObligatorios = [
+      'nombres','primer_apellido','segundo_apellido','curp','carrera',
+      'periodo_semestral','semestre','turno','fecha_nacimiento','edad','sexo',
+      'estado_nacimiento','municipio_nacimiento','ciudad_nacimiento','estado_civil',
+      'primera_opcion','segunda_opcion','tercera_opcion','cuarta_opcion',
+      'colonia','domicilio','codigo_postal','telefono_alumno','correo_alumno',
+      'tipo_sangre','contacto_emergencia_nombre','contacto_emergencia_telefono',
+      'habla_lengua_indigena_respuesta','numero_seguro_social','unidad_medica_familiar',
+      'enfermedad_cronica_o_alergia_respuesta','enfermedad_cronica_o_alergia_detalle',
+      'discapacidad','entrega_diagnostico','detalle_enfermedad',
+      'nombre_secundaria','regimen','promedio_general','modalidad',
+      'nombre_padre','telefono_padre','nombre_madre','telefono_madre',
+      'vive_con','persona_emergencia_nombre','persona_emergencia_parentesco','persona_emergencia_telefono',
+      'responsable_emergencia_nombre','responsable_emergencia_telefono','responsable_emergencia_parentesco','carta_poder',
+      'paraescolar'
+    ];
 
     for (const campo of camposObligatorios) {
       const input = document.querySelector(`[name="${campo}"]`);
@@ -129,11 +144,20 @@ document.addEventListener('DOMContentLoaded', () => {
     if (res.ok) {
       alert('Registro guardado con éxito');
       window.open(result.pdf_url, '_blank');
+      deshabilitarFormulario(); // 🔒 bloquear después del registro
     } else {
       alert(result.message || 'Error al guardar');
     }
   });
 });
+
+function deshabilitarFormulario() {
+  const form = document.getElementById('registroForm');
+  Array.from(form.elements).forEach(el => {
+    el.disabled = true;
+  });
+  alert('🛑 Ya no puedes modificar este formulario. El registro está finalizado.');
+}
 
 function cargarCatalogo() {
   fetch('/data/catalogo.json')
@@ -202,6 +226,10 @@ function consultarFolioYAutocompletar() {
   fetch(`${BASE_URL}/api/folio/${folio}`)
     .then(res => res.json())
     .then(data => {
+      if (data.registro_completado) {
+        deshabilitarFormulario(); // 🔒 bloquear si ya está registrado
+      }
+
       for (const [seccion, valores] of Object.entries(data)) {
         if (typeof valores === 'object') {
           for (const [campo, valor] of Object.entries(valores)) {
