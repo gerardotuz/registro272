@@ -4,6 +4,7 @@ const BASE_URL = window.location.origin.includes('localhost')
 
 document.addEventListener('DOMContentLoaded', () => {
   cargarCatalogo();
+  cargarCatalogoGeneral();
   consultarFolioYAutocompletar();
 
   document.getElementById('registroForm').addEventListener('submit', async (e) => {
@@ -42,6 +43,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const estadoClave = document.getElementById('estado_nacimiento').selectedOptions[0]?.dataset.clave;
     const municipioClave = document.getElementById('municipio_nacimiento').selectedOptions[0]?.dataset.clave;
     const ciudadClave = document.getElementById('ciudad_nacimiento').selectedOptions[0]?.dataset.clave;
+
+    const estadoClaveG = document.getElementById('estado_nacimiento_general').selectedOptions[0]?.dataset.clave;
+    const municipioClaveG = document.getElementById('municipio_nacimiento_general').selectedOptions[0]?.dataset.clave;
+    const ciudadClaveG = document.getElementById('ciudad_nacimiento_general').selectedOptions[0]?.dataset.clave;
 
     const nuevoRegistro = {
       folio,
@@ -88,7 +93,10 @@ document.addEventListener('DOMContentLoaded', () => {
         primera_opcion: formData.get('primera_opcion'),
         segunda_opcion: formData.get('segunda_opcion'),
         tercera_opcion: formData.get('tercera_opcion'),
-        cuarta_opcion: formData.get('cuarta_opcion')
+        cuarta_opcion: formData.get('cuarta_opcion'),
+        estado_nacimiento_general: estadoClaveG,
+        municipio_nacimiento_general: municipioClaveG,
+        ciudad_nacimiento_general: ciudadClaveG
       },
       datos_medicos: {
         numero_seguro_social: formData.get('numero_seguro_social'),
@@ -157,61 +165,70 @@ function deshabilitarFormulario() {
 function cargarCatalogo() {
   fetch('/data/catalogo.json')
     .then(res => res.json())
-    .then(data => {
-      const estadoSelect = document.getElementById('estado_nacimiento');
-      const municipioSelect = document.getElementById('municipio_nacimiento');
-      const ciudadSelect = document.getElementById('ciudad_nacimiento');
-
-      estadoSelect.innerHTML = '<option value="">-- Selecciona Estado --</option>';
-      municipioSelect.innerHTML = '<option value="">-- Selecciona Municipio --</option>';
-      ciudadSelect.innerHTML = '<option value="">-- Selecciona Ciudad --</option>';
-
-      data.forEach(estado => {
-        const option = document.createElement('option');
-        option.value = estado.nombre;
-        option.dataset.clave = estado.clave;
-        option.dataset.municipios = JSON.stringify(estado.municipios || []);
-        option.textContent = estado.nombre;
-        estadoSelect.appendChild(option);
-      });
-
-      estadoSelect.addEventListener('change', function () {
-        const selected = this.selectedOptions[0];
-        const municipios = JSON.parse(selected.dataset.municipios || '[]');
-
-        municipioSelect.innerHTML = '<option value="">-- Selecciona Municipio --</option>';
-        ciudadSelect.innerHTML = '<option value="">-- Selecciona Ciudad --</option>';
-
-        municipios.forEach(mun => {
-          const opt = document.createElement('option');
-          opt.value = mun.nombre;
-          opt.dataset.clave = mun.clave;
-          opt.dataset.localidades = JSON.stringify(mun.localidades || []);
-          opt.textContent = mun.nombre;
-          municipioSelect.appendChild(opt);
-        });
-
-        municipioSelect.disabled = municipios.length === 0;
-        ciudadSelect.disabled = true;
-      });
-
-      municipioSelect.addEventListener('change', function () {
-        const selected = this.selectedOptions[0];
-        const localidades = JSON.parse(selected.dataset.localidades || '[]');
-
-        ciudadSelect.innerHTML = '<option value="">-- Selecciona Ciudad --</option>';
-        localidades.forEach(loc => {
-          const opt = document.createElement('option');
-          opt.value = loc.nombre;
-          opt.dataset.clave = loc.clave;
-          opt.textContent = loc.nombre;
-          ciudadSelect.appendChild(opt);
-        });
-
-        ciudadSelect.disabled = localidades.length === 0;
-      });
-    })
+    .then(data => cargarSelectores('nacimiento', data))
     .catch(err => console.error('❌ Error cargando catálogo:', err));
+}
+
+function cargarCatalogoGeneral() {
+  fetch('/data/catalogo.json')
+    .then(res => res.json())
+    .then(data => cargarSelectores('nacimiento_general', data))
+    .catch(err => console.error('❌ Error cargando catálogo general:', err));
+}
+
+function cargarSelectores(sufijo, data) {
+  const estado = document.getElementById(`estado_${sufijo}`);
+  const municipio = document.getElementById(`municipio_${sufijo}`);
+  const ciudad = document.getElementById(`ciudad_${sufijo}`);
+
+  estado.innerHTML = '<option value="">-- Selecciona Estado --</option>';
+  municipio.innerHTML = '<option value="">-- Selecciona Municipio --</option>';
+  ciudad.innerHTML = '<option value="">-- Selecciona Ciudad --</option>';
+
+  data.forEach(est => {
+    const opt = document.createElement('option');
+    opt.value = est.nombre;
+    opt.dataset.clave = est.clave;
+    opt.dataset.municipios = JSON.stringify(est.municipios || []);
+    opt.textContent = est.nombre;
+    estado.appendChild(opt);
+  });
+
+  estado.addEventListener('change', function () {
+    const selected = this.selectedOptions[0];
+    const municipios = JSON.parse(selected.dataset.municipios || '[]');
+
+    municipio.innerHTML = '<option value="">-- Selecciona Municipio --</option>';
+    ciudad.innerHTML = '<option value="">-- Selecciona Ciudad --</option>';
+
+    municipios.forEach(mun => {
+      const opt = document.createElement('option');
+      opt.value = mun.nombre;
+      opt.dataset.clave = mun.clave;
+      opt.dataset.localidades = JSON.stringify(mun.localidades || []);
+      opt.textContent = mun.nombre;
+      municipio.appendChild(opt);
+    });
+
+    municipio.disabled = municipios.length === 0;
+    ciudad.disabled = true;
+  });
+
+  municipio.addEventListener('change', function () {
+    const selected = this.selectedOptions[0];
+    const localidades = JSON.parse(selected.dataset.localidades || '[]');
+
+    ciudad.innerHTML = '<option value="">-- Selecciona Ciudad --</option>';
+    localidades.forEach(loc => {
+      const opt = document.createElement('option');
+      opt.value = loc.nombre;
+      opt.dataset.clave = loc.clave;
+      opt.textContent = loc.nombre;
+      ciudad.appendChild(opt);
+    });
+
+    ciudad.disabled = localidades.length === 0;
+  });
 }
 
 function consultarFolioYAutocompletar() {
@@ -230,17 +247,18 @@ function consultarFolioYAutocompletar() {
         }
       }
 
-      // Asegurar selección de estado → municipio → ciudad
       setTimeout(() => {
-        document.getElementById('estado_nacimiento').value = data.datos_alumno.estado_nacimiento;
-        document.getElementById('estado_nacimiento').dispatchEvent(new Event('change'));
-        setTimeout(() => {
-          document.getElementById('municipio_nacimiento').value = data.datos_alumno.municipio_nacimiento;
-          document.getElementById('municipio_nacimiento').dispatchEvent(new Event('change'));
+        ['nacimiento', 'nacimiento_general'].forEach((sufijo, i) => {
+          document.getElementById(`estado_${sufijo}`).value = data.datos_alumno[`estado_${sufijo}`] || data.datos_generales[`estado_${sufijo}`];
+          document.getElementById(`estado_${sufijo}`).dispatchEvent(new Event('change'));
           setTimeout(() => {
-            document.getElementById('ciudad_nacimiento').value = data.datos_alumno.ciudad_nacimiento;
+            document.getElementById(`municipio_${sufijo}`).value = data.datos_alumno[`municipio_${sufijo}`] || data.datos_generales[`municipio_${sufijo}`];
+            document.getElementById(`municipio_${sufijo}`).dispatchEvent(new Event('change'));
+            setTimeout(() => {
+              document.getElementById(`ciudad_${sufijo}`).value = data.datos_alumno[`ciudad_${sufijo}`] || data.datos_generales[`ciudad_${sufijo}`];
+            }, 300);
           }, 300);
-        }, 300);
+        });
       }, 300);
 
       if (data.registro_completado) {
