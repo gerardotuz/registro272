@@ -105,7 +105,6 @@ function generarPDF(datos, nombreArchivo = 'formulario.pdf') {
     y += 80;
   }
 
-  // SECCIONES
   y = drawSectionTitle('Datos del Alumno', y);
   y = drawBox('Nombres', alumno.nombres, marginX, y);
   y = drawBox('Primer Apellido', alumno.primer_apellido, marginX + 260, y);
@@ -157,7 +156,7 @@ function generarPDF(datos, nombreArchivo = 'formulario.pdf') {
   y = drawBox('¿Cuál?', generales.habla_lengua_indigena?.cual, marginX + 260, y);
   y += GAP_Y;
 
-  // NUEVO BLOQUE: Lugar de nacimiento en Datos Generales
+  // NUEVO BLOQUE
   y = drawSectionTitle('Lugar de Nacimiento en Datos Generales', y);
   y = drawBox('Estado (General)', lugarGeneral.estado, marginX, y);
   y = drawBox('Municipio (General)', lugarGeneral.municipio, marginX + 260, y);
@@ -165,7 +164,40 @@ function generarPDF(datos, nombreArchivo = 'formulario.pdf') {
   y = drawBox('Ciudad (General)', lugarGeneral.ciudad, marginX, y);
   y += GAP_Y;
 
-  // PIE DE FIRMA Y NÚMERO DE PÁGINA
+  // BLOQUE RESTAURADO: DATOS MÉDICOS
+  y = drawSectionTitle('Datos Médicos', y);
+  y = drawBox('NSS', medicos.numero_seguro_social, marginX, y);
+  y = drawBox('Unidad Médica', medicos.unidad_medica_familiar, marginX + 260, y);
+  y += GAP_Y;
+  y = drawBox('¿Alergia o Enfermedad?', medicos.enfermedad_cronica_o_alergia?.respuesta, marginX, y);
+  y = drawMultilineBox('Detalle', medicos.enfermedad_cronica_o_alergia?.detalle, marginX + 260, y);
+  y = drawBox('Discapacidad', medicos.discapacidad, marginX, y);
+  y += GAP_Y;
+
+  y = drawSectionTitle('Secundaria de Origen', y);
+  y = drawBox('Nombre', secundaria.nombre_secundaria, marginX, y);
+  y = drawBox('Régimen', secundaria.regimen, marginX + 260, y);
+  y += GAP_Y;
+  y = drawBox('Promedio', secundaria.promedio_general, marginX, y);
+  y = drawBox('Modalidad', secundaria.modalidad, marginX + 260, y);
+  y += GAP_Y;
+
+  y = drawSectionTitle('Tutor Responsable', y);
+  y = drawBox('Padre', tutor.nombre_padre, marginX, y);
+  y = drawBox('Tel. Padre', tutor.telefono_padre, marginX + 260, y);
+  y += GAP_Y;
+  y = drawBox('Madre', tutor.nombre_madre, marginX, y);
+  y = drawBox('Tel. Madre', tutor.telefono_madre, marginX + 260, y);
+  y += GAP_Y;
+  y = drawBox('Vive con', tutor.vive_con, marginX, y);
+  y += GAP_Y;
+  y = drawBox('Emergencia Adicional', generales.responsable_emergencia?.nombre, marginX, y);
+  y = drawBox('Teléfono', generales.responsable_emergencia?.telefono, marginX + 260, y);
+  y += GAP_Y;
+  y = drawBox('Parentesco', generales.responsable_emergencia?.parentesco, marginX, y);
+  y = drawBox('¿Carta Poder?', generales.carta_poder, marginX + 260, y);
+  y += GAP_Y;
+
   if (fs.existsSync(footerPath)) {
     if (y + 100 > PAGE_HEIGHT) {
       doc.addPage();
