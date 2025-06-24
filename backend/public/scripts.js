@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const camposObligatorios = [
       'nombres','primer_apellido','segundo_apellido','curp','carrera',
-      'periodo_semestral','semestre','turno','fecha_nacimiento','edad','sexo',
+      'periodo_semestral','semestre','fecha_nacimiento','edad','sexo',
       'estado_nacimiento','municipio_nacimiento','ciudad_nacimiento','estado_civil',
       'primera_opcion','segunda_opcion','tercera_opcion','cuarta_opcion',
       'colonia','domicilio','codigo_postal','telefono_alumno','correo_alumno',
