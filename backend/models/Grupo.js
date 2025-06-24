@@ -28,6 +28,11 @@ const GrupoSchema = new mongoose.Schema({
     required: true,
     trim: true
   },
+   turno: {
+    type: String,
+    required: true,
+    trim: true
+  },
   especialidad: {
     type: String,
     required: true,
