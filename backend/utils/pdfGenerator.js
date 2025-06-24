@@ -20,7 +20,7 @@ function obtenerNombresDesdeCatalogo(estadoClave, municipioClave, ciudadClave) {
 }
 
 function generarPDF(datos, nombreArchivo = 'formulario.pdf') {
-  const doc = new PDFDocument({ size: 'A4', margin: 50, bufferPages: true });
+  const doc = new PDFDocument({ size: 'A4', margin: 50 });
   const rutaPDF = path.join(__dirname, '../public/pdfs', nombreArchivo);
   const stream = fs.createWriteStream(rutaPDF);
   doc.pipe(stream);
@@ -98,7 +98,7 @@ function generarPDF(datos, nombreArchivo = 'formulario.pdf') {
     y += 80;
   }
 
-  // Secciones
+  // Secciones del formulario
   y = drawSectionTitle('Datos del Alumno', y);
   y = drawBox('Nombres', alumno.nombres, marginX, y);
   y = drawBox('Primer Apellido', alumno.primer_apellido, marginX + 260, y);
@@ -183,22 +183,17 @@ function generarPDF(datos, nombreArchivo = 'formulario.pdf') {
   y = drawBox('¿Carta Poder?', generales.carta_poder, marginX + 260, y);
   y += GAP_Y;
 
-  // Firma (si hay espacio)
-  if (fs.existsSync(footerPath)) {
-    if (y + 100 > PAGE_HEIGHT) {
-      doc.addPage();
-      y = START_Y;
-    }
+  // Pie con firma si hay espacio
+  if (fs.existsSync(footerPath) && y + 100 < PAGE_HEIGHT - 100) {
     doc.image(footerPath, 50, y, { width: 500 });
   }
 
-  // Pie de página con número de página
-  const pageRange = doc.bufferedPageRange();
-  for (let i = pageRange.start; i < pageRange.start + pageRange.count; i++) {
+  // Agrega número de página en pie
+  const totalPages = doc._pageBuffer.length;
+  for (let i = 0; i < totalPages; i++) {
     doc.switchToPage(i);
-    doc.fontSize(8)
-      .fillColor('gray')
-      .text(`Página ${i + 1} de ${pageRange.count}`, 50, PAGE_HEIGHT - 40, {
+    doc.fontSize(8).fillColor('gray')
+      .text(`Página ${i + 1} de ${totalPages}`, 50, doc.page.height - 40, {
         align: 'center',
         width: doc.page.width - 100
       });
