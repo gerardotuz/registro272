@@ -156,9 +156,9 @@ function deshabilitarFormulario() {
   Array.from(form.elements).forEach(el => {
     el.disabled = true;
   });
-  alert('🛑 Ya no puedes modificar este formulario. El registro está finalizado.');
+  const aviso = document.getElementById('registro-bloqueado');
+  if (aviso) aviso.style.display = 'block';
 }
-
 function cargarCatalogo() {
   fetch('/data/catalogo.json')
     .then(res => res.json())
@@ -218,7 +218,6 @@ function cargarCatalogo() {
     })
     .catch(err => console.error('❌ Error cargando catálogo:', err));
 }
-
 function consultarFolioYAutocompletar() {
   const folio = localStorage.getItem('alumnoFolio');
   if (!folio) return;
@@ -226,10 +225,6 @@ function consultarFolioYAutocompletar() {
   fetch(`${BASE_URL}/api/folio/${folio}`)
     .then(res => res.json())
     .then(data => {
-      if (data.registro_completado) {
-        deshabilitarFormulario(); // 🔒 bloquear si ya está registrado
-      }
-
       for (const [seccion, valores] of Object.entries(data)) {
         if (typeof valores === 'object') {
           for (const [campo, valor] of Object.entries(valores)) {
@@ -255,6 +250,10 @@ function consultarFolioYAutocompletar() {
           }, 300);
         }, 300);
       }, 300);
+
+      if (data.registro_completado) {
+        deshabilitarFormulario();
+      }
     })
     .catch(err => console.error('Error al cargar alumno:', err));
 }
