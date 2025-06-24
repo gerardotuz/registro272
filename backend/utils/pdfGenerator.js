@@ -190,6 +190,18 @@ function generarPDF(datos, nombreArchivo = 'formulario.pdf') {
     }
     doc.image(footerPath, 50, y, { width: 500 });
   }
+// === Agregar pie de página con número de página ===
+const totalPaginas = doc.bufferedPageRange().count;
+
+for (let i = 0; i < totalPaginas; i++) {
+  doc.switchToPage(i);
+  doc.fontSize(8)
+     .fillColor('gray')
+     .text(`Página ${i + 1} de ${totalPaginas}`, 50, doc.page.height - 40, {
+       align: 'center',
+       width: doc.page.width - 100
+     });
+}
 
   doc.end();
   return new Promise((resolve, reject) => {
