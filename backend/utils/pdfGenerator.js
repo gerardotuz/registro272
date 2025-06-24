@@ -20,7 +20,7 @@ function obtenerNombresDesdeCatalogo(estadoClave, municipioClave, ciudadClave) {
 }
 
 function generarPDF(datos, nombreArchivo = 'formulario.pdf') {
-  const doc = new PDFDocument({ margin: 50, size: 'LETTER' });
+ const doc = new PDFDocument({ size: 'A4', margin: 50, bufferPages: true });
   const rutaPDF = path.join(__dirname, '../public/pdfs', nombreArchivo);
   const stream = fs.createWriteStream(rutaPDF);
   doc.pipe(stream);
