@@ -30,22 +30,22 @@ router.post('/guardar', async (req, res) => {
 
     const yaRegistrado = await Alumno.findOne({ folio: data.folio });
 
-    // 🚫 Si ya está registrado, no permitir editar
     if (yaRegistrado?.registro_completado) {
       return res.status(403).json({ message: 'Este folio ya fue registrado y no se puede modificar.' });
     }
 
-    // Convertimos a mayúsculas excepto claves que deben mantenerse
+    // Evitar convertir claves de catálogos
+    const clavesExentas = [
+      'estado_nacimiento', 'municipio_nacimiento', 'ciudad_nacimiento',
+      'estado_nacimiento_general', 'municipio_nacimiento_general', 'ciudad_nacimiento_general'
+    ];
+
     const upperCaseData = JSON.parse(JSON.stringify(data), (key, value) => {
-      if (['estado_nacimiento', 'municipio_nacimiento', 'ciudad_nacimiento'].includes(key)) {
-        return value; // No convertir claves
-      }
-      return typeof value === 'string' ? value.toUpperCase() : value;
+      return typeof value === 'string' && !clavesExentas.includes(key) ? value.toUpperCase() : value;
     });
 
-    // Validación de paraescolar
+    // Validar paraescolar
     const paraescolar = data.datos_generales?.paraescolar;
-
     if (paraescolar) {
       const count = await Alumno.countDocuments({ "datos_generales.paraescolar": paraescolar.toUpperCase() });
       const paraescolarPrevio = yaRegistrado?.datos_generales?.paraescolar;
@@ -60,22 +60,26 @@ router.post('/guardar', async (req, res) => {
       }
     }
 
-    // Convertir estado_civil a número si es numérico
+    // Asegurar estado civil como número
     const estadoCivilNum = parseInt(data.datos_alumno?.estado_civil);
     if (!isNaN(estadoCivilNum)) {
       upperCaseData.datos_alumno.estado_civil = estadoCivilNum;
     }
 
-    // Asegurar que las opciones estén definidas
+    // Asegurar opciones vacías si no existen
     upperCaseData.datos_generales.primera_opcion = data.datos_generales.primera_opcion || '';
     upperCaseData.datos_generales.segunda_opcion = data.datos_generales.segunda_opcion || '';
     upperCaseData.datos_generales.tercera_opcion = data.datos_generales.tercera_opcion || '';
     upperCaseData.datos_generales.cuarta_opcion = data.datos_generales.cuarta_opcion || '';
 
+    // ✅ NUEVO: guardar claves generales si vienen en el body
+    upperCaseData.datos_generales.estado_nacimiento_general = data.datos_generales.estado_nacimiento_general || '';
+    upperCaseData.datos_generales.municipio_nacimiento_general = data.datos_generales.municipio_nacimiento_general || '';
+    upperCaseData.datos_generales.ciudad_nacimiento_general = data.datos_generales.ciudad_nacimiento_general || '';
+
     // ✅ Marcar como registro completado
     upperCaseData.registro_completado = true;
 
-    // Guardar en base de datos
     await Alumno.findOneAndUpdate({ folio: data.folio }, upperCaseData, { upsert: true });
 
     // Generar PDF
