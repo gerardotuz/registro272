@@ -1,9 +1,9 @@
-// ✅ MODELO ACTUALIZADO: models/Alumno.js
 const mongoose = require('mongoose');
 
 const alumnoSchema = new mongoose.Schema({
   folio: { type: String, required: true, unique: true },
   registro_completado: { type: Boolean, default: false },
+
   datos_alumno: {
     primer_apellido: String,
     segundo_apellido: String,
@@ -24,6 +24,7 @@ const alumnoSchema = new mongoose.Schema({
     nacionalidad: String,
     pais_extranjero: String
   },
+
   datos_generales: {
     colonia: String,
     domicilio: String,
@@ -51,6 +52,7 @@ const alumnoSchema = new mongoose.Schema({
     tercera_opcion: String,
     cuarta_opcion: String
   },
+
   datos_medicos: {
     numero_seguro_social: String,
     unidad_medica_familiar: String,
@@ -60,12 +62,14 @@ const alumnoSchema = new mongoose.Schema({
     },
     discapacidad: String
   },
+
   secundaria_origen: {
     nombre_secundaria: String,
     regimen: String,
     promedio_general: Number,
     modalidad: String
   },
+
   tutor_responsable: {
     nombre_padre: String,
     telefono_padre: String,
@@ -73,11 +77,13 @@ const alumnoSchema = new mongoose.Schema({
     telefono_madre: String,
     vive_con: String
   },
+
   persona_emergencia: {
     nombre: String,
     parentesco: String,
     telefono: String
   }
+
 }, {
   timestamps: true,
   collection: 'alumnos'
