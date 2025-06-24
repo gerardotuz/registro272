@@ -11,10 +11,6 @@ const alumnoSchema = new mongoose.Schema({
     grupo: String,
     turno: String,
     carrera: String,
-    primera_opcion: String,
-    segunda_opcion: String,
-    tercera_opcion: String,
-    cuarta_opcion: String,
     curp: String,
     fecha_nacimiento: String,
     edad: Number,
@@ -22,7 +18,7 @@ const alumnoSchema = new mongoose.Schema({
     estado_nacimiento: String,
     municipio_nacimiento: String,
     ciudad_nacimiento: String,
-    estado_civil: Number, // CAMBIADO A NÚMERO
+    estado_civil: Number,
     nacionalidad: String,
     pais_extranjero: String
   },
@@ -47,7 +43,11 @@ const alumnoSchema = new mongoose.Schema({
     habla_lengua_indigena: {
       respuesta: String,
       cual: String
-    }
+    },
+    primera_opcion: String,
+    segunda_opcion: String,
+    tercera_opcion: String,
+    cuarta_opcion: String
   },
   datos_medicos: {
     numero_seguro_social: String,
