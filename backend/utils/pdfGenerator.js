@@ -191,17 +191,17 @@ function generarPDF(datos, nombreArchivo = 'formulario.pdf') {
     doc.image(footerPath, 50, y, { width: 500 });
   }
 
-  // PIE DE PÁGINA CON NÚMERO DE PÁGINA
- const range = doc.bufferedPageRange(); // { start: 0, count: N }
+// PIE DE PÁGINA CON NÚMERO DE PÁGINA
+const pageRange = doc.bufferedPageRange(); // { start: 0, count: N }
 
-for (let i = range.start; i < range.start + range.count; i++) {
+for (let i = pageRange.start; i < pageRange.start + pageRange.count; i++) {
   doc.switchToPage(i);
   doc.fontSize(8)
-     .fillColor('gray')
-     .text(`Página ${i + 1} de ${range.count}`, 0, doc.page.height - 30, {
-       align: 'center',
-       width: doc.page.width
-     });
+    .fillColor('gray')
+    .text(`Página ${i + 1} de ${pageRange.count}`, 50, doc.page.height - 40, {
+      width: doc.page.width - 100,
+      align: 'center'
+    });
 }
 
 
