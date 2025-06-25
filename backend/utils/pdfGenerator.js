@@ -1,6 +1,7 @@
 const PDFDocument = require('pdfkit');
 const fs = require('fs');
 const path = require('path');
+const { PDFDocument: PDFLibDocument } = require('pdf-lib'); // para fusionar PDFs
 
 const catalogoPath = path.resolve(__dirname, './catalogo.json');
 const catalogo = JSON.parse(fs.readFileSync(catalogoPath, 'utf8'));
@@ -19,9 +20,9 @@ function obtenerNombresDesdeCatalogo(estadoClave, municipioClave, ciudadClave) {
   };
 }
 
-function generarPDF(datos, nombreArchivo = 'formulario.pdf') {
-  const doc = new PDFDocument({ size: 'A4', margin: 50, bufferPages: true });
+async function generarPDF(datos, nombreArchivo = 'formulario.pdf') {
   const rutaPDF = path.join(__dirname, '../public/pdfs', nombreArchivo);
+  const doc = new PDFDocument({ size: 'A4', margin: 50, bufferPages: true });
   const stream = fs.createWriteStream(rutaPDF);
   doc.pipe(stream);
 
@@ -54,11 +55,7 @@ function generarPDF(datos, nombreArchivo = 'formulario.pdf') {
   );
 
   const estadoCivilTexto = {
-    "1": "Soltero",
-    "2": "Casado",
-    "3": "Unión Libre",
-    "4": "Divorciado",
-    "5": "Viudo"
+    "1": "Soltero", "2": "Casado", "3": "Unión Libre", "4": "Divorciado", "5": "Viudo"
   }[alumno.estado_civil] || alumno.estado_civil;
 
   let y = START_Y;
@@ -156,7 +153,6 @@ function generarPDF(datos, nombreArchivo = 'formulario.pdf') {
   y = drawBox('¿Cuál?', generales.habla_lengua_indigena?.cual, marginX + 260, y);
   y += GAP_Y;
 
-  // NUEVO BLOQUE
   y = drawSectionTitle('Estado de Residencia', y);
   y = drawBox('Estado (General)', lugarGeneral.estado, marginX, y);
   y = drawBox('Municipio (General)', lugarGeneral.municipio, marginX + 260, y);
@@ -164,7 +160,6 @@ function generarPDF(datos, nombreArchivo = 'formulario.pdf') {
   y = drawBox('Ciudad (General)', lugarGeneral.ciudad, marginX, y);
   y += GAP_Y;
 
-  // BLOQUE RESTAURADO: DATOS MÉDICOS
   y = drawSectionTitle('Datos Médicos', y);
   y = drawBox('NSS', medicos.numero_seguro_social, marginX, y);
   y = drawBox('Unidad Médica', medicos.unidad_medica_familiar, marginX + 260, y);
@@ -220,7 +215,23 @@ function generarPDF(datos, nombreArchivo = 'formulario.pdf') {
   doc.end();
 
   return new Promise((resolve, reject) => {
-    stream.on('finish', () => resolve(`/pdfs/${nombreArchivo}`));
+    stream.on('finish', async () => {
+      try {
+        const generatedPDF = await PDFLibDocument.load(fs.readFileSync(rutaPDF));
+        const anexosPDF = await PDFLibDocument.load(
+          fs.readFileSync(path.join(__dirname, '../public/assets/LISTA_DE_COTEJO_2025.pdf'))
+        );
+
+        const totalPages = anexosPDF.getPageCount();
+        const copiedPages = await generatedPDF.copyPages(anexosPDF, [...Array(totalPages).keys()]);
+        copiedPages.forEach(page => generatedPDF.addPage(page));
+
+        fs.writeFileSync(rutaPDF, await generatedPDF.save());
+        resolve(`/pdfs/${nombreArchivo}`);
+      } catch (err) {
+        reject(err);
+      }
+    });
     stream.on('error', reject);
   });
 }
