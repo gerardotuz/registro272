@@ -17,7 +17,6 @@
   <div class="nav-links">
     <a href="index.html">Inicio</a>
     <a href="consultar-grupo.html">Consultar grupo</a>
-    <button id="btnReimprimir">📄 Reimprimir mi comprobante</button>
     <a href="/assets/LISTA_DE_COTEJO_2025.pdf" download>Descargar Requisitos</a>
     <a href="login.html">Iniciar sesión</a>
   </div>
@@ -29,6 +28,10 @@
     <input type="text" id="folio" placeholder="Ingresa tu folio" required>
     <button type="submit">Buscar</button>
   </form>
+  <form id="reimprimirForm">
+  <input type="text" id="folioReimpresion" placeholder="Ingresa tu folio para reimprimir" required />
+  <button type="submit">Reimprimir PDF</button>
+</form>
   <script>
     document.getElementById('folioForm').addEventListener('submit', async (e) => {
       e.preventDefault();
