@@ -267,10 +267,11 @@ function consultarFolioYAutocompletar() {
     })
     .catch(err => console.error('Error al cargar alumno:', err));
 }
-const btnReimprimir = document.getElementById('btnReimprimir');
-if (btnReimprimir) {
-  btnReimprimir.addEventListener('click', async () => {
-    const folio = prompt('Ingresa tu folio para reimprimir tu PDF');
+const reimprimirForm = document.getElementById('reimprimirForm');
+if (reimprimirForm) {
+  reimprimirForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const folio = document.getElementById('folioReimpresion').value.trim();
     if (!folio) return;
 
     try {
@@ -286,3 +287,4 @@ if (btnReimprimir) {
     }
   });
 }
+
