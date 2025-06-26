@@ -1,6 +1,4 @@
-router.get('/ping', (req, res) => {
-  res.status(200).json({ ok: true });
-});
+
 const express = require('express');
 const router = express.Router();
 const Alumno = require('../models/Alumno');
@@ -9,6 +7,10 @@ const xlsx = require('xlsx');
 const generarPDF = require('../utils/pdfGenerator');
 const flattenToNested = require('../utils/flattenToNested');
 const path = require('path');
+
+router.get('/ping', (req, res) => {
+  res.status(200).json({ ok: true });
+});
 
 const upload = multer({ storage: multer.memoryStorage() });
 const MAX_PARAESCOLAR = 40;
