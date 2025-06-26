@@ -48,6 +48,21 @@
     });
   </script>
   <script src="scripts.js"></script>
+<div id="alerta-servidor" style="display:none; background-color:#ffcdd2; color:#b71c1c; padding:10px; text-align:center; font-weight:bold;">
+  ⚠️ El servidor está experimentando una alta demanda. Si no carga correctamente, intenta más tarde.
+</div>
 
+<script>
+  async function verificarServidor() {
+    try {
+      const respuesta = await fetch('/api/ping');
+      if (!respuesta.ok) throw new Error('Error en la respuesta');
+    } catch (error) {
+      document.getElementById('alerta-servidor').style.display = 'block';
+    }
+  }
+
+  verificarServidor();
+</script>
 </body>
 </html>
