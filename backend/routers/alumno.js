@@ -1,3 +1,6 @@
+router.get('/ping', (req, res) => {
+  res.status(200).json({ ok: true });
+});
 const express = require('express');
 const router = express.Router();
 const Alumno = require('../models/Alumno');
