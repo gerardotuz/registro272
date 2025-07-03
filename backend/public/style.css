@@ -124,7 +124,7 @@ select {
   padding: 12px;
   border: 1px solid #ccc;
   border-radius: 8px;
-  font-size: 16px;
+  font-size: 12px;
   background: #fff;
   transition: border-color 0.3s, background-color 0.3s;
   background-repeat: no-repeat;
@@ -207,6 +207,6 @@ textarea::placeholder {
 }
 
 label {
-  font-size: 13px;
+  font-size: 11px;
   font-weight: bold;
 }
