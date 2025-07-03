@@ -15,6 +15,7 @@ body {
   color: #222;
   padding: 20px;
 }
+
 .campo-fecha {
   display: flex;
   flex-direction: column;
@@ -152,10 +153,10 @@ input:required:valid, select:required:valid {
   background-image: url("data:image/svg+xml,%3Csvg fill='green' height='20' viewBox='0 0 24 24' width='20' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0h24v24H0z' fill='none'/%3E%3Cpath d='M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z'/%3E%3C/svg%3E");
 }
 
-/* Estilo para opciones en select */
-select option {
-  padding: 10px;
-  font-size: 16px;
+/* Alineación para bloques internos grid de selects agrupados */
+fieldset div {
+  display: flex;
+  flex-direction: column;
 }
 
 /* Botón */
@@ -195,7 +196,9 @@ html, body {
     width: 95%;
   }
 }
-legend,Add commentMore actions
+
+/* Textos en mayúsculas */
+legend,
 label,
 button,
 input::placeholder,
