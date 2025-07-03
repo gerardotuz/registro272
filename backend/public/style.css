@@ -5,17 +5,16 @@
   box-sizing: border-box;
 }
 
-/* Estilo general del cuerpo */
+/* Body general */
 body {
-  background-image: url('/background.jpg');
+  background: url('/background.jpg') no-repeat center center fixed;
   background-size: cover;
-  background-position: center;
-  background-attachment: fixed;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   color: #222;
   padding: 20px;
 }
 
+/* Bloques de fecha */
 .campo-fecha {
   display: flex;
   flex-direction: column;
@@ -24,8 +23,8 @@ body {
 
 .campo-fecha label {
   font-weight: bold;
-  color: #444;
   font-size: 14px;
+  color: #444;
 }
 
 /* Navegación */
@@ -34,16 +33,15 @@ nav {
   padding: 15px 20px;
   border-radius: 10px;
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
-  flex-wrap: wrap;
   margin-bottom: 30px;
   box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
 }
 
 .nav-logo img {
   height: 50px;
-  object-fit: contain;
 }
 
 .nav-links {
@@ -52,7 +50,7 @@ nav {
 }
 
 .nav-links a {
-  color: white;
+  color: #fff;
   text-decoration: none;
   font-weight: 600;
   padding: 10px 15px;
@@ -68,19 +66,19 @@ nav {
 /* Título */
 h2 {
   text-align: center;
-  margin: 20px auto;
-  font-size: 28px;
-  background-color: rgba(0, 0, 0, 0.6);
+  background: rgba(0, 0, 0, 0.6);
   color: #fff;
   padding: 12px 20px;
   border-radius: 10px;
+  font-size: 28px;
   display: table;
+  margin: 20px auto;
 }
 
-/* Formulario principal */
+/* Form principal */
 form {
-  max-width: 100%;
   width: 100%;
+  max-width: 1200px;
   margin: 0 auto;
   background: rgba(255, 255, 255, 0.95);
   padding: 25px;
@@ -88,7 +86,7 @@ form {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 25px;
 }
 
 /* Fieldsets como tarjetas */
@@ -96,25 +94,25 @@ fieldset {
   border: 1px solid #ccc;
   border-radius: 10px;
   padding: 20px;
-  background-color: #f9f9f9;
+  background: #f9f9f9;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 15px;
   transition: box-shadow 0.3s;
 }
 
 fieldset:hover {
-  box-shadow: 0 0 8px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 0 8px rgba(0,0,0,0.08);
 }
 
-fieldset legend {
+legend {
   font-weight: bold;
-  padding: 0 10px;
   font-size: 18px;
+  padding: 0 10px;
   color: #333;
 }
 
-/* Inputs y selects generales */
+/* Inputs y selects */
 input[type="text"],
 input[type="email"],
 input[type="password"],
@@ -124,10 +122,10 @@ input[type="number"],
 select {
   width: 100%;
   padding: 12px;
-  border-radius: 8px;
   border: 1px solid #ccc;
+  border-radius: 8px;
   font-size: 16px;
-  background-color: #fff;
+  background: #fff;
   transition: border-color 0.3s, background-color 0.3s;
   background-repeat: no-repeat;
   background-position: right 12px center;
@@ -140,7 +138,7 @@ input:focus, select:focus {
   outline: none;
 }
 
-/* Indicador para campos obligatorios */
+/* Indicadores de validación */
 input:required:invalid, select:required:invalid {
   border-color: #e74c3c;
   background-color: #fff6f6;
@@ -153,16 +151,16 @@ input:required:valid, select:required:valid {
   background-image: url("data:image/svg+xml,%3Csvg fill='green' height='20' viewBox='0 0 24 24' width='20' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0h24v24H0z' fill='none'/%3E%3Cpath d='M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z'/%3E%3C/svg%3E");
 }
 
-/* Alineación para bloques internos grid de selects agrupados */
+/* Bloques de grid internos */
 fieldset div {
   display: flex;
   flex-direction: column;
 }
 
-/* Botón */
+/* Botón principal */
 button {
   background-color: #690e04;
-  color: white;
+  color: #fff;
   border: none;
   cursor: pointer;
   padding: 14px;
@@ -176,28 +174,29 @@ button:hover {
   transform: scale(1.02);
 }
 
-/* Ajuste global para altura completa */
-html, body {
-  height: 100%;
-}
-
-/* Responsive nav */
-@media (max-width: 600px) {
+/* Ajustes responsive nav */
+@media (max-width: 768px) {
+  nav {
+    flex-direction: column;
+    align-items: center;
+  }
   .nav-links {
     flex-direction: column;
     align-items: center;
     width: 100%;
   }
-  nav {
-    flex-direction: column;
-    align-items: center;
-  }
+}
+
+@media (max-width: 600px) {
   form {
-    width: 95%;
+    padding: 15px;
+  }
+  fieldset {
+    grid-template-columns: 1fr;
   }
 }
 
-/* Textos en mayúsculas */
+/* Texto en mayúsculas */
 legend,
 label,
 button,
@@ -205,4 +204,9 @@ input::placeholder,
 select,
 textarea::placeholder {
   text-transform: uppercase;
+}
+
+label {
+  font-size: 13px;
+  font-weight: bold;
 }
