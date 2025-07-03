@@ -108,49 +108,57 @@
 </div>
 
 
-  
-<input name="turno" placeholder="Turno" readonly="" type="text"/>
-<!-- 
-  <select <option value="">Selecciona turno</option>
-<option value="matutino">Matutino</option>
-<option value="vespertino">Vespertino</option>
-</select>-->
-<div class="campo-fecha">
-<label for="fecha_nacimiento">Fecha de Nacimiento</label>
-<input id="fecha_nacimiento" name="fecha_nacimiento" required="" type="date"/>
-</div>
-<input name="edad" placeholder="Edad" type="text"/>
-<select name="sexo" required="">
-<option value="">Selecciona sexo</option>
-<option value="femenino">Femenino</option>
-<option value="masculino">Masculino</option>
-</select>
-<!-- Por los siguientes: -->
-
-<div >
-  <div>
-    <label for="estado_nacimiento">Estado de nacimiento</label>
-    <select id="estado_nacimiento" name="estado_nacimiento" required></select>
-  </div>
-  <div>
-    <label for="municipio_nacimiento">Municipio de nacimiento</label>
-    <select disabled id="municipio_nacimiento" name="municipio_nacimiento" required></select>
-  </div>
-  <div>
-    <label for="ciudad_nacimiento">Ciudad de nacimiento</label>
-    <select disabled id="ciudad_nacimiento" name="ciudad_nacimiento" required></select>
-  </div>
+ <div>
+  <label for="turno">Turno</label>
+  <input id="turno" name="turno" placeholder="Turno" readonly type="text"/>
 </div>
 
+<div>
+  <label for="fecha_nacimiento">Fecha de Nacimiento</label>
+  <input id="fecha_nacimiento" name="fecha_nacimiento" required type="date"/>
+</div>
 
+<div>
+  <label for="edad">Edad</label>
+  <input id="edad" name="edad" placeholder="Edad" type="text"/>
+</div>
 
+<div>
+  <label for="sexo">Sexo</label>
+  <select id="sexo" name="sexo" required>
+    <option value="">Selecciona sexo</option>
+    <option value="femenino">Femenino</option>
+    <option value="masculino">Masculino</option>
+  </select>
+</div>
 
-  
+<!-- Bloque de Estado/Municipio/Ciudad de nacimiento -->
+<div>
+  <label for="estado_nacimiento">Estado de nacimiento</label>
+  <select id="estado_nacimiento" name="estado_nacimiento" required>
+    <option value="">-- Selecciona Estado --</option>
+  </select>
+</div>
+
+<div>
+  <label for="municipio_nacimiento">Municipio de nacimiento</label>
+  <select id="municipio_nacimiento" name="municipio_nacimiento" required disabled>
+    <option value="">-- Selecciona Municipio --</option>
+  </select>
+</div>
+
+<div>
+  <label for="ciudad_nacimiento">Ciudad de nacimiento</label>
+  <select id="ciudad_nacimiento" name="ciudad_nacimiento" required disabled>
+    <option value="">-- Selecciona Ciudad --</option>
+  </select>
+</div>
+
 <!-- Inputs ocultos para MongoDB -->
 <input name="estado_codigo" type="hidden"/>
 <input name="municipio_codigo" type="hidden"/>
 <input name="ciudad_codigo" type="hidden"/>
-</fieldset>
+
 <fieldset>
 <legend>DATOS GENERALES DEL ALUMNO</legend>
 <input name="colonia" placeholder="SMZ, COLONIA, FRACCIONAMIENTO" type="text"/>
@@ -178,27 +186,32 @@
 
   
 <!-- Selección de lugar de nacimiento en DATOS GENERALES -->
-<div >
-  <div>
-    <label for="estado_nacimiento_general">Estado de Residencia</label>
-    <select id="estado_nacimiento_general" name="estado_nacimiento_general" required></select>
-  </div>
-  <div>
-    <label for="municipio_nacimiento_general">Municipio de Residencia</label>
-    <select id="municipio_nacimiento_general" name="municipio_nacimiento_general" required disabled></select>
-  </div>
-  <div>
-    <label for="ciudad_nacimiento_general">Ciudad de Residencia</label>
-    <select id="ciudad_nacimiento_general" name="ciudad_nacimiento_general" required disabled></select>
-  </div>
+<div>
+  <label for="estado_nacimiento_general">Estado de Residencia</label>
+  <select id="estado_nacimiento_general" name="estado_nacimiento_general" required>
+    <option value="">-- Selecciona Estado --</option>
+    <!-- Opciones dinámicas aquí -->
+  </select>
 </div>
 
+<div>
+  <label for="municipio_nacimiento_general">Municipio de Residencia</label>
+  <select id="municipio_nacimiento_general" name="municipio_nacimiento_general" required disabled>
+    <option value="">-- Selecciona Municipio --</option>
+  </select>
+</div>
+
+<div>
+  <label for="ciudad_nacimiento_general">Ciudad de Residencia</label>
+  <select id="ciudad_nacimiento_general" name="ciudad_nacimiento_general" required disabled>
+    <option value="">-- Selecciona Ciudad --</option>
+  </select>
+</div>
 
 <!-- Inputs ocultos para guardar claves -->
 <input type="hidden" name="estado_codigo_general" />
 <input type="hidden" name="municipio_codigo_general" />
 <input type="hidden" name="ciudad_codigo_general" />
-
 
   
 </fieldset>
