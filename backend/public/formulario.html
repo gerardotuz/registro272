@@ -34,34 +34,54 @@
 <input name="semestre" placeholder="Semestre" readonly="" type="text" value="Primer Semestre"/>
 <input name="grupo" placeholder="Grupo" readonly="" type="text"/>
 <!-- Campos anteriores -->
-<select id="primera_opcion" name="primera_opcion" required="">
-<option value="">cuál fue tu 1era opción</option>
-<option value="A Y B">A Y B</option>
-<option value="PROGRAMACIÓN">PROGRAMACIÓN</option>
-<option value="GESTIÓN E INNOVACIÓN TURÍSTICA">GESTIÓN E INNOVACIÓN TURÍSTICA</option>
-<option value="VENTAS">VENTAS</option>
-</select>
-<select id="segunda_opcion" name="segunda_opcion" required="">
-<option value="">cuál fue tu 2da opción</option>
-<option value="A Y B">A Y B</option>
-<option value="PROGRAMACIÓN">PROGRAMACIÓN</option>
-<option value="GESTIÓN E INNOVACIÓN TURÍSTICA">GESTIÓN E INNOVACIÓN TURÍSTICA</option>
-<option value="VENTAS">VENTAS</option>
-</select>
-<select id="tercera_opcion" name="tercera_opcion" required="">
-<option value="">cuál fue tu 3era opción</option>
-<option value="A Y B">A Y B</option>
-<option value="PROGRAMACIÓN">PROGRAMACIÓN</option>
-<option value="GESTIÓN E INNOVACIÓN TURÍSTICA">GESTIÓN E INNOVACIÓN TURÍSTICA</option>
-<option value="VENTAS">VENTAS</option>
-</select>
-<select id="cuarta_opcion" name="cuarta_opcion" required="">
-<option value="">cuál fue tu 4ta opción</option>
-<option value="A Y B">A Y B</option>
-<option value="PROGRAMACIÓN">PROGRAMACIÓN</option>
-<option value="GESTIÓN E INNOVACIÓN TURÍSTICA">GESTIÓN E INNOVACIÓN TURÍSTICA</option>
-<option value="VENTAS">VENTAS</option>
-</select>
+<div style="display: grid; gap: 0.5rem;">
+  <div>
+    <label for="primera_opcion">1era Opción</label>
+    <select id="primera_opcion" name="primera_opcion" required>
+      <option value="">Cuál fue tu 1era opción</option>
+      <option value="A Y B">A Y B</option>
+      <option value="PROGRAMACIÓN">PROGRAMACIÓN</option>
+      <option value="GESTIÓN E INNOVACIÓN TURÍSTICA">GESTIÓN E INNOVACIÓN TURÍSTICA</option>
+      <option value="VENTAS">VENTAS</option>
+    </select>
+  </div>
+  <div>
+    <label for="segunda_opcion">2da Opción</label>
+    <select id="segunda_opcion" name="segunda_opcion" required>
+      <option value="">Cuál fue tu 2da opción</option>
+      <option value="A Y B">A Y B</option>
+      <option value="PROGRAMACIÓN">PROGRAMACIÓN</option>
+      <option value="GESTIÓN E INNOVACIÓN TURÍSTICA">GESTIÓN E INNOVACIÓN TURÍSTICA</option>
+      <option value="VENTAS">VENTAS</option>
+    </select>
+  </div>
+  <div>
+    <label for="tercera_opcion">3era Opción</label>
+    <select id="tercera_opcion" name="tercera_opcion" required>
+      <option value="">Cuál fue tu 3era opción</option>
+      <option value="A Y B">A Y B</option>
+      <option value="PROGRAMACIÓN">PROGRAMACIÓN</option>
+      <option value="GESTIÓN E INNOVACIÓN TURÍSTICA">GESTIÓN E INNOVACIÓN TURÍSTICA</option>
+      <option value="VENTAS">VENTAS</option>
+    </select>
+  </div>
+  <div>
+    <label for="cuarta_opcion">4ta Opción</label>
+    <select id="cuarta_opcion" name="cuarta_opcion" required>
+      <option value="">Cuál fue tu 4ta opción</option>
+      <option value="A Y B">A Y B</option>
+      <option value="PROGRAMACIÓN">PROGRAMACIÓN</option>
+      <option value="GESTIÓN E INNOVACIÓN TURÍSTICA">GESTIÓN E INNOVACIÓN TURÍSTICA</option>
+      <option value="VENTAS">VENTAS</option>
+    </select>
+  </div>
+</div>
+
+
+
+
+
+  
 <select name="nacionalidad" required="">
 <option value="">Selecciona Nacionalidad</option>
 <option value="Mexicano">Mexicano</option>
@@ -92,9 +112,26 @@
 <option value="masculino">Masculino</option>
 </select>
 <!-- Por los siguientes: -->
-<select id="estado_nacimiento" name="estado_nacimiento" required=""></select>
-<select disabled="" id="municipio_nacimiento" name="municipio_nacimiento" required=""></select>
-<select disabled="" id="ciudad_nacimiento" name="ciudad_nacimiento" required=""></select>
+
+<div style="display: grid; gap: 0.5rem;">
+  <div>
+    <label for="estado_nacimiento">Estado de nacimiento</label>
+    <select id="estado_nacimiento" name="estado_nacimiento" required></select>
+  </div>
+  <div>
+    <label for="municipio_nacimiento">Municipio de nacimiento</label>
+    <select disabled id="municipio_nacimiento" name="municipio_nacimiento" required></select>
+  </div>
+  <div>
+    <label for="ciudad_nacimiento">Ciudad de nacimiento</label>
+    <select disabled id="ciudad_nacimiento" name="ciudad_nacimiento" required></select>
+  </div>
+</div>
+
+
+
+
+  
 <!-- Inputs ocultos para MongoDB -->
 <input name="estado_codigo" type="hidden"/>
 <input name="municipio_codigo" type="hidden"/>
@@ -118,14 +155,21 @@
 <input name="habla_lengua_indigena_cual" placeholder="¿Cuál lengua?" type="text"/>
 
 <!-- Selección de lugar de nacimiento en DATOS GENERALES -->
-<label for="estado_nacimiento_general">Estado de Residencia</label>
-<select id="estado_nacimiento_general" name="estado_nacimiento_general" required></select>
+<div style="display: grid; gap: 0.5rem;">
+  <div>
+    <label for="estado_nacimiento_general">Estado de Residencia</label>
+    <select id="estado_nacimiento_general" name="estado_nacimiento_general" required></select>
+  </div>
+  <div>
+    <label for="municipio_nacimiento_general">Municipio de Residencia</label>
+    <select id="municipio_nacimiento_general" name="municipio_nacimiento_general" required disabled></select>
+  </div>
+  <div>
+    <label for="ciudad_nacimiento_general">Ciudad de Residencia</label>
+    <select id="ciudad_nacimiento_general" name="ciudad_nacimiento_general" required disabled></select>
+  </div>
+</div>
 
-<label for="municipio_nacimiento_general">Municipio de Residencia</label>
-<select id="municipio_nacimiento_general" name="municipio_nacimiento_general" required disabled></select>
-
-<label for="ciudad_nacimiento_general">Ciudad de Residencia</label>
-<select id="ciudad_nacimiento_general" name="ciudad_nacimiento_general" required disabled></select>
 
 <!-- Inputs ocultos para guardar claves -->
 <input type="hidden" name="estado_codigo_general" />
@@ -268,6 +312,38 @@ window.onload = () => {
   Object.entries(mappings).forEach(([k, v]) => set(k, v));
 };
 </script>
+<script>
+  const opciones = ["A Y B", "PROGRAMACIÓN", "GESTIÓN E INNOVACIÓN TURÍSTICA", "VENTAS"];
+  const selects = [
+    document.getElementById('primera_opcion'),
+    document.getElementById('segunda_opcion'),
+    document.getElementById('tercera_opcion'),
+    document.getElementById('cuarta_opcion')
+  ];
+  function actualizarOpciones() {
+    const seleccionados = selects.map(select => select.value);
+    selects.forEach(select => {
+      const valorActual = select.value;
+      select.innerHTML = '<option value="">Selecciona opción</option>';
+      opciones.forEach(opcion => {
+        if (!seleccionados.includes(opcion) || opcion === valorActual) {
+          const option = document.createElement('option');
+          option.value = opcion;
+          option.textContent = opcion;
+          if (opcion === valorActual) option.selected = true;
+          select.appendChild(option);
+        }
+      });
+    });
+  }
+  selects.forEach(select => {
+    select.addEventListener('change', actualizarOpciones);
+  });
+</script>
+
+
+
+  
 <script defer="" src="scripts.js"></script>
 </body>
 </html>
