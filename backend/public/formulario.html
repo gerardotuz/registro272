@@ -81,20 +81,33 @@
 
 
 
+<div>
+  <label for="nacionalidad">Nacionalidad</label>
+  <select id="nacionalidad" name="nacionalidad" required>
+    <option value="">Selecciona Nacionalidad</option>
+    <option value="Mexicano">Mexicano</option>
+    <option value="Extranjero">Extranjero</option>
+  </select>
+</div>
+
+<div>
+  <label for="pais_extranjero">País (si es extranjero)</label>
+  <input id="pais_extranjero" name="pais_extranjero" placeholder="País (si es extranjero)" type="text"/>
+</div>
+
+<div>
+  <label for="estado_civil">Estado Civil</label>
+  <select id="estado_civil" name="estado_civil" required>
+    <option value="">Selecciona Estado Civil</option>
+    <option value="Soltero">Soltero</option>
+    <option value="Casado">Casado</option>
+    <option value="Unión libre">Unión libre</option>
+    <option value="Otro">Otro</option>
+  </select>
+</div>
+
+
   
-<select name="nacionalidad" required="">
-<option value="">Selecciona Nacionalidad</option>
-<option value="Mexicano">Mexicano</option>
-<option value="Extranjero">Extranjero</option>
-</select>
-<input name="pais_extranjero" placeholder="País (si es extranjero)" type="text"/>
-<select name="estado_civil" required="">
-<option value="">Estado Civil</option>
-<option value="Soltero">Soltero</option>
-<option value="Casado">Casado</option>
-<option value="Unión libre">Unión libre</option>
-<option value="Otro">Otro</option>
-</select>
 <input name="turno" placeholder="Turno" readonly="" type="text"/>
 <!-- 
   <select <option value="">Selecciona turno</option>
@@ -147,13 +160,22 @@
 <input name="tipo_sangre" placeholder="TIPO DE SANGRE" type="text"/>
 <input name="contacto_emergencia_nombre" placeholder="CONTACTO DE EMERGENCIA-NOMBRE" type="text"/>
 <input name="contacto_emergencia_telefono" placeholder="CONTACTO DE EMERGENCIA- TELÉFONO" type="text"/>
-<select name="habla_lengua_indigena_respuesta" required="">
-<option value="">¿Habla lengua indígena? (Sí/No)</option>
-<option value="si">Sí</option>
-<option value="no">No</option>
-</select>
-<input name="habla_lengua_indigena_cual" placeholder="¿Cuál lengua?" type="text"/>
 
+<div>
+  <label for="habla_lengua_indigena_respuesta">¿Habla lengua indígena?</label>
+  <select id="habla_lengua_indigena_respuesta" name="habla_lengua_indigena_respuesta" required>
+    <option value="">¿Habla lengua indígena? (Sí/No)</option>
+    <option value="si">Sí</option>
+    <option value="no">No</option>
+  </select>
+</div>
+
+<div>
+  <label for="habla_lengua_indigena_cual">¿Cuál lengua?</label>
+  <input id="habla_lengua_indigena_cual" name="habla_lengua_indigena_cual" placeholder="¿Cuál lengua?" type="text"/>
+</div>
+
+  
 <!-- Selección de lugar de nacimiento en DATOS GENERALES -->
 <div style="display: grid; gap: 0.5rem;">
   <div>
