@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Dashboard de Alumnos</title>
+  <style>
+    table { border-collapse: collapse; width: 100%; }
+    th, td { border: 1px solid #333; padding: 8px; text-align: left; }
+    form { display: none; margin-top: 20px; }
+    label { display: block; margin: 5px 0; }
+  </style>
+  <script defer src="/dashboardFront.js"></script>
+</head>
+<body>
+  <h1>Dashboard de Alumnos</h1>
+  <table>
+    <thead>
+      <tr>
+        <th>Folio</th><th>Nombre</th><th>Carrera</th><th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody id="tablaAlumnos"></tbody>
+  </table>
+
+  <h2>Editar Alumno</h2>
+  <form id="formEditar">
+    <input type="hidden" id="alumnoId" />
+    <label>Folio: <input type="text" id="folio" /></label>
+    <label>Nombres: <input type="text" id="nombres" /></label>
+    <label>Primer Apellido: <input type="text" id="primer_apellido" /></label>
+    <label>Segundo Apellido: <input type="text" id="segundo_apellido" /></label>
+    <label>Carrera: <input type="text" id="carrera" /></label>
+    <!-- Agrega más campos si quieres -->
+    <button type="submit">Guardar Cambios</button>
+  </form>
+</body>
+</html>
