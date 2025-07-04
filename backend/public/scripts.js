@@ -17,32 +17,51 @@ document.addEventListener('DOMContentLoaded', async () => {
       const input = document.querySelector(`[name="${name}"]`);
       if (input) input.value = value;
     });
+
+    if (combined.estado_nacimiento) {
+      await asignarEstadoMunicipioCiudad('nacimiento',
+        getNombreEstado(combined.estado_nacimiento),
+        getNombreMunicipio(combined.estado_nacimiento, combined.municipio_nacimiento),
+        getNombreCiudad(combined.estado_nacimiento, combined.municipio_nacimiento, combined.ciudad_nacimiento));
+    }
+
+    if (combined.estado_nacimiento_general) {
+      await asignarEstadoMunicipioCiudad('nacimiento_general',
+        getNombreEstado(combined.estado_nacimiento_general),
+        getNombreMunicipio(combined.estado_nacimiento_general, combined.municipio_nacimiento_general),
+        getNombreCiudad(combined.estado_nacimiento_general, combined.municipio_nacimiento_general, combined.ciudad_nacimiento_general));
+    }
+
+    if (combined.estado_civil) {
+      const estadoCivilMapReverse = { 1: 'Soltero', 2: 'Casado', 3: 'Unión libre', 4: 'Divorciado', 5: 'Viudo' };
+      document.querySelector('[name="estado_civil"]').value = estadoCivilMapReverse[combined.estado_civil] || '';
+    }
   }
 
   document.getElementById('registroForm').addEventListener('submit', async (e) => {
     e.preventDefault();
 
     const camposObligatorios = [
-      'nombres', 'primer_apellido', 'segundo_apellido', 'curp', 'carrera',
-      'periodo_semestral', 'semestre', 'fecha_nacimiento', 'edad', 'sexo',
-      'estado_nacimiento', 'municipio_nacimiento', 'ciudad_nacimiento', 'estado_civil',
-      'primera_opcion', 'segunda_opcion', 'tercera_opcion', 'cuarta_opcion',
-      'colonia', 'domicilio', 'codigo_postal', 'telefono_alumno', 'correo_alumno',
-      'tipo_sangre', 'contacto_emergencia_nombre', 'contacto_emergencia_telefono',
-      'habla_lengua_indigena_respuesta', 'numero_seguro_social', 'unidad_medica_familiar',
-      'enfermedad_cronica_o_alergia_respuesta', 'enfermedad_cronica_o_alergia_detalle',
-      'discapacidad', 'entrega_diagnostico', 'detalle_enfermedad',
-      'nombre_secundaria', 'regimen', 'promedio_general', 'modalidad',
-      'nombre_padre', 'telefono_padre', 'nombre_madre', 'telefono_madre',
-      'vive_con', 'persona_emergencia_nombre', 'persona_emergencia_parentesco', 'persona_emergencia_telefono',
-      'responsable_emergencia_nombre', 'responsable_emergencia_telefono', 'responsable_emergencia_parentesco',
-      'carta_poder', 'paraescolar'
+      'nombres','primer_apellido','segundo_apellido','curp','carrera',
+      'periodo_semestral','semestre','fecha_nacimiento','edad','sexo',
+      'estado_nacimiento','municipio_nacimiento','ciudad_nacimiento','estado_civil',
+      'primera_opcion','segunda_opcion','tercera_opcion','cuarta_opcion',
+      'colonia','domicilio','codigo_postal','telefono_alumno','correo_alumno',
+      'tipo_sangre','contacto_emergencia_nombre','contacto_emergencia_telefono',
+      'habla_lengua_indigena_respuesta','numero_seguro_social','unidad_medica_familiar',
+      'enfermedad_cronica_o_alergia_respuesta','enfermedad_cronica_o_alergia_detalle',
+      'discapacidad','entrega_diagnostico','detalle_enfermedad',
+      'nombre_secundaria','regimen','promedio_general','modalidad',
+      'nombre_padre','telefono_padre','nombre_madre','telefono_madre',
+      'vive_con','persona_emergencia_nombre','persona_emergencia_parentesco','persona_emergencia_telefono',
+      'responsable_emergencia_nombre','responsable_emergencia_telefono','responsable_emergencia_parentesco','carta_poder',
+      'paraescolar'
     ];
 
     for (const campo of camposObligatorios) {
       const input = document.querySelector(`[name="${campo}"]`);
       if (!input || !input.value.trim()) {
-        alert(`⚠️ Por favor completa el campo: ${campo.replaceAll('_', ' ')}`);
+        alert(`⚠️ Completa: ${campo.replaceAll('_', ' ')}`);
         input?.focus();
         return;
       }
@@ -143,8 +162,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     const estadoCivilMap = { 'soltero': 1, 'casado': 2, 'union libre': 3, 'divorciado': 4, 'viudo': 5 };
-    const textoEC = nuevoRegistro.datos_alumno.estado_civil?.toLowerCase();
-    nuevoRegistro.datos_alumno.estado_civil = estadoCivilMap[textoEC] || 0;
+    nuevoRegistro.datos_alumno.estado_civil = estadoCivilMap[nuevoRegistro.datos_alumno.estado_civil?.toLowerCase()] || 0;
 
     const res = await fetch(`${BASE_URL}/api/guardar`, {
       method: 'POST',
@@ -246,24 +264,5 @@ async function consultarFolioYAutocompletar() {
   const data = await res.json();
   if (!data) return;
 
-  const estadoCivilMapReverse = { 1: 'Soltero', 2: 'Casado', 3: 'Unión libre', 4: 'Divorciado', 5: 'Viudo' };
-
-  if (data.datos_alumno) {
-    const d = data.datos_alumno;
-    document.querySelector('[name="nombres"]').value = d.nombres || '';
-    document.querySelector('[name="primer_apellido"]').value = d.primer_apellido || '';
-    document.querySelector('[name="segundo_apellido"]').value = d.segundo_apellido || '';
-    document.querySelector('[name="curp"]').value = d.curp || '';
-    document.querySelector('[name="carrera"]').value = d.carrera || '';
-    document.querySelector('[name="periodo_semestral"]').value = d.periodo_semestral || '';
-    document.querySelector('[name="semestre"]').value = d.semestre || '';
-    document.querySelector('[name="grupo"]').value = d.grupo || '';
-    document.querySelector('[name="turno"]').value = d.turno || '';
-    document.querySelector('[name="fecha_nacimiento"]').value = d.fecha_nacimiento || '';
-    document.querySelector('[name="edad"]').value = d.edad || '';
-    document.querySelector('[name="sexo"]').value = d.sexo || '';
-    document.querySelector('[name="estado_civil"]').value = estadoCivilMapReverse[d.estado_civil] || '';
-    document.querySelector('[name="nacionalidad"]').value = d.nacionalidad || '';
-    document.querySelector('[name="pais_extranjero"]').value = d.pais_extranjero || '';
-  }
+  localStorage.setItem('datosPrecargados', JSON.stringify(data));
 }
