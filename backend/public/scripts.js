@@ -1,3 +1,4 @@
+
 const BASE_URL = window.location.origin.includes('localhost')
   ? 'http://localhost:3001'
   : 'https://registro272.onrender.com';
@@ -11,57 +12,50 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   const datos = JSON.parse(localStorage.getItem('datosPrecargados'));
   if (datos) {
-    const combined = flatten(datos);
+    const flatten = (obj, prefix = '') => {
+      let res = {};
+      for (let k in obj) {
+        if (typeof obj[k] === 'object' && obj[k] !== null && !Array.isArray(obj[k])) {
+          Object.assign(res, flatten(obj[k], prefix ? `${prefix}_${k}` : k));
+        } else {
+          res[prefix ? `${prefix}_${k}` : k] = obj[k];
+        }
+      }
+      return res;
+    };
 
-    // Rellenar campos normales
+    const combined = flatten(datos);
     Object.entries(combined).forEach(([name, value]) => {
       const input = document.querySelector(`[name="${name}"]`);
       if (input && value != null) input.value = value;
     });
-
-    // Estado civil numérico → texto
-    if (combined.datos_alumno_estado_civil) {
-      const map = { 1: 'Soltero', 2: 'Casado', 3: 'Unión libre', 4: 'Divorciado', 5: 'Viudo' };
-      document.querySelector('[name="estado_civil"]').value = map[combined.datos_alumno_estado_civil] || '';
-    }
-
-    // Cargar selects: nacimiento
-    if (combined.datos_alumno_estado_nacimiento) {
-      await asignarEstadoMunicipioCiudad(
-        'nacimiento',
-        getNombreEstado(combined.datos_alumno_estado_nacimiento),
-        getNombreMunicipio(combined.datos_alumno_estado_nacimiento, combined.datos_alumno_municipio_nacimiento),
-        getNombreCiudad(combined.datos_alumno_estado_nacimiento, combined.datos_alumno_municipio_nacimiento, combined.datos_alumno_ciudad_nacimiento)
-      );
-    }
-
-    // Cargar selects: residencia general
-    if (combined.datos_generales_estado_nacimiento_general) {
-      await asignarEstadoMunicipioCiudad(
-        'nacimiento_general',
-        getNombreEstado(combined.datos_generales_estado_nacimiento_general),
-        getNombreMunicipio(combined.datos_generales_estado_nacimiento_general, combined.datos_generales_municipio_nacimiento_general),
-        getNombreCiudad(combined.datos_generales_estado_nacimiento_general, combined.datos_generales_municipio_nacimiento_general, combined.datos_generales_ciudad_nacimiento_general)
-      );
-    }
   }
 
   document.getElementById('registroForm').addEventListener('submit', async (e) => {
     e.preventDefault();
 
-    // Validar campos obligatorios
     const camposObligatorios = [
       'nombres', 'primer_apellido', 'segundo_apellido', 'curp', 'carrera',
       'periodo_semestral', 'semestre', 'fecha_nacimiento', 'edad', 'sexo',
       'estado_nacimiento', 'municipio_nacimiento', 'ciudad_nacimiento', 'estado_civil',
       'colonia', 'domicilio', 'codigo_postal', 'telefono_alumno', 'correo_alumno',
+      'tipo_sangre', 'contacto_emergencia_nombre', 'contacto_emergencia_telefono',
+      'habla_lengua_indigena_respuesta', 'habla_lengua_indigena_cual',
+      'numero_seguro_social', 'unidad_medica_familiar',
+      'enfermedad_cronica_o_alergia_respuesta', 'enfermedad_cronica_o_alergia_detalle',
+      'discapacidad', 'entrega_diagnostico', 'detalle_enfermedad',
+      'nombre_secundaria', 'regimen', 'promedio_general', 'modalidad',
+      'nombre_padre', 'telefono_padre', 'nombre_madre', 'telefono_madre',
+      'vive_con', 'persona_emergencia_nombre', 'persona_emergencia_parentesco', 'persona_emergencia_telefono',
+      'responsable_emergencia_nombre', 'responsable_emergencia_telefono', 'responsable_emergencia_parentesco',
+      'carta_poder', 'primera_opcion', 'segunda_opcion', 'tercera_opcion', 'cuarta_opcion',
       'paraescolar'
     ];
 
     for (const campo of camposObligatorios) {
       const input = document.querySelector(`[name="${campo}"]`);
       if (!input || !input.value.trim()) {
-        alert(`⚠️ Falta: ${campo.replaceAll('_', ' ')}`);
+        alert(`⚠️ Completa: ${campo}`);
         input?.focus();
         return;
       }
@@ -71,10 +65,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!folio) return alert('Folio perdido');
 
     const formData = new FormData(e.target);
-
     const estadoClave = document.getElementById('estado_nacimiento').selectedOptions[0]?.dataset?.clave;
     const municipioClave = document.getElementById('municipio_nacimiento').selectedOptions[0]?.dataset?.clave;
     const ciudadClave = document.getElementById('ciudad_nacimiento').selectedOptions[0]?.dataset?.clave;
+    const estadoClaveG = document.getElementById('estado_nacimiento_general').selectedOptions[0]?.dataset?.clave;
+    const municipioClaveG = document.getElementById('municipio_nacimiento_general').selectedOptions[0]?.dataset?.clave;
+    const ciudadClaveG = document.getElementById('ciudad_nacimiento_general').selectedOptions[0]?.dataset?.clave;
 
     const nuevoRegistro = {
       folio,
@@ -95,12 +91,69 @@ document.addEventListener('DOMContentLoaded', async () => {
         municipio_nacimiento: municipioClave,
         ciudad_nacimiento: ciudadClave,
         estado_civil: formData.get('estado_civil')
+      },
+      datos_generales: {
+        colonia: formData.get('colonia'),
+        domicilio: formData.get('domicilio'),
+        codigo_postal: formData.get('codigo_postal'),
+        telefono_alumno: formData.get('telefono_alumno'),
+        correo_alumno: formData.get('correo_alumno'),
+        paraescolar: formData.get('paraescolar'),
+        tipo_sangre: formData.get('tipo_sangre'),
+        contacto_emergencia_nombre: formData.get('contacto_emergencia_nombre'),
+        contacto_emergencia_telefono: formData.get('contacto_emergencia_telefono'),
+        habla_lengua_indigena: {
+          respuesta: formData.get('habla_lengua_indigena_respuesta'),
+          cual: formData.get('habla_lengua_indigena_cual')
+        },
+        entrega_diagnostico: formData.get('entrega_diagnostico'),
+        detalle_enfermedad: formData.get('detalle_enfermedad'),
+        responsable_emergencia: {
+          nombre: formData.get('responsable_emergencia_nombre'),
+          telefono: formData.get('responsable_emergencia_telefono'),
+          parentesco: formData.get('responsable_emergencia_parentesco')
+        },
+        carta_poder: formData.get('carta_poder'),
+        primera_opcion: formData.get('primera_opcion'),
+        segunda_opcion: formData.get('segunda_opcion'),
+        tercera_opcion: formData.get('tercera_opcion'),
+        cuarta_opcion: formData.get('cuarta_opcion'),
+        estado_nacimiento_general: estadoClaveG,
+        municipio_nacimiento_general: municipioClaveG,
+        ciudad_nacimiento_general: ciudadClaveG
+      },
+      datos_medicos: {
+        numero_seguro_social: formData.get('numero_seguro_social'),
+        unidad_medica_familiar: formData.get('unidad_medica_familiar'),
+        enfermedad_cronica_o_alergia: {
+          respuesta: formData.get('enfermedad_cronica_o_alergia_respuesta'),
+          detalle: formData.get('enfermedad_cronica_o_alergia_detalle')
+        },
+        discapacidad: formData.get('discapacidad')
+      },
+      secundaria_origen: {
+        nombre_secundaria: formData.get('nombre_secundaria'),
+        regimen: formData.get('regimen'),
+        promedio_general: formData.get('promedio_general'),
+        modalidad: formData.get('modalidad')
+      },
+      tutor_responsable: {
+        nombre_padre: formData.get('nombre_padre'),
+        telefono_padre: formData.get('telefono_padre'),
+        nombre_madre: formData.get('nombre_madre'),
+        telefono_madre: formData.get('telefono_madre'),
+        vive_con: formData.get('vive_con')
+      },
+      persona_emergencia: {
+        nombre: formData.get('persona_emergencia_nombre'),
+        parentesco: formData.get('persona_emergencia_parentesco'),
+        telefono: formData.get('persona_emergencia_telefono')
       }
-      // 👇 Aquí igual rellena el resto como tengas
     };
 
-    const map = { 'soltero': 1, 'casado': 2, 'unión libre': 3, 'divorciado': 4, 'viudo': 5 };
-    nuevoRegistro.datos_alumno.estado_civil = map[nuevoRegistro.datos_alumno.estado_civil.toLowerCase()] || 0;
+    const estadoCivilMap = { 'soltero': 1, 'casado': 2, 'union_libre': 3, 'divorciado': 4, 'viudo': 5 };
+    const textoEC = nuevoRegistro.datos_alumno.estado_civil?.toLowerCase();
+    nuevoRegistro.datos_alumno.estado_civil = estadoCivilMap[textoEC] || 0;
 
     const res = await fetch(`${BASE_URL}/api/guardar`, {
       method: 'POST',
@@ -110,25 +163,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const result = await res.json();
     if (res.ok) {
-      alert('✅ Guardado OK');
+      alert('✅ Registro guardado');
       window.open(result.pdf_url, '_blank');
     } else {
-      alert(result.message || '❌ Error');
+      alert(result.message || '❌ Error al guardar');
     }
   });
 });
-
-function flatten(obj, prefix = '') {
-  let result = {};
-  for (let key in obj) {
-    if (typeof obj[key] === 'object' && obj[key] !== null) {
-      Object.assign(result, flatten(obj[key], prefix ? `${prefix}_${key}` : key));
-    } else {
-      result[prefix ? `${prefix}_${key}` : key] = obj[key];
-    }
-  }
-  return result;
-}
 
 async function cargarCatalogo() {
   const res = await fetch('/data/catalogo.json');
@@ -147,9 +188,9 @@ function cargarSelectores(sufijo, data) {
   const municipio = document.getElementById(`municipio_${sufijo}`);
   const ciudad = document.getElementById(`ciudad_${sufijo}`);
 
-  estado.innerHTML = '<option value="">-- Estado --</option>';
-  municipio.innerHTML = '<option value="">-- Municipio --</option>';
-  ciudad.innerHTML = '<option value="">-- Ciudad --</option>';
+  estado.innerHTML = '<option value="">-- Selecciona Estado --</option>';
+  municipio.innerHTML = '<option value="">-- Selecciona Municipio --</option>';
+  ciudad.innerHTML = '<option value="">-- Selecciona Ciudad --</option>';
 
   data.forEach(est => {
     const opt = document.createElement('option');
@@ -162,9 +203,10 @@ function cargarSelectores(sufijo, data) {
 
   estado.addEventListener('change', function () {
     const selected = this.selectedOptions[0];
-    const municipios = selected ? JSON.parse(selected.dataset.municipios) : [];
-    municipio.innerHTML = '<option value="">-- Municipio --</option>';
-    ciudad.innerHTML = '<option value="">-- Ciudad --</option>';
+    if (!selected) return;
+    const municipios = JSON.parse(selected.dataset.municipios || '[]');
+    municipio.innerHTML = '<option value="">-- Selecciona Municipio --</option>';
+    ciudad.innerHTML = '<option value="">-- Selecciona Ciudad --</option>';
     municipios.forEach(mun => {
       const opt = document.createElement('option');
       opt.value = mun.nombre;
@@ -179,8 +221,9 @@ function cargarSelectores(sufijo, data) {
 
   municipio.addEventListener('change', function () {
     const selected = this.selectedOptions[0];
-    const localidades = selected ? JSON.parse(selected.dataset.localidades) : [];
-    ciudad.innerHTML = '<option value="">-- Ciudad --</option>';
+    if (!selected) return;
+    const localidades = JSON.parse(selected.dataset.localidades || '[]');
+    ciudad.innerHTML = '<option value="">-- Selecciona Ciudad --</option>';
     localidades.forEach(loc => {
       const opt = document.createElement('option');
       opt.value = loc.nombre;
@@ -198,30 +241,23 @@ async function consultarFolioYAutocompletar() {
   const res = await fetch(`${BASE_URL}/api/folio/${folio}`);
   const data = await res.json();
   if (!data) return;
-  localStorage.setItem('datosPrecargados', JSON.stringify(data));
+
+  const flatten = (obj, prefix = '') => {
+    let res = {};
+    for (let k in obj) {
+      if (typeof obj[k] === 'object' && obj[k] !== null && !Array.isArray(obj[k])) {
+        Object.assign(res, flatten(obj[k], prefix ? `${prefix}_${k}` : k));
+      } else {
+        res[prefix ? `${prefix}_${k}` : k] = obj[k];
+      }
+    }
+    return res;
+  };
+
+  const flat = flatten(data);
+  Object.entries(flat).forEach(([name, value]) => {
+    const input = document.querySelector(`[name="${name}"]`);
+    if (input) input.value = value;
+  });
 }
 
-function getNombreEstado(clave) {
-  return catalogoEstados.find(e => e.clave == clave)?.nombre || '';
-}
-function getNombreMunicipio(estadoC, munC) {
-  const estado = catalogoEstados.find(e => e.clave == estadoC);
-  return estado?.municipios?.find(m => m.clave == munC)?.nombre || '';
-}
-function getNombreCiudad(estadoC, munC, locC) {
-  const estado = catalogoEstados.find(e => e.clave == estadoC);
-  const mun = estado?.municipios?.find(m => m.clave == munC);
-  return mun?.localidades?.find(l => l.clave == locC)?.nombre || '';
-}
-
-async function asignarEstadoMunicipioCiudad(sufijo, estado, municipio, ciudad) {
-  const e = document.getElementById(`estado_${sufijo}`);
-  const m = document.getElementById(`municipio_${sufijo}`);
-  const c = document.getElementById(`ciudad_${sufijo}`);
-  if (!e) return;
-  e.value = estado; e.dispatchEvent(new Event('change'));
-  await new Promise(r => setTimeout(r, 400));
-  m.value = municipio; m.dispatchEvent(new Event('change'));
-  await new Promise(r => setTimeout(r, 400));
-  c.value = ciudad;
-}
