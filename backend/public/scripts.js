@@ -2,9 +2,9 @@ const BASE_URL = window.location.origin.includes('localhost')
   ? 'http://localhost:3001'
   : 'https://registro272.onrender.com';
 
-document.addEventListener('DOMContentLoaded', () => {
-  cargarCatalogo();
-  cargarCatalogoGeneral();
+document.addEventListener('DOMContentLoaded', async () => {
+  await cargarCatalogo();
+  await cargarCatalogoGeneral();
   consultarFolioYAutocompletar();
 
   document.getElementById('registroForm').addEventListener('submit', async (e) => {
@@ -40,13 +40,13 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!folio) return alert('Folio perdido');
 
     const formData = new FormData(e.target);
-    const estadoClave = document.getElementById('estado_nacimiento').selectedOptions[0]?.dataset.clave;
-    const municipioClave = document.getElementById('municipio_nacimiento').selectedOptions[0]?.dataset.clave;
-    const ciudadClave = document.getElementById('ciudad_nacimiento').selectedOptions[0]?.dataset.clave;
+    const estadoClave = document.getElementById('estado_nacimiento').selectedOptions[0]?.dataset?.clave;
+    const municipioClave = document.getElementById('municipio_nacimiento').selectedOptions[0]?.dataset?.clave;
+    const ciudadClave = document.getElementById('ciudad_nacimiento').selectedOptions[0]?.dataset?.clave;
 
-    const estadoClaveG = document.getElementById('estado_nacimiento_general').selectedOptions[0]?.dataset.clave;
-    const municipioClaveG = document.getElementById('municipio_nacimiento_general').selectedOptions[0]?.dataset.clave;
-    const ciudadClaveG = document.getElementById('ciudad_nacimiento_general').selectedOptions[0]?.dataset.clave;
+    const estadoClaveG = document.getElementById('estado_nacimiento_general').selectedOptions[0]?.dataset?.clave;
+    const municipioClaveG = document.getElementById('municipio_nacimiento_general').selectedOptions[0]?.dataset?.clave;
+    const ciudadClaveG = document.getElementById('ciudad_nacimiento_general').selectedOptions[0]?.dataset?.clave;
 
     const nuevoRegistro = {
       folio,
@@ -153,18 +153,16 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
-function cargarCatalogo() {
-  fetch('/data/catalogo.json')
-    .then(res => res.json())
-    .then(data => cargarSelectores('nacimiento', data))
-    .catch(err => console.error('❌ Error cargando catálogo:', err));
+async function cargarCatalogo() {
+  const res = await fetch('/data/catalogo.json');
+  const data = await res.json();
+  cargarSelectores('nacimiento', data);
 }
 
-function cargarCatalogoGeneral() {
-  fetch('/data/catalogo.json')
-    .then(res => res.json())
-    .then(data => cargarSelectores('nacimiento_general', data))
-    .catch(err => console.error('❌ Error cargando catálogo general:', err));
+async function cargarCatalogoGeneral() {
+  const res = await fetch('/data/catalogo.json');
+  const data = await res.json();
+  cargarSelectores('nacimiento_general', data);
 }
 
 function cargarSelectores(sufijo, data) {
@@ -187,8 +185,9 @@ function cargarSelectores(sufijo, data) {
 
   estado.addEventListener('change', function () {
     const selected = this.selectedOptions[0];
-    const municipios = JSON.parse(selected.dataset.municipios || '[]');
+    if (!selected) return;
 
+    const municipios = JSON.parse(selected.dataset.municipios || '[]');
     municipio.innerHTML = '<option value="">-- Selecciona Municipio --</option>';
     ciudad.innerHTML = '<option value="">-- Selecciona Ciudad --</option>';
 
@@ -207,8 +206,9 @@ function cargarSelectores(sufijo, data) {
 
   municipio.addEventListener('change', function () {
     const selected = this.selectedOptions[0];
-    const localidades = JSON.parse(selected.dataset.localidades || '[]');
+    if (!selected) return;
 
+    const localidades = JSON.parse(selected.dataset.localidades || '[]');
     ciudad.innerHTML = '<option value="">-- Selecciona Ciudad --</option>';
     localidades.forEach(loc => {
       const opt = document.createElement('option');
@@ -340,6 +340,8 @@ function consultarFolioYAutocompletar() {
     })
     .catch(err => console.error('Error al cargar alumno:', err));
 }
+
+
 
 
 
