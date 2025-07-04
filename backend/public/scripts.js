@@ -223,9 +223,6 @@ function cargarSelectores(sufijo, data) {
 }
 
 
-
-
-
 function consultarFolioYAutocompletar() {
   const folio = localStorage.getItem('alumnoFolio');
   if (!folio) return;
@@ -351,10 +348,7 @@ function consultarFolioYAutocompletar() {
 
 
 
-      
-    })
-    .catch(err => console.error('Error al cargar alumno:', err));
-}
+
 
 const reimprimirForm = document.getElementById('reimprimirForm');
 if (reimprimirForm) {
