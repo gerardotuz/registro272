@@ -1,6 +1,9 @@
+<script>
 const BASE_URL = window.location.origin.includes('localhost')
   ? 'http://localhost:3001'
   : 'https://registro272.onrender.com';
+
+let catalogoEstados = [];
 
 document.addEventListener('DOMContentLoaded', async () => {
   await cargarCatalogo();
@@ -40,6 +43,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!folio) return alert('Folio perdido');
 
     const formData = new FormData(e.target);
+
     const estadoClave = document.getElementById('estado_nacimiento').selectedOptions[0]?.dataset?.clave;
     const municipioClave = document.getElementById('municipio_nacimiento').selectedOptions[0]?.dataset?.clave;
     const ciudadClave = document.getElementById('ciudad_nacimiento').selectedOptions[0]?.dataset?.clave;
@@ -127,13 +131,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     };
 
-    const estadoCivilMap = {
-      'soltero': 1,
-      'casado': 2,
-      'union_libre': 3,
-      'divorciado': 4,
-      'viudo': 5
-    };
+    const estadoCivilMap = { 'soltero': 1, 'casado': 2, 'union_libre': 3, 'divorciado': 4, 'viudo': 5 };
     const textoEC = nuevoRegistro.datos_alumno.estado_civil?.toLowerCase();
     nuevoRegistro.datos_alumno.estado_civil = estadoCivilMap[textoEC] || 0;
 
@@ -155,8 +153,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 async function cargarCatalogo() {
   const res = await fetch('/data/catalogo.json');
-  const data = await res.json();
-  cargarSelectores('nacimiento', data);
+  catalogoEstados = await res.json();
+  cargarSelectores('nacimiento', catalogoEstados);
 }
 
 async function cargarCatalogoGeneral() {
@@ -186,11 +184,9 @@ function cargarSelectores(sufijo, data) {
   estado.addEventListener('change', function () {
     const selected = this.selectedOptions[0];
     if (!selected) return;
-
     const municipios = JSON.parse(selected.dataset.municipios || '[]');
     municipio.innerHTML = '<option value="">-- Selecciona Municipio --</option>';
     ciudad.innerHTML = '<option value="">-- Selecciona Ciudad --</option>';
-
     municipios.forEach(mun => {
       const opt = document.createElement('option');
       opt.value = mun.nombre;
@@ -199,7 +195,6 @@ function cargarSelectores(sufijo, data) {
       opt.textContent = mun.nombre;
       municipio.appendChild(opt);
     });
-
     municipio.disabled = municipios.length === 0;
     ciudad.disabled = true;
   });
@@ -207,7 +202,6 @@ function cargarSelectores(sufijo, data) {
   municipio.addEventListener('change', function () {
     const selected = this.selectedOptions[0];
     if (!selected) return;
-
     const localidades = JSON.parse(selected.dataset.localidades || '[]');
     ciudad.innerHTML = '<option value="">-- Selecciona Ciudad --</option>';
     localidades.forEach(loc => {
@@ -217,7 +211,6 @@ function cargarSelectores(sufijo, data) {
       opt.textContent = loc.nombre;
       ciudad.appendChild(opt);
     });
-
     ciudad.disabled = localidades.length === 0;
   });
 }
@@ -229,6 +222,8 @@ async function consultarFolioYAutocompletar() {
   const res = await fetch(`${BASE_URL}/api/folio/${folio}`);
   const data = await res.json();
   if (!data) return;
+
+  const estadoCivilMapReverse = { 1: 'Soltero', 2: 'Casado', 3: 'Unión libre', 4: 'Divorciado', 5: 'Viudo' };
 
   if (data.datos_alumno) {
     const d = data.datos_alumno;
@@ -244,8 +239,11 @@ async function consultarFolioYAutocompletar() {
     document.querySelector('[name="fecha_nacimiento"]').value = d.fecha_nacimiento || '';
     document.querySelector('[name="edad"]').value = d.edad || '';
     document.querySelector('[name="sexo"]').value = d.sexo || '';
-    document.querySelector('[name="estado_civil"]').value = d.estado_civil || '';
-    await asignarEstadoMunicipioCiudad('nacimiento', d.estado_nacimiento, d.municipio_nacimiento, d.ciudad_nacimiento);
+    document.querySelector('[name="estado_civil"]').value = estadoCivilMapReverse[d.estado_civil] || '';
+    await asignarEstadoMunicipioCiudad('nacimiento',
+      getNombreEstado(d.estado_nacimiento),
+      getNombreMunicipio(d.estado_nacimiento, d.municipio_nacimiento),
+      getNombreCiudad(d.estado_nacimiento, d.municipio_nacimiento, d.ciudad_nacimiento));
   }
 
   if (data.datos_generales) {
@@ -271,78 +269,37 @@ async function consultarFolioYAutocompletar() {
     document.querySelector('[name="segunda_opcion"]').value = d.segunda_opcion || '';
     document.querySelector('[name="tercera_opcion"]').value = d.tercera_opcion || '';
     document.querySelector('[name="cuarta_opcion"]').value = d.cuarta_opcion || '';
-    await asignarEstadoMunicipioCiudad('nacimiento_general', d.estado_nacimiento_general, d.municipio_nacimiento_general, d.ciudad_nacimiento_general);
-  }
-
-  if (data.datos_medicos) {
-    const d = data.datos_medicos;
-    document.querySelector('[name="numero_seguro_social"]').value = d.numero_seguro_social || '';
-    document.querySelector('[name="unidad_medica_familiar"]').value = d.unidad_medica_familiar || '';
-    document.querySelector('[name="enfermedad_cronica_o_alergia_respuesta"]').value = d.enfermedad_cronica_o_alergia?.respuesta || '';
-    document.querySelector('[name="enfermedad_cronica_o_alergia_detalle"]').value = d.enfermedad_cronica_o_alergia?.detalle || '';
-    document.querySelector('[name="discapacidad"]').value = d.discapacidad || '';
-  }
-
-  if (data.secundaria_origen) {
-    const d = data.secundaria_origen;
-    document.querySelector('[name="nombre_secundaria"]').value = d.nombre_secundaria || '';
-    document.querySelector('[name="regimen"]').value = d.regimen || '';
-    document.querySelector('[name="promedio_general"]').value = d.promedio_general || '';
-    document.querySelector('[name="modalidad"]').value = d.modalidad || '';
-  }
-
-  if (data.tutor_responsable) {
-    const d = data.tutor_responsable;
-    document.querySelector('[name="nombre_padre"]').value = d.nombre_padre || '';
-    document.querySelector('[name="telefono_padre"]').value = d.telefono_padre || '';
-    document.querySelector('[name="nombre_madre"]').value = d.nombre_madre || '';
-    document.querySelector('[name="telefono_madre"]').value = d.telefono_madre || '';
-    document.querySelector('[name="vive_con"]').value = d.vive_con || '';
-  }
-
-  if (data.persona_emergencia) {
-    const d = data.persona_emergencia;
-    document.querySelector('[name="persona_emergencia_nombre"]').value = d.nombre || '';
-    document.querySelector('[name="persona_emergencia_parentesco"]').value = d.parentesco || '';
-    document.querySelector('[name="persona_emergencia_telefono"]').value = d.telefono || '';
+    await asignarEstadoMunicipioCiudad('nacimiento_general',
+      getNombreEstado(d.estado_nacimiento_general),
+      getNombreMunicipio(d.estado_nacimiento_general, d.municipio_nacimiento_general),
+      getNombreCiudad(d.estado_nacimiento_general, d.municipio_nacimiento_general, d.ciudad_nacimiento_general));
   }
 }
 
-async function asignarEstadoMunicipioCiudad(sufijo, estadoValue, municipioValue, ciudadValue) {
+function getNombreEstado(clave) {
+  return catalogoEstados.find(est => est.clave == clave)?.nombre || '';
+}
+function getNombreMunicipio(claveEstado, claveMunicipio) {
+  const estado = catalogoEstados.find(est => est.clave == claveEstado);
+  return estado?.municipios?.find(mun => mun.clave == claveMunicipio)?.nombre || '';
+}
+function getNombreCiudad(claveEstado, claveMunicipio, claveCiudad) {
+  const estado = catalogoEstados.find(est => est.clave == claveEstado);
+  const municipio = estado?.municipios?.find(mun => mun.clave == claveMunicipio);
+  return municipio?.localidades?.find(loc => loc.clave == claveCiudad)?.nombre || '';
+}
+
+async function asignarEstadoMunicipioCiudad(sufijo, estado, municipio, ciudad) {
   const estadoSel = document.getElementById(`estado_${sufijo}`);
   const municipioSel = document.getElementById(`municipio_${sufijo}`);
   const ciudadSel = document.getElementById(`ciudad_${sufijo}`);
-
   if (!estadoSel) return;
-
-  estadoSel.value = estadoValue || '';
+  estadoSel.value = estado;
   estadoSel.dispatchEvent(new Event('change'));
-  await new Promise(resolve => setTimeout(resolve, 400));
-
-  municipioSel.value = municipioValue || '';
+  await new Promise(r => setTimeout(r, 400));
+  municipioSel.value = municipio;
   municipioSel.dispatchEvent(new Event('change'));
-  await new Promise(resolve => setTimeout(resolve, 400));
-
-  ciudadSel.value = ciudadValue || '';
+  await new Promise(r => setTimeout(r, 400));
+  ciudadSel.value = ciudad;
 }
-
-const reimprimirForm = document.getElementById('reimprimirForm');
-if (reimprimirForm) {
-  reimprimirForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const folio = document.getElementById('folioReimpresion').value.trim();
-    if (!folio) return;
-
-    try {
-      const res = await fetch(`${BASE_URL}/api/reimprimir/${folio}`);
-      const data = await res.json();
-      if (res.ok) {
-        window.open(data.pdf, '_blank');
-      } else {
-        alert(data.message || 'No se pudo reimprimir el PDF');
-      }
-    } catch (err) {
-      alert('❌ Error al reimprimir PDF');
-    }
-  });
-}
+</script>
