@@ -1,4 +1,3 @@
-<script>
 const BASE_URL = window.location.origin.includes('localhost')
   ? 'http://localhost:3001'
   : 'https://registro272.onrender.com';
@@ -308,4 +307,4 @@ async function asignarEstadoMunicipioCiudad(sufijo, estado, municipio, ciudad) {
   await new Promise(r => setTimeout(r, 400));
   ciudadSel.value = ciudad;
 }
-</script>
+
