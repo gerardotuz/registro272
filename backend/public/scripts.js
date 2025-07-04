@@ -9,23 +9,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   await cargarCatalogoGeneral();
   await consultarFolioYAutocompletar();
 
-  // Precargar datos locales si existen
   const datos = JSON.parse(localStorage.getItem('datosPrecargados'));
   if (datos) {
-    const flatten = (obj, prefix = '') => {
-      let result = {};
-      for (let key in obj) {
-        if (!obj.hasOwnProperty(key)) continue;
-        const newKey = prefix ? `${prefix}_${key}` : key;
-        if (typeof obj[key] === 'object' && obj[key] !== null && !Array.isArray(obj[key])) {
-          Object.assign(result, flatten(obj[key], newKey));
-        } else {
-          result[newKey] = obj[key];
-        }
-      }
-      return result;
-    };
     const combined = flatten(datos);
+
     Object.entries(combined).forEach(([name, value]) => {
       const input = document.querySelector(`[name="${name}"]`);
       if (input) input.value = value;
@@ -36,20 +23,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     e.preventDefault();
 
     const camposObligatorios = [
-      'nombres','primer_apellido','segundo_apellido','curp','carrera',
-      'periodo_semestral','semestre','fecha_nacimiento','edad','sexo',
-      'estado_nacimiento','municipio_nacimiento','ciudad_nacimiento','estado_civil',
-      'primera_opcion','segunda_opcion','tercera_opcion','cuarta_opcion',
-      'colonia','domicilio','codigo_postal','telefono_alumno','correo_alumno',
-      'tipo_sangre','contacto_emergencia_nombre','contacto_emergencia_telefono',
-      'habla_lengua_indigena_respuesta','numero_seguro_social','unidad_medica_familiar',
-      'enfermedad_cronica_o_alergia_respuesta','enfermedad_cronica_o_alergia_detalle',
-      'discapacidad','entrega_diagnostico','detalle_enfermedad',
-      'nombre_secundaria','regimen','promedio_general','modalidad',
-      'nombre_padre','telefono_padre','nombre_madre','telefono_madre',
-      'vive_con','persona_emergencia_nombre','persona_emergencia_parentesco','persona_emergencia_telefono',
-      'responsable_emergencia_nombre','responsable_emergencia_telefono','responsable_emergencia_parentesco','carta_poder',
-      'paraescolar'
+      'nombres', 'primer_apellido', 'segundo_apellido', 'curp', 'carrera',
+      'periodo_semestral', 'semestre', 'fecha_nacimiento', 'edad', 'sexo',
+      'estado_nacimiento', 'municipio_nacimiento', 'ciudad_nacimiento', 'estado_civil',
+      'primera_opcion', 'segunda_opcion', 'tercera_opcion', 'cuarta_opcion',
+      'colonia', 'domicilio', 'codigo_postal', 'telefono_alumno', 'correo_alumno',
+      'tipo_sangre', 'contacto_emergencia_nombre', 'contacto_emergencia_telefono',
+      'habla_lengua_indigena_respuesta', 'numero_seguro_social', 'unidad_medica_familiar',
+      'enfermedad_cronica_o_alergia_respuesta', 'enfermedad_cronica_o_alergia_detalle',
+      'discapacidad', 'entrega_diagnostico', 'detalle_enfermedad',
+      'nombre_secundaria', 'regimen', 'promedio_general', 'modalidad',
+      'nombre_padre', 'telefono_padre', 'nombre_madre', 'telefono_madre',
+      'vive_con', 'persona_emergencia_nombre', 'persona_emergencia_parentesco', 'persona_emergencia_telefono',
+      'responsable_emergencia_nombre', 'responsable_emergencia_telefono', 'responsable_emergencia_parentesco',
+      'carta_poder', 'paraescolar'
     ];
 
     for (const campo of camposObligatorios) {
@@ -92,7 +79,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         estado_nacimiento: estadoClave,
         municipio_nacimiento: municipioClave,
         ciudad_nacimiento: ciudadClave,
-        estado_civil: formData.get('estado_civil')
+        estado_civil: formData.get('estado_civil'),
+        nacionalidad: formData.get('nacionalidad'),
+        pais_extranjero: formData.get('pais_extranjero')
       },
       datos_generales: {
         colonia: formData.get('colonia'),
@@ -153,7 +142,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     };
 
-    const estadoCivilMap = { 'soltero': 1, 'casado': 2, 'union_libre': 3, 'divorciado': 4, 'viudo': 5 };
+    const estadoCivilMap = { 'soltero': 1, 'casado': 2, 'union libre': 3, 'divorciado': 4, 'viudo': 5 };
     const textoEC = nuevoRegistro.datos_alumno.estado_civil?.toLowerCase();
     nuevoRegistro.datos_alumno.estado_civil = estadoCivilMap[textoEC] || 0;
 
@@ -172,6 +161,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 });
+
+function flatten(obj, prefix = '') {
+  let result = {};
+  for (const key in obj) {
+    if (typeof obj[key] === 'object' && obj[key] !== null && !Array.isArray(obj[key])) {
+      Object.assign(result, flatten(obj[key], `${prefix}${prefix ? '_' : ''}${key}`));
+    } else {
+      result[`${prefix}${prefix ? '_' : ''}${key}`] = obj[key];
+    }
+  }
+  return result;
+}
 
 async function cargarCatalogo() {
   const res = await fetch('/data/catalogo.json');
@@ -262,67 +263,7 @@ async function consultarFolioYAutocompletar() {
     document.querySelector('[name="edad"]').value = d.edad || '';
     document.querySelector('[name="sexo"]').value = d.sexo || '';
     document.querySelector('[name="estado_civil"]').value = estadoCivilMapReverse[d.estado_civil] || '';
-    await asignarEstadoMunicipioCiudad('nacimiento',
-      getNombreEstado(d.estado_nacimiento),
-      getNombreMunicipio(d.estado_nacimiento, d.municipio_nacimiento),
-      getNombreCiudad(d.estado_nacimiento, d.municipio_nacimiento, d.ciudad_nacimiento));
+    document.querySelector('[name="nacionalidad"]').value = d.nacionalidad || '';
+    document.querySelector('[name="pais_extranjero"]').value = d.pais_extranjero || '';
   }
-
-  if (data.datos_generales) {
-    const d = data.datos_generales;
-    document.querySelector('[name="colonia"]').value = d.colonia || '';
-    document.querySelector('[name="domicilio"]').value = d.domicilio || '';
-    document.querySelector('[name="codigo_postal"]').value = d.codigo_postal || '';
-    document.querySelector('[name="telefono_alumno"]').value = d.telefono_alumno || '';
-    document.querySelector('[name="correo_alumno"]').value = d.correo_alumno || '';
-    document.querySelector('[name="paraescolar"]').value = d.paraescolar || '';
-    document.querySelector('[name="tipo_sangre"]').value = d.tipo_sangre || '';
-    document.querySelector('[name="contacto_emergencia_nombre"]').value = d.contacto_emergencia_nombre || '';
-    document.querySelector('[name="contacto_emergencia_telefono"]').value = d.contacto_emergencia_telefono || '';
-    document.querySelector('[name="habla_lengua_indigena_respuesta"]').value = d.habla_lengua_indigena?.respuesta || '';
-    document.querySelector('[name="habla_lengua_indigena_cual"]').value = d.habla_lengua_indigena?.cual || '';
-    document.querySelector('[name="entrega_diagnostico"]').value = d.entrega_diagnostico || '';
-    document.querySelector('[name="detalle_enfermedad"]').value = d.detalle_enfermedad || '';
-    document.querySelector('[name="responsable_emergencia_nombre"]').value = d.responsable_emergencia?.nombre || '';
-    document.querySelector('[name="responsable_emergencia_telefono"]').value = d.responsable_emergencia?.telefono || '';
-    document.querySelector('[name="responsable_emergencia_parentesco"]').value = d.responsable_emergencia?.parentesco || '';
-    document.querySelector('[name="carta_poder"]').value = d.carta_poder || '';
-    document.querySelector('[name="primera_opcion"]').value = d.primera_opcion || '';
-    document.querySelector('[name="segunda_opcion"]').value = d.segunda_opcion || '';
-    document.querySelector('[name="tercera_opcion"]').value = d.tercera_opcion || '';
-    document.querySelector('[name="cuarta_opcion"]').value = d.cuarta_opcion || '';
-    await asignarEstadoMunicipioCiudad('nacimiento_general',
-      getNombreEstado(d.estado_nacimiento_general),
-      getNombreMunicipio(d.estado_nacimiento_general, d.municipio_nacimiento_general),
-      getNombreCiudad(d.estado_nacimiento_general, d.municipio_nacimiento_general, d.ciudad_nacimiento_general));
-  }
-}
-
-function getNombreEstado(clave) {
-  return catalogoEstados.find(est => est.clave == clave)?.nombre || '';
-}
-
-function getNombreMunicipio(claveEstado, claveMunicipio) {
-  const estado = catalogoEstados.find(est => est.clave == claveEstado);
-  return estado?.municipios?.find(mun => mun.clave == claveMunicipio)?.nombre || '';
-}
-
-function getNombreCiudad(claveEstado, claveMunicipio, claveCiudad) {
-  const estado = catalogoEstados.find(est => est.clave == claveEstado);
-  const municipio = estado?.municipios?.find(mun => mun.clave == claveMunicipio);
-  return municipio?.localidades?.find(loc => loc.clave == claveCiudad)?.nombre || '';
-}
-
-async function asignarEstadoMunicipioCiudad(sufijo, estado, municipio, ciudad) {
-  const estadoSel = document.getElementById(`estado_${sufijo}`);
-  const municipioSel = document.getElementById(`municipio_${sufijo}`);
-  const ciudadSel = document.getElementById(`ciudad_${sufijo}`);
-  if (!estadoSel) return;
-  estadoSel.value = estado;
-  estadoSel.dispatchEvent(new Event('change'));
-  await new Promise(r => setTimeout(r, 400));
-  municipioSel.value = municipio;
-  municipioSel.dispatchEvent(new Event('change'));
-  await new Promise(r => setTimeout(r, 400));
-  ciudadSel.value = ciudad;
 }
