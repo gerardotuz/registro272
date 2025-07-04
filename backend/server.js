@@ -29,7 +29,7 @@ app.use('/api', require('./routers/auth.js'));
 app.use('/api', require('./routers/grupo.js'));
 
 // ✅ Rutas Dashboard
-app.use('/api/dashboard', require('./routes/dashboard')); // NUEVA ruta API para dashboard
+app.use('/api/dashboard', require('./routers/dashboard')); // NUEVA ruta API para dashboard
 
 // ✅ Vista Dashboard
 app.get('/dashboard', (req, res) => {
