@@ -9,6 +9,40 @@ document.addEventListener('DOMContentLoaded', async () => {
   await cargarCatalogoGeneral();
   await consultarFolioYAutocompletar();
 
+  // Precargar datos locales si existen
+  const datos = JSON.parse(localStorage.getItem('datosPrecargados'));
+  if (datos) {
+    const flatten = (obj, prefix = '') => {
+      let result = {};
+      for (let key in obj) {
+        if (!obj.hasOwnProperty(key)) continue;
+        const newKey = prefix ? `${prefix}_${key}` : key;
+        if (typeof obj[key] === 'object' && obj[key] !== null && !Array.isArray(obj[key])) {
+          Object.assign(result, flatten(obj[key], newKey));
+        } else {
+          result[newKey] = obj[key];
+        }
+      }
+      return result;
+    };
+
+    const set = (name, value) => {
+      const input = document.querySelector(`[name="${name}"]`);
+      if (input && value != null && value !== '') input.value = value;
+    };
+
+    let combined = {};
+    ['datos_alumno', 'datos_generales', 'datos_medicos', 'secundaria_origen', 'tutor_responsable', 'persona_emergencia'].forEach(key => {
+      if (datos[key]) combined = { ...combined, ...flatten(datos[key], key) };
+    });
+
+    Object.entries(datos).forEach(([k, v]) => {
+      if (typeof v !== 'object' || v === null) combined[k] = v;
+    });
+
+    Object.entries(combined).forEach(([name, value]) => set(name, value));
+  }
+
   document.getElementById('registroForm').addEventListener('submit', async (e) => {
     e.preventDefault();
 
@@ -278,10 +312,12 @@ async function consultarFolioYAutocompletar() {
 function getNombreEstado(clave) {
   return catalogoEstados.find(est => est.clave == clave)?.nombre || '';
 }
+
 function getNombreMunicipio(claveEstado, claveMunicipio) {
   const estado = catalogoEstados.find(est => est.clave == claveEstado);
   return estado?.municipios?.find(mun => mun.clave == claveMunicipio)?.nombre || '';
 }
+
 function getNombreCiudad(claveEstado, claveMunicipio, claveCiudad) {
   const estado = catalogoEstados.find(est => est.clave == claveEstado);
   const municipio = estado?.municipios?.find(mun => mun.clave == claveMunicipio);
