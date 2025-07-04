@@ -313,13 +313,15 @@ async function asignarEstadoMunicipioCiudad(sufijo, estadoValue, municipioValue,
   const municipioSel = document.getElementById(`municipio_${sufijo}`);
   const ciudadSel = document.getElementById(`ciudad_${sufijo}`);
 
+  if (!estadoSel) return;
+
   estadoSel.value = estadoValue || '';
   estadoSel.dispatchEvent(new Event('change'));
-  await new Promise(resolve => setTimeout(resolve, 200));
+  await new Promise(resolve => setTimeout(resolve, 400));
 
   municipioSel.value = municipioValue || '';
   municipioSel.dispatchEvent(new Event('change'));
-  await new Promise(resolve => setTimeout(resolve, 200));
+  await new Promise(resolve => setTimeout(resolve, 400));
 
   ciudadSel.value = ciudadValue || '';
 }
