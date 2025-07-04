@@ -317,54 +317,7 @@
 </form>
 
 
-<script>
-window.onload = () => {
-  cargarCatalogo();
-  consultarFolioYAutocompletar();
 
-  const datos = JSON.parse(localStorage.getItem('datosPrecargados'));
-  if (!datos) return;
-
-  const set = (name, value) => {
-    const input = document.querySelector(`[name="${name}"]`);
-    if (input && value != null && value !== '') input.value = value;
-  };
-
-  // Función para aplanar objetos anidados
-  const flatten = (obj, prefix = '') => {
-    let result = {};
-    for (let key in obj) {
-      if (!obj.hasOwnProperty(key)) continue;
-
-      const newKey = prefix ? `${prefix}_${key}` : key;
-      if (typeof obj[key] === 'object' && obj[key] !== null && !Array.isArray(obj[key])) {
-        Object.assign(result, flatten(obj[key], newKey));
-      } else {
-        result[newKey] = obj[key];
-      }
-    }
-    return result;
-  };
-
-  // Combinar todos los bloques principales
-  let combined = {};
-  ['datos_alumno', 'datos_generales', 'datos_medicos', 'secundaria_origen', 'tutor_responsable', 'persona_emergencia'].forEach(key => {
-    if (datos[key]) {
-      combined = { ...combined, ...flatten(datos[key], key) };
-    }
-  });
-
-  // Además, a nivel raíz si hay algo más
-  Object.entries(datos).forEach(([k, v]) => {
-    if (typeof v !== 'object' || v === null) {
-      combined[k] = v;
-    }
-  });
-
-  // Asignar todos los campos encontrados
-  Object.entries(combined).forEach(([name, value]) => set(name, value));
-};
-</script>
 
 <script>
   const opciones = ["A Y B", "PROGRAMACIÓN", "GESTIÓN E INNOVACIÓN TURÍSTICA", "VENTAS"];
