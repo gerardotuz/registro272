@@ -261,9 +261,9 @@ function consultarFolioYAutocompletar() {
         });
       }, 300);
 
-      if (data.registro_completado) {
-        deshabilitarFormulario();
-      }
+    //  if (data.registro_completado) {
+       // deshabilitarFormulario();
+    //  }
     })
     .catch(err => console.error('Error al cargar alumno:', err));
 }
