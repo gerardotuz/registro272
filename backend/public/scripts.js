@@ -222,16 +222,9 @@ function cargarSelectores(sufijo, data) {
   });
 }
 
-function consultarFolioYAutocompletar() {
-  const folio = localStorage.getItem('alumnoFolio');
-  if (!folio) return;
 
-  fetch(`${BASE_URL}/api/folio/${folio}`)
-    .then(res => res.json())
-    .then(data => {
-      if (!data) return;
 
-      
+
 
 function consultarFolioYAutocompletar() {
   const folio = localStorage.getItem('alumnoFolio');
