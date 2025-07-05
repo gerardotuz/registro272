@@ -1,11 +1,10 @@
 // /public/js/dashboard.js
 document.addEventListener('DOMContentLoaded', () => {
-  // ✅ Verificar login
+  // Validar login localStorage
   if (!localStorage.getItem('login')) {
     window.location.href = '/login.html';
   }
 
-  // ✅ Logout
   document.getElementById('logoutBtn').addEventListener('click', () => {
     localStorage.removeItem('login');
     window.location.href = '/login.html';
@@ -22,7 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const folio = searchFolio.value.trim();
     const apellidos = searchApellidos.value.trim();
 
-    const res = await fetch(`/api/alumnos?folio=${folio}&apellidos=${apellidos}`);
+    const res = await fetch(`/api/dashboard/alumnos?folio=${folio}&apellidos=${apellidos}`);
     const data = await res.json();
 
     data.forEach(alumno => {
@@ -41,7 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
       resultadosTable.appendChild(row);
     });
 
-    // Eventos CRUD
+    // Botones CRUD
     document.querySelectorAll('.btnEditar').forEach(btn => {
       btn.addEventListener('click', abrirModalEdicion);
     });
@@ -50,10 +49,9 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // ✅ Abrir modal y cargar datos
   function abrirModalEdicion(e) {
     const id = e.target.dataset.id;
-    fetch(`/api/alumnos/${id}`)
+    fetch(`/api/dashboard/alumnos/${id}`)
       .then(res => res.json())
       .then(alumno => {
         document.getElementById('editId').value = alumno._id;
@@ -65,7 +63,6 @@ document.addEventListener('DOMContentLoaded', () => {
       });
   }
 
-  // ✅ Guardar cambios
   document.getElementById('btnGuardar').addEventListener('click', () => {
     const id = document.getElementById('editId').value;
     const datos = {
@@ -75,7 +72,8 @@ document.addEventListener('DOMContentLoaded', () => {
         nombres: document.getElementById('editNombres').value
       }
     };
-    fetch(`/api/alumnos/${id}`, {
+
+    fetch(`/api/dashboard/alumnos/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(datos)
@@ -85,11 +83,10 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // ✅ Eliminar alumno
   function eliminarAlumno(e) {
     const id = e.target.dataset.id;
-    if (confirm('¿Estás seguro de eliminar este alumno?')) {
-      fetch(`/api/alumnos/${id}`, { method: 'DELETE' })
+    if (confirm('¿Eliminar este alumno?')) {
+      fetch(`/api/dashboard/alumnos/${id}`, { method: 'DELETE' })
         .then(() => {
           alert('Alumno eliminado');
           location.reload();
