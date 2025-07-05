@@ -124,4 +124,57 @@ router.get('/reimprimir/:folio', async (req, res) => {
   }
 });
 
+
+
+// 📌 Búsqueda para Dashboard (folio y apellidos)
+router.get('/dashboard/alumnos', async (req, res) => {
+  const { folio, apellidos } = req.query;
+  let query = {};
+
+  if (folio) query.folio = folio;
+  if (apellidos) {
+    query['datos_alumno.primer_apellido'] = { $regex: apellidos, $options: 'i' };
+  }
+
+  try {
+    const alumnos = await Alumno.find(query);
+    res.json(alumnos);
+  } catch (error) {
+    res.status(500).json({ message: 'Error al buscar alumnos', error });
+  }
+});
+
+// 📌 Obtener alumno por ID para edición
+router.get('/dashboard/alumnos/:id', async (req, res) => {
+  try {
+    const alumno = await Alumno.findById(req.params.id);
+    if (!alumno) return res.status(404).json({ message: 'No encontrado' });
+    res.json(alumno);
+  } catch (error) {
+    res.status(500).json({ message: 'Error al obtener alumno', error });
+  }
+});
+
+// 📌 Actualizar alumno desde Dashboard
+router.put('/dashboard/alumnos/:id', async (req, res) => {
+  try {
+    const actualizado = await Alumno.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    res.json(actualizado);
+  } catch (error) {
+    res.status(500).json({ message: 'Error al actualizar alumno', error });
+  }
+});
+
+// 📌 Eliminar alumno desde Dashboard
+router.delete('/dashboard/alumnos/:id', async (req, res) => {
+  try {
+    await Alumno.findByIdAndDelete(req.params.id);
+    res.json({ message: 'Alumno eliminado' });
+  } catch (error) {
+    res.status(500).json({ message: 'Error al eliminar alumno', error });
+  }
+});
+
+
+
 module.exports = router;
