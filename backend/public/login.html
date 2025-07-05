@@ -45,7 +45,7 @@
         const data = await res.json();
 
         if (res.ok) {
-          window.location.href = 'dashboard.html';
+          window.location.href = 'views/dashboard.html';
         } else {
           alert(data.message || 'Error al iniciar sesión');
         }
