@@ -66,7 +66,9 @@ document.addEventListener('DOMContentLoaded', () => {
         estado_nacimiento: estadoClave,
         municipio_nacimiento: municipioClave,
         ciudad_nacimiento: ciudadClave,
-        estado_civil: formData.get('estado_civil')
+        estado_civil: formData.get('estado_civil'),
+        nacionalidad: formData.get('nacionalidad'),         
+        pais_extranjero: formData.get('pais_extranjero')
       },
       datos_generales: {
         colonia: formData.get('colonia'),
