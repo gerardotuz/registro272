@@ -61,6 +61,22 @@
       </table>
     </div>
   </div>
+<!-- ✅ Bloque para cargar Excel de alumnos -->
+<h3>Cargar Excel de Alumnos</h3>
+<form id="excelForm" enctype="multipart/form-data">
+  <input type="file" name="archivo" accept=".xlsx" required>
+  <button type="submit">Cargar</button>
+</form>
+<p id="cargando" style="display:none; color: darkblue; text-align:center; font-weight: bold; margin-top: 10px;">
+  ⏳ Cargando archivo, por favor espera...
+</p>
+
+<!-- ✅ Bloque para cargar grupos -->
+<h3>Cargar Excel de Grupos</h3>
+<form id="formGrupos">
+  <input type="file" id="archivoGrupos" accept=".xlsx, .xls" required />
+  <button type="submit">Subir archivo</button>
+</form>
 
   <!-- Modal edición -->
   <div class="modal fade" id="editModal" tabindex="-1">
