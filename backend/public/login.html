@@ -14,7 +14,7 @@
   </div>
   <div class="nav-links">
     <a href="index.html">Inicio</a>
-   <a href="/assets/LISTA_DE_COTEJO_2025.pdf" download>Descargar Requisitos</a>
+
     <a href="login.html">Iniciar sesión</a>
   </div>
 </nav>
@@ -48,7 +48,7 @@
         // ✅ Guarda sesión local
         localStorage.setItem('login', 'true');
         // ✅ Redirige correctamente a /dashboard
-        window.location.href = '/views/dashboard';
+        window.location.href = '/dashboard';
       } else {
         alert(data.message || 'Error al iniciar sesión');
       }
