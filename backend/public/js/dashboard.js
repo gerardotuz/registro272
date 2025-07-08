@@ -2,9 +2,7 @@ const BASE_URL = window.location.origin.includes('localhost')
   ? 'http://localhost:3001'
   : 'https://registro272.onrender.com';
 
-// /public/js/dashboard.js
 document.addEventListener('DOMContentLoaded', () => {
-  // Verificar login con localStorage
   if (!localStorage.getItem('login')) {
     window.location.href = '/login.html';
   }
@@ -21,10 +19,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   btnBuscar.addEventListener('click', async () => {
     resultadosTable.innerHTML = '';
-
     const folio = searchFolio.value.trim();
     const apellidos = searchApellidos.value.trim();
-
     const res = await fetch(`/api/dashboard/alumnos?folio=${folio}&apellidos=${apellidos}`);
     const data = await res.json();
 
@@ -54,14 +50,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function abrirModalEdicion(e) {
     const id = e.target.dataset.id;
-
     fetch(`/api/dashboard/alumnos/${id}`)
       .then(res => res.json())
       .then(alumno => {
         document.getElementById('editId').value = alumno._id;
-
-        // ✅ Datos del Alumno
-        const da = alumno.datos_alumno;
+        const da = alumno.datos_alumno || {};
         document.getElementById('primer_apellido').value = da.primer_apellido || '';
         document.getElementById('segundo_apellido').value = da.segundo_apellido || '';
         document.getElementById('nombres').value = da.nombres || '';
@@ -81,8 +74,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('nacionalidad').value = da.nacionalidad || '';
         document.getElementById('pais_extranjero').value = da.pais_extranjero || '';
 
-        // ✅ Datos Generales
-        const dg = alumno.datos_generales;
+        const dg = alumno.datos_generales || {};
         document.getElementById('colonia').value = dg.colonia || '';
         document.getElementById('domicilio').value = dg.domicilio || '';
         document.getElementById('codigo_postal').value = dg.codigo_postal || '';
@@ -108,31 +100,27 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('municipio_nacimiento_general').value = dg.municipio_nacimiento_general || '';
         document.getElementById('ciudad_nacimiento_general').value = dg.ciudad_nacimiento_general || '';
 
-        // ✅ Datos Médicos
-        const dm = alumno.datos_medicos;
+        const dm = alumno.datos_medicos || {};
         document.getElementById('numero_seguro_social').value = dm.numero_seguro_social || '';
         document.getElementById('unidad_medica_familiar').value = dm.unidad_medica_familiar || '';
         document.getElementById('enfermedad_cronica_respuesta').value = dm.enfermedad_cronica_o_alergia?.respuesta || '';
         document.getElementById('enfermedad_cronica_detalle').value = dm.enfermedad_cronica_o_alergia?.detalle || '';
         document.getElementById('discapacidad').value = dm.discapacidad || '';
 
-        // ✅ Secundaria Origen
-        const so = alumno.secundaria_origen;
+        const so = alumno.secundaria_origen || {};
         document.getElementById('nombre_secundaria').value = so.nombre_secundaria || '';
         document.getElementById('regimen').value = so.regimen || '';
         document.getElementById('promedio_general').value = so.promedio_general || '';
         document.getElementById('modalidad').value = so.modalidad || '';
 
-        // ✅ Tutor Responsable
-        const tr = alumno.tutor_responsable;
+        const tr = alumno.tutor_responsable || {};
         document.getElementById('nombre_padre').value = tr.nombre_padre || '';
         document.getElementById('telefono_padre').value = tr.telefono_padre || '';
         document.getElementById('nombre_madre').value = tr.nombre_madre || '';
         document.getElementById('telefono_madre').value = tr.telefono_madre || '';
         document.getElementById('vive_con').value = tr.vive_con || '';
 
-        // ✅ Persona Emergencia
-        const pe = alumno.persona_emergencia;
+        const pe = alumno.persona_emergencia || {};
         document.getElementById('persona_emergencia_nombre').value = pe.nombre || '';
         document.getElementById('persona_emergencia_parentesco').value = pe.parentesco || '';
         document.getElementById('persona_emergencia_telefono').value = pe.telefono || '';
@@ -143,7 +131,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.getElementById('btnGuardar').addEventListener('click', () => {
     const id = document.getElementById('editId').value;
-
     const datos = {
       datos_alumno: {
         primer_apellido: document.getElementById('primer_apellido').value,
@@ -163,7 +150,7 @@ document.addEventListener('DOMContentLoaded', () => {
         ciudad_nacimiento: document.getElementById('ciudad_nacimiento').value,
         estado_civil: document.getElementById('estado_civil').value,
         nacionalidad: document.getElementById('nacionalidad').value,
-        pais_extranjero: document.getElementById('pais_extranjero').value,
+        pais_extranjero: document.getElementById('pais_extranjero').value
       },
       datos_generales: {
         colonia: document.getElementById('colonia').value,
@@ -193,7 +180,7 @@ document.addEventListener('DOMContentLoaded', () => {
         cuarta_opcion: document.getElementById('cuarta_opcion').value,
         estado_nacimiento_general: document.getElementById('estado_nacimiento_general').value,
         municipio_nacimiento_general: document.getElementById('municipio_nacimiento_general').value,
-        ciudad_nacimiento_general: document.getElementById('ciudad_nacimiento_general').value,
+        ciudad_nacimiento_general: document.getElementById('ciudad_nacimiento_general').value
       },
       datos_medicos: {
         numero_seguro_social: document.getElementById('numero_seguro_social').value,
@@ -245,57 +232,36 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-// ✅ Cargar Excel de alumnos
-document.getElementById('excelForm').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const formData = new FormData(e.target);
-  const cargando = document.getElementById('cargando');
-  cargando.style.display = 'block';
-
-  try {
-    const res = await fetch(`${BASE_URL}/api/cargar-excel`, {
-      method: 'POST',
-      body: formData
-    });
-
-    if (!res.ok) {
-      const errorText = await res.text();
-      throw new Error(`Error ${res.status}: ${errorText}`);
+  document.getElementById('excelForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    try {
+      const res = await fetch(`${BASE_URL}/api/cargar-excel`, {
+        method: 'POST',
+        body: formData
+      });
+      const result = await res.json();
+      alert(result.message);
+    } catch (err) {
+      alert('Error al cargar archivo');
     }
+  });
 
-    const result = await res.json();
-    alert("✅ " + result.message);
-  } catch (error) {
-    alert("❌ Error al cargar el archivo: " + error.message);
-    console.error("Detalles del error:", error);
-  } finally {
-    cargando.style.display = 'none';
-  }
-});
-
-// ✅ Cargar Excel de grupos
-document.getElementById('formGrupos').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const archivo = document.getElementById('archivoGrupos').files[0];
-  if (!archivo) return alert('Selecciona un archivo');
-
-  const formData = new FormData();
-  formData.append('archivo', archivo);
-
-  try {
-    const res = await fetch(`${BASE_URL}/api/cargar-grupos`, {
-      method: 'POST',
-      body: formData
-    });
-    const json = await res.json();
-    if (!json.ok) throw new Error(json.msg);
-    alert(json.msg);
-  } catch (err) {
-    alert(err.message || 'Error al cargar archivo');
-  }
-});
-
-
-
-  
+  document.getElementById('formGrupos').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const archivo = document.getElementById('archivoGrupos').files[0];
+    if (!archivo) return alert('Selecciona un archivo');
+    const formData = new FormData();
+    formData.append('archivo', archivo);
+    try {
+      const res = await fetch(`${BASE_URL}/api/cargar-grupos`, {
+        method: 'POST',
+        body: formData
+      });
+      const result = await res.json();
+      alert(result.message);
+    } catch (err) {
+      alert('Error al cargar archivo');
+    }
+  });
 });
