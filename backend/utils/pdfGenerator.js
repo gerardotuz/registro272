@@ -127,6 +127,10 @@ async function generarPDF(datos, nombreArchivo = 'formulario.pdf') {
   y = drawBox('Municipio de Nacimiento', municipio, marginX, y);
   y = drawBox('Ciudad de Nacimiento', ciudad, marginX + 260, y);
   y += GAP_Y;
+  y = drawBox('Nacionalidad', alumno.nacionalidad, marginX, y);
+  y = drawBox('País (si extranjero)', alumno.pais_extranjero, marginX + 260, y);
+  y += GAP_Y;
+
 
   y = drawSectionTitle('Datos Generales', y);
   y = drawBox('Colonia', generales.colonia, marginX, y);
