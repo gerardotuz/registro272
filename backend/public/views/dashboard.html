@@ -402,6 +402,10 @@
     } finally {
       cargando.style.display = 'none';
     }
+ document.getElementById('btnExportar').addEventListener('click', () => {
+    window.location.href = `${BASE_URL}/api/exportar-excel`;
+
+    
   });
 </script>
 
