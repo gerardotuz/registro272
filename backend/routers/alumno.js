@@ -103,6 +103,34 @@ router.post('/guardar', async (req, res) => {
   }
 });
 
+
+// ✅ Cargar archivo Excel de alumnos
+router.post('/cargar-excel', upload.single('archivo'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: 'No se envió archivo' });
+    }
+
+    const workbook = xlsx.read(req.file.buffer, { type: 'buffer' });
+    const sheetName = workbook.SheetNames[0];
+    const datos = xlsx.utils.sheet_to_json(workbook.Sheets[sheetName]);
+
+    if (!datos || datos.length === 0) {
+      return res.status(400).json({ message: 'El archivo está vacío o no tiene datos válidos' });
+    }
+
+    await Alumno.insertMany(datos);
+    res.status(200).json({ message: 'Archivo Excel cargado correctamente' });
+
+  } catch (error) {
+    console.error('❌ Error al cargar Excel:', error);
+    res.status(500).json({ message: 'Error al procesar el archivo' });
+  }
+});
+
+
+
+
 // ✅ NUEVA RUTA: Reimprimir PDF desde folio ya registrado
 router.get('/reimprimir/:folio', async (req, res) => {
   try {
