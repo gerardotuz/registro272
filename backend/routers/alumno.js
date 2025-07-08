@@ -104,6 +104,7 @@ router.post('/guardar', async (req, res) => {
 });
 
 
+
 // ✅ Cargar archivo Excel de alumnos
 router.post('/cargar-excel', upload.single('archivo'), async (req, res) => {
   try {
@@ -119,7 +120,10 @@ router.post('/cargar-excel', upload.single('archivo'), async (req, res) => {
       return res.status(400).json({ message: 'El archivo está vacío o no tiene datos válidos' });
     }
 
-    await Alumno.insertMany(datos);
+    const flattenToNested = require('../utils/flattenToNested');
+    const nestedDocs = datos.map(flattenToNested);
+
+    await Alumno.insertMany(nestedDocs);
     res.status(200).json({ message: 'Archivo Excel cargado correctamente' });
 
   } catch (error) {
@@ -127,6 +131,7 @@ router.post('/cargar-excel', upload.single('archivo'), async (req, res) => {
     res.status(500).json({ message: 'Error al procesar el archivo' });
   }
 });
+
 
 
 
