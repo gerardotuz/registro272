@@ -124,17 +124,25 @@ router.post('/cargar-excel', upload.single('archivo'), async (req, res) => {
     const flattenToNested = require('../utils/flattenToNested');
     const nestedDocs = datos.map(flattenToNested);
 
-    // ✅ ELIMINA _id para evitar duplicados
-    nestedDocs.forEach(doc => { delete doc._id; });
+    for (const doc of nestedDocs) {
+      delete doc._id;
+      if (doc.folio) {
+        await Alumno.findOneAndUpdate(
+          { folio: doc.folio },
+          doc,
+          { upsert: true, new: true }
+        );
+      }
+    }
 
-    await Alumno.insertMany(nestedDocs);
-    res.status(200).json({ message: '✅ Alumnos cargados correctamente' });
+    res.status(200).json({ message: '✅ Alumnos cargados o actualizados correctamente' });
 
   } catch (error) {
     console.error('❌ Error al cargar Excel:', error);
     res.status(500).json({ message: 'Error al procesar el archivo' });
   }
 });
+
 
 
 
