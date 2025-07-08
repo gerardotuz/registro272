@@ -240,4 +240,58 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
   }
+
+// ✅ Cargar Excel de alumnos
+document.getElementById('excelForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const formData = new FormData(e.target);
+  const cargando = document.getElementById('cargando');
+  cargando.style.display = 'block';
+
+  try {
+    const res = await fetch(`${BASE_URL}/api/cargar-excel`, {
+      method: 'POST',
+      body: formData
+    });
+
+    if (!res.ok) {
+      const errorText = await res.text();
+      throw new Error(`Error ${res.status}: ${errorText}`);
+    }
+
+    const result = await res.json();
+    alert("✅ " + result.message);
+  } catch (error) {
+    alert("❌ Error al cargar el archivo: " + error.message);
+    console.error("Detalles del error:", error);
+  } finally {
+    cargando.style.display = 'none';
+  }
+});
+
+// ✅ Cargar Excel de grupos
+document.getElementById('formGrupos').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const archivo = document.getElementById('archivoGrupos').files[0];
+  if (!archivo) return alert('Selecciona un archivo');
+
+  const formData = new FormData();
+  formData.append('archivo', archivo);
+
+  try {
+    const res = await fetch(`${BASE_URL}/api/cargar-grupos`, {
+      method: 'POST',
+      body: formData
+    });
+    const json = await res.json();
+    if (!json.ok) throw new Error(json.msg);
+    alert(json.msg);
+  } catch (err) {
+    alert(err.message || 'Error al cargar archivo');
+  }
+});
+
+
+
+  
 });
