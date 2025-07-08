@@ -1,4 +1,3 @@
-
 const express = require('express');
 const router = express.Router();
 const Alumno = require('../models/Alumno');
@@ -7,6 +6,7 @@ const xlsx = require('xlsx');
 const generarPDF = require('../utils/pdfGenerator');
 const flattenToNested = require('../utils/flattenToNested');
 const path = require('path');
+const fs = require('fs');
 
 router.get('/ping', (req, res) => {
   res.status(200).json({ ok: true });
@@ -39,7 +39,6 @@ router.post('/guardar', async (req, res) => {
       return res.status(403).json({ message: 'Este folio ya fue registrado y no se puede modificar.' });
     }
 
-    // Evitar convertir claves de catálogos
     const clavesExentas = [
       'estado_nacimiento', 'municipio_nacimiento', 'ciudad_nacimiento',
       'estado_nacimiento_general', 'municipio_nacimiento_general', 'ciudad_nacimiento_general'
@@ -49,7 +48,6 @@ router.post('/guardar', async (req, res) => {
       return typeof value === 'string' && !clavesExentas.includes(key) ? value.toUpperCase() : value;
     });
 
-    // Validar paraescolar
     const paraescolar = data.datos_generales?.paraescolar;
     if (paraescolar) {
       const count = await Alumno.countDocuments({ "datos_generales.paraescolar": paraescolar.toUpperCase() });
@@ -65,29 +63,24 @@ router.post('/guardar', async (req, res) => {
       }
     }
 
-    // Asegurar estado civil como número
     const estadoCivilNum = parseInt(data.datos_alumno?.estado_civil);
     if (!isNaN(estadoCivilNum)) {
       upperCaseData.datos_alumno.estado_civil = estadoCivilNum;
     }
 
-    // Asegurar opciones vacías si no existen
     upperCaseData.datos_generales.primera_opcion = data.datos_generales.primera_opcion || '';
     upperCaseData.datos_generales.segunda_opcion = data.datos_generales.segunda_opcion || '';
     upperCaseData.datos_generales.tercera_opcion = data.datos_generales.tercera_opcion || '';
     upperCaseData.datos_generales.cuarta_opcion = data.datos_generales.cuarta_opcion || '';
 
-    // ✅ NUEVO: guardar claves generales si vienen en el body
     upperCaseData.datos_generales.estado_nacimiento_general = data.datos_generales.estado_nacimiento_general || '';
     upperCaseData.datos_generales.municipio_nacimiento_general = data.datos_generales.municipio_nacimiento_general || '';
     upperCaseData.datos_generales.ciudad_nacimiento_general = data.datos_generales.ciudad_nacimiento_general || '';
 
-    // ✅ Marcar como registro completado
     upperCaseData.registro_completado = true;
 
     await Alumno.findOneAndUpdate({ folio: data.folio }, upperCaseData, { upsert: true });
 
-    // Generar PDF
     const datosAnidados = flattenToNested(upperCaseData);
     const nombreArchivo = `${datosAnidados.datos_alumno?.curp || 'formulario'}.pdf`;
     await generarPDF(datosAnidados, nombreArchivo);
@@ -103,10 +96,6 @@ router.post('/guardar', async (req, res) => {
   }
 });
 
-
-//carga de excel alumnos
-
-
 router.post('/cargar-excel', upload.single('archivo'), async (req, res) => {
   try {
     if (!req.file) {
@@ -121,7 +110,6 @@ router.post('/cargar-excel', upload.single('archivo'), async (req, res) => {
       return res.status(400).json({ message: 'El archivo está vacío o mal formado' });
     }
 
-    const flattenToNested = require('../utils/flattenToNested');
     const nestedDocs = datos.map(flattenToNested);
 
     for (const doc of nestedDocs) {
@@ -143,14 +131,6 @@ router.post('/cargar-excel', upload.single('archivo'), async (req, res) => {
   }
 });
 
-
-
-
-
-
-
-
-// ✅ NUEVA RUTA: Reimprimir PDF desde folio ya registrado
 router.get('/reimprimir/:folio', async (req, res) => {
   try {
     const alumno = await Alumno.findOne({ folio: req.params.folio });
@@ -171,9 +151,6 @@ router.get('/reimprimir/:folio', async (req, res) => {
   }
 });
 
-
-
-// 📌 Búsqueda para Dashboard (folio y apellidos)
 router.get('/dashboard/alumnos', async (req, res) => {
   const { folio, apellidos } = req.query;
   let query = {};
@@ -191,7 +168,6 @@ router.get('/dashboard/alumnos', async (req, res) => {
   }
 });
 
-// 📌 Obtener alumno por ID para edición
 router.get('/dashboard/alumnos/:id', async (req, res) => {
   try {
     const alumno = await Alumno.findById(req.params.id);
@@ -202,7 +178,6 @@ router.get('/dashboard/alumnos/:id', async (req, res) => {
   }
 });
 
-// 📌 Actualizar alumno desde Dashboard
 router.put('/dashboard/alumnos/:id', async (req, res) => {
   try {
     const actualizado = await Alumno.findByIdAndUpdate(req.params.id, req.body, { new: true });
@@ -212,7 +187,6 @@ router.put('/dashboard/alumnos/:id', async (req, res) => {
   }
 });
 
-// 📌 Eliminar alumno desde Dashboard
 router.delete('/dashboard/alumnos/:id', async (req, res) => {
   try {
     await Alumno.findByIdAndDelete(req.params.id);
@@ -222,6 +196,47 @@ router.delete('/dashboard/alumnos/:id', async (req, res) => {
   }
 });
 
+router.get('/exportar-excel', async (req, res) => {
+  try {
+    const alumnos = await Alumno.find({ registro_completado: true }).lean();
 
+    if (!alumnos.length) {
+      return res.status(404).json({ message: 'No hay alumnos registrados aún.' });
+    }
+
+    const datos = alumnos.map(al => ({
+      folio: al.folio || '',
+      primer_apellido: al.datos_alumno?.primer_apellido || '',
+      segundo_apellido: al.datos_alumno?.segundo_apellido || '',
+      nombres: al.datos_alumno?.nombres || '',
+      curp: al.datos_alumno?.curp || '',
+      grupo: al.datos_alumno?.grupo || '',
+      semestre: al.datos_alumno?.semestre || '',
+      correo: al.datos_generales?.correo_alumno || '',
+      paraescolar: al.datos_generales?.paraescolar || '',
+      telefono: al.datos_generales?.telefono_alumno || ''
+    }));
+
+    const workbook = xlsx.utils.book_new();
+    const worksheet = xlsx.utils.json_to_sheet(datos);
+
+    xlsx.utils.book_append_sheet(workbook, worksheet, 'Alumnos');
+
+    const exportPath = path.join(__dirname, '../exports', 'alumnos_registrados.xlsx');
+    xlsx.writeFile(workbook, exportPath);
+
+    res.download(exportPath, 'alumnos_registrados.xlsx', (err) => {
+      if (err) {
+        console.error('❌ Error al descargar:', err);
+      }
+      fs.unlinkSync(exportPath);
+    });
+
+  } catch (err) {
+    console.error('❌ Error al exportar Excel:', err);
+    res.status(500).json({ message: 'Error al exportar datos.' });
+  }
+});
 
 module.exports = router;
+
