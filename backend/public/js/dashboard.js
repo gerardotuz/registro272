@@ -1,3 +1,7 @@
+const BASE_URL = window.location.origin.includes('localhost')
+  ? 'http://localhost:3001'
+  : 'https://registro272.onrender.com';
+
 // /public/js/dashboard.js
 document.addEventListener('DOMContentLoaded', () => {
   // Verificar login con localStorage
