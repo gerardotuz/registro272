@@ -7,7 +7,6 @@ const xlsx = require('xlsx');
 const generarPDF = require('../utils/pdfGenerator');
 const flattenToNested = require('../utils/flattenToNested');
 const path = require('path');
-const upload = multer({ storage: multer.memoryStorage() });
 
 router.get('/ping', (req, res) => {
   res.status(200).json({ ok: true });
