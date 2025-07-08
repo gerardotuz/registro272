@@ -105,6 +105,8 @@ router.post('/guardar', async (req, res) => {
 
 
 //carga de excel alumnos
+const upload = multer({ storage: multer.memoryStorage() });
+
 router.post('/cargar-excel', upload.single('archivo'), async (req, res) => {
   try {
     if (!req.file) {
@@ -116,23 +118,24 @@ router.post('/cargar-excel', upload.single('archivo'), async (req, res) => {
     const datos = xlsx.utils.sheet_to_json(workbook.Sheets[sheetName]);
 
     if (!datos || datos.length === 0) {
-      return res.status(400).json({ message: 'El archivo está vacío o no tiene datos válidos' });
+      return res.status(400).json({ message: 'El archivo está vacío o mal formado' });
     }
 
     const flattenToNested = require('../utils/flattenToNested');
     const nestedDocs = datos.map(flattenToNested);
 
-    // 🔑 ELIMINA cualquier _id para evitar duplicados
+    // ✅ ELIMINA _id para evitar duplicados
     nestedDocs.forEach(doc => { delete doc._id; });
 
     await Alumno.insertMany(nestedDocs);
-    res.status(200).json({ message: 'Archivo Excel cargado correctamente' });
+    res.status(200).json({ message: '✅ Alumnos cargados correctamente' });
 
   } catch (error) {
     console.error('❌ Error al cargar Excel:', error);
     res.status(500).json({ message: 'Error al procesar el archivo' });
   }
 });
+
 
 
 
