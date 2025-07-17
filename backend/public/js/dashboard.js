@@ -161,9 +161,6 @@ document.getElementById('btnGuardar').addEventListener('click', () => {
       telefono_alumno: document.getElementById('telefono_alumno').value,
       correo_alumno: document.getElementById('correo_alumno').value,
       paraescolar: document.getElementById('paraescolar').value,
-      nivel_ingles: document.getElementById('nivel_ingles').value,
-      certificacion_ingles: document.getElementById('certificacion_ingles').value,
-      gustaria_certificarse: document.getElementById('gustaria_certificarse').value,
       entrega_diagnostico: document.getElementById('entrega_diagnostico').value,
       detalle_enfermedad: document.getElementById('detalle_enfermedad').value,
       responsable_emergencia: {
