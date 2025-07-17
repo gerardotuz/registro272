@@ -32,6 +32,8 @@
   <!-- Contenido -->
   <div class="container my-4">
     <h2>Gestión de Alumnos</h2>
+    <button id="btnAgregarNuevo" class="btn btn-success mb-3">Agregar Nuevo Alumno</button>
+
     <div class="row mb-3">
       <div class="col-md-4">
         <input id="searchFolio" type="text" class="form-control" placeholder="Buscar por folio">
@@ -95,6 +97,14 @@
             <!-- ✅ DATOS ALUMNO -->
             <h5>Datos del Alumno</h5>
             <div class="row">
+
+            <div class="col-md-4 mb-2">
+  <label for="folio" style="color: red; font-weight: bold; font-size: 1.1rem;">
+    ⚠️ Folio (NO se te olvide capturarlo de nuevo)
+  </label>
+  <input type="text" id="folio" class="form-control border-danger">
+</div>
+              
               <div class="col-md-4 mb-2">
                 <label>Primer Apellido</label>
                 <input type="text" id="primer_apellido" class="form-control">
