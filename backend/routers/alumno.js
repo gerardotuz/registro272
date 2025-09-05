@@ -22,18 +22,14 @@ const CLAVES_EXENTAS = new Set([
   'estado_nacimiento_general', 'municipio_nacimiento_general', 'ciudad_nacimiento_general'
 ]);
 
-/** Convierte a MAYÚSCULAS todos los strings excepto catálogos exentos */
+
 function toUpperData(obj) {
   return JSON.parse(JSON.stringify(obj), (key, value) => {
     return (typeof value === 'string' && !CLAVES_EXENTAS.has(key)) ? value.toUpperCase() : value;
   });
 }
 
-/**
- * Verifica si se puede asignar `paraescolar` sin rebasar el cupo.
- * - Excluye del conteo al propio alumno cuando se edita (alumnoId).
- * - Si `paraescolar` no viene, no limita.
- */
+
 async function puedeAsignarParaescolar(paraescolar, alumnoId = null) {
   if (!paraescolar) return true;
   const filtro = { "datos_generales.paraescolar": paraescolar.toUpperCase() };
@@ -53,9 +49,7 @@ router.get('/folio/:folio', async (req, res) => {
   }
 });
 
-/**
- * Registro público: respeta tope por paraescolar.
- */
+
 router.post('/guardar', async (req, res) => {
   try {
     const data = req.body;
@@ -86,7 +80,7 @@ router.post('/guardar', async (req, res) => {
     dg.municipio_nacimiento_general = data.datos_generales.municipio_nacimiento_general || '';
     dg.ciudad_nacimiento_general  = data.datos_generales.ciudad_nacimiento_general  || '';
 
-    // ✅ Chequeo de cupo
+    // Chequeo de cupo
     const nuevoPara = data.datos_generales?.paraescolar;
     if (nuevoPara) {
       const paraPrevio = yaRegistrado?.datos_generales?.paraescolar;
@@ -128,10 +122,7 @@ router.post('/guardar', async (req, res) => {
   }
 });
 
-/**
- * Importación masiva desde Excel (por defecto SIN tope para facilitar migraciones).
- * Si quieres respetar cupos aquí también, descomenta el bloque marcado.
- */
+
 router.post('/cargar-excel', upload.single('archivo'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ message: 'No se envió archivo' });
@@ -148,13 +139,7 @@ router.post('/cargar-excel', upload.single('archivo'), async (req, res) => {
     for (const doc of nestedDocs) {
       delete doc._id;
 
-      // --- (Opcional) Forzar cupo también aquí ---
-      // const para = doc?.datos_generales?.paraescolar;
-      // if (para) {
-      //   const ok = await puedeAsignarParaescolar(para, null);
-      //   if (!ok) continue; // omitir este registro para no rebasar
-      // }
-      // -------------------------------------------
+    
 
       if (doc.folio) {
         await Alumno.findOneAndUpdate(
@@ -216,9 +201,7 @@ router.get('/dashboard/alumnos/:id', async (req, res) => {
   }
 });
 
-/**
- * Dashboard: ACTUALIZAR respetando cupo
- */
+
 router.put('/dashboard/alumnos/:id', async (req, res) => {
   try {
     const alumnoActual = await Alumno.findById(req.params.id);
@@ -243,9 +226,7 @@ router.put('/dashboard/alumnos/:id', async (req, res) => {
   }
 });
 
-/**
- * Dashboard: CREAR respetando cupo
- */
+
 router.post('/dashboard/alumnos', async (req, res) => {
   try {
     const bodyUpper = toUpperData(req.body);
