@@ -3,7 +3,7 @@ const router = express.Router();
 const User = require('../models/User');
 const bcrypt = require('bcrypt');
 
-// Ruta para login
+
 router.post('/auth/login', async (req, res) => {
   const { username, password } = req.body;
   console.log('🔐 Intentando login con:', username);
@@ -21,14 +21,13 @@ router.post('/auth/login', async (req, res) => {
     res.status(500).json({ message: 'Error del servidor' });
   }
 });
-// Ruta para ver todos los usuarios (SOLO PARA PRUEBA, BORRAR DESPUÉS)
 router.get('/auth/users', async (req, res) => {
   const users = await User.find();
   res.json(users);
 });
 
 
-// Ruta para crear el primer admin
+
 router.post('/auth/register-admin', async (req, res) => {
   const { username, password } = req.body;
   console.log('🛠️ Registrando nuevo admin:', username);
