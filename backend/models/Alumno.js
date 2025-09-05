@@ -52,7 +52,7 @@ const alumnoSchema = new mongoose.Schema({
     tercera_opcion: String,
     cuarta_opcion: String,
 
-    // ✅ Nuevos campos agregados
+    
     estado_nacimiento_general: String,
     municipio_nacimiento_general: String,
     ciudad_nacimiento_general: String
