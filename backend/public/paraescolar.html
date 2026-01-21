@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+
+<html lang="es">
+<head>
+<link href="/style.css" rel="stylesheet"/>
+<link href="/favicon.ico" rel="icon" type="image/x-icon"/>
+<meta charset="utf-8"/>
+<title>Formulario de Alumno</title>
+
+</head>
+<body>
+<nav>
+<div class="nav-logo">
+<img alt="Logo" src="/logo.png"/>
+</div>
+<div class="nav-links">
+<a href="index.html">Inicio</a>
+<a href="consultar-grupo.html">Consultar grupo</a>
+
+<a href="login.html">Iniciar sesión</a>
+</div>
+</nav>
+<h2>Formulario de Registro</h2>
+<form id="registroForm">
+<!-- Fieldsets integrados -->
+<fieldset>
+<legend>Datos del Alumno</legend>
+<input name="nombres" placeholder="Nombres" required="" type="text"/>
+<input name="primer_apellido" placeholder="Primer Apellido" required="" type="text"/>
+<input name="segundo_apellido" placeholder="Segundo Apellido" required="" type="text"/>
+<input name="curp" placeholder="CURP" required="" type="text"/>
+<input name="carrera" placeholder="Carrera" readonly="" type="text"/>
+<input name="periodo_semestral" placeholder="Periodo Semestral" readonly="" type="text" value="2025-2026"/>
+<input name="semestre" placeholder="Semestre" readonly="" type="text" value="Primer Semestre"/>
+<input name="grupo" placeholder="Grupo" readonly="" type="text"/>
+
+
+
+
+ <div>
+  <label for="turno">Turno</label>
+  <input id="turno" name="turno" placeholder="Turno" readonly type="text"/>
+</div>
+
+
+
+
+</fieldset>
+
+
+<fieldset>
+<legend>Selecciona un Paraescolar</legend>
+<label for="paraescolar">Paraescolar:</label>
+<select id="paraescolar" name="paraescolar" required="">
+<option value="">--Selecciona--</option>
+<option value="AJEDREZ">AJEDREZ</option>
+<option value="ATLETISMO">ATLETISMO</option>
+<option value="BANDA DE GUERRA">BANDA DE GUERRA</option>
+<option value="BASQUETBOL">BASQUETBOL</option>
+<option value="DANZA">DANZA</option>
+<option value="ESCOLTA DE BANDERA">ESCOLTA DE BANDERA</option>
+<option value="FOTOGRAFÍA">FOTOGRAFÍA</option>
+<option value="FUTBOL">FUTBOL</option>
+<option value="PINTURA">PINTURA</option>
+<option value="TEATRO-CANTO">TEATRO-CANTO</option>
+<option value="TOCHO BANDERA">TOCHO BANDERA</option>
+<option value="VOLEIBOL">VOLEIBOL</option>
+<option value="ORATORIADECLAMACION">ORATORIA Y  DECLAMACION</option>
+<option value="MÚSICA">MÚSICA</option>
+</select>
+</fieldset>
+<button type="submit">Guardar</button>
+<div id="pdfLink" style="margin-top: 20px;"></div>
+</form>
+
+
+
+
+<script>
+  const opciones = ["A Y B", "PROGRAMACIÓN", "GESTIÓN E INNOVACIÓN TURÍSTICA", "VENTAS"];
+  const selects = [
+    document.getElementById('primera_opcion'),
+    document.getElementById('segunda_opcion'),
+    document.getElementById('tercera_opcion'),
+    document.getElementById('cuarta_opcion')
+  ];
+  function actualizarOpciones() {
+    const seleccionados = selects.map(select => select.value);
+    selects.forEach(select => {
+      const valorActual = select.value;
+      select.innerHTML = '<option value="">Selecciona opción</option>';
+      opciones.forEach(opcion => {
+        if (!seleccionados.includes(opcion) || opcion === valorActual) {
+          const option = document.createElement('option');
+          option.value = opcion;
+          option.textContent = opcion;
+          if (opcion === valorActual) option.selected = true;
+          select.appendChild(option);
+        }
+      });
+    });
+  }
+  selects.forEach(select => {
+    select.addEventListener('change', actualizarOpciones);
+  });
+</script>
+
+
+
+  
+<script defer="" src="scripts.js"></script>
+</body>
+</html>
+
