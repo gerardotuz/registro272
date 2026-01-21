@@ -47,12 +47,8 @@ mongoose.connect(process.env.MONGO_URI, {
   .catch(err => console.error('❌ Error en la conexión', err));
 
 
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
 
-
-const PORT = process.env.PORT || 3001;
+//para escolares
 
 
 app.get("/api/paraescolar/:control", async (req, res) => {
@@ -124,20 +120,21 @@ app.post("/api/paraescolar/cargar-excel", upload.single("excel"), async (req, re
     const data = XLSX.utils.sheet_to_json(sheet);
 
     for (const fila of data) {
-      await Paraescolar.updateOne(
-        { numero_control: fila.numero_control },
-        {
-          $setOnInsert: {
-            nombres: fila.nombres,
-            primer_apellido: fila.primer_apellido,
-            segundo_apellido: fila.segundo_apellido,
-            grupo: fila.grupo,
-            turno: fila.turno
-          }
-        },
-        { upsert: true }
-      );
-    }
+  await Paraescolar.updateOne(
+    { numero_control: String(fila["No control"]).trim() },
+    {
+      $setOnInsert: {
+        curp: fila["Curp"] || "",
+        nombre: fila["Nombre"] || "",
+        grado: fila["Grado"] || "",
+        grupo: fila["Grupo"] || "",
+        bloqueado: false
+      }
+    },
+    { upsert: true }
+  );
+}
+
 
     res.json({ ok: true });
 
@@ -177,6 +174,23 @@ app.get("/api/paraescolar/exportar", async (req, res) => {
       item.paraescolar || "",
       item.fecha_registro || ""
     ]);
+
+
+
+
+
+
+
+
+
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+
+const PORT = process.env.PORT || 3001;
+
+
 
     // Construir CSV
     let csv = headers.join(",") + "\n";
