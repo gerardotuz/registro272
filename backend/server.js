@@ -55,23 +55,7 @@ app.use('/api/dashboard', require('./routers/dashboard'));
    MÓDULO PARAESCOLARES
 ========================= */
 
-// Buscar alumno
-app.get("/api/paraescolar/:control", async (req, res) => {
-  try {
-    const alumno = await Paraescolar.findOne({
-      numero_control: req.params.control
-    });
 
-    if (!alumno) {
-      return res.status(404).json({ error: "Alumno no encontrado" });
-    }
-
-    res.json(alumno);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Error en servidor" });
-  }
-});
 
 // Guardar paraescolar
 app.put("/api/paraescolar/:id", async (req, res) => {
@@ -227,7 +211,23 @@ app.get("/api/paraescolar/estadisticas", async (req, res) => {
   }
 });
 
+// Buscar alumno
+app.get("/api/paraescolar/:control", async (req, res) => {
+  try {
+    const alumno = await Paraescolar.findOne({
+      numero_control: req.params.control
+    });
 
+    if (!alumno) {
+      return res.status(404).json({ error: "Alumno no encontrado" });
+    }
+
+    res.json(alumno);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Error en servidor" });
+  }
+});
 
 /* =========================
    ARCHIVOS ESTÁTICOS
