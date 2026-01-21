@@ -53,6 +53,123 @@ app.get('*', (req, res) => {
 
 
 const PORT = process.env.PORT || 3001;
+
+
+app.get("/api/paraescolar/:control", async (req, res) => {
+  try {
+    const alumno = await Paraescolar.findOne({
+      numero_control: req.params.control
+    });
+
+    if (!alumno) {
+      return res.status(404).json({ error: "Alumno no encontrado" });
+    }
+
+    res.json(alumno);
+  } catch (err) {
+    res.status(500).json({ error: "Error en servidor" });
+  }
+});
+
+
+
+app.put("/api/paraescolar/:id", async (req, res) => {
+  try {
+    const { paraescolar } = req.body;
+
+    const alumno = await Paraescolar.findById(req.params.id);
+
+    if (!alumno) {
+      return res.status(404).json({ error: "Alumno no existe" });
+    }
+
+    if (alumno.bloqueado) {
+      return res.status(400).json({
+        error: "Este alumno ya seleccionó un paraescolar"
+      });
+    }
+
+    const total = await Paraescolar.countDocuments({ paraescolar });
+
+    if (total >= 50) {
+      return res.status(400).json({
+        error: "Este paraescolar ya alcanzó el límite de 50 alumnos"
+      });
+    }
+
+    alumno.paraescolar = paraescolar;
+    alumno.fecha_registro = new Date();
+    alumno.bloqueado = true;
+    await alumno.save();
+
+    res.json({ ok: true });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Error al guardar paraescolar" });
+  }
+});
+
+
+
+
+const multer = require("multer");
+const XLSX = require("xlsx");
+const upload = multer({ dest: "uploads/" });
+
+app.post("/api/paraescolar/cargar-excel", upload.single("excel"), async (req, res) => {
+  try {
+    const workbook = XLSX.readFile(req.file.path);
+    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+    const data = XLSX.utils.sheet_to_json(sheet);
+
+    for (const fila of data) {
+      await Paraescolar.updateOne(
+        { numero_control: fila.numero_control },
+        {
+          $setOnInsert: {
+            nombres: fila.nombres,
+            primer_apellido: fila.primer_apellido,
+            segundo_apellido: fila.segundo_apellido,
+            grupo: fila.grupo,
+            turno: fila.turno
+          }
+        },
+        { upsert: true }
+      );
+    }
+
+    res.json({ ok: true });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Error al cargar Excel" });
+  }
+});
+
+
+
+app.get("/api/paraescolar/exportar", async (req, res) => {
+  try {
+    const data = await Paraescolar.find().lean();
+
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.json_to_sheet(data);
+    XLSX.utils.book_append_sheet(wb, ws, "Paraescolares");
+
+    const filePath = "paraescolares.xlsx";
+    XLSX.writeFile(wb, filePath);
+
+    res.download(filePath);
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Error al exportar Excel" });
+  }
+});
+
+
+
 app.listen(PORT, () => {
   console.log(`🚀 Servidor escuchando en puerto ${PORT}`);
 });
