@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Dashboard Paraescolar</title>
+<link rel="stylesheet" href="/style.css">
+
+<style>
+.container {
+  max-width: 700px;
+  margin: auto;
+  padding: 30px;
+}
+
+h2 {
+  text-align: center;
+}
+
+button {
+  padding: 10px;
+  width: 100%;
+  margin-top: 10px;
+}
+
+input {
+  width: 100%;
+  margin-top: 10px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h2>📊 Dashboard Paraescolar</h2>
+
+<!-- 📤 CARGAR EXCEL -->
+<h3>Cargar Excel de Alumnos</h3>
+
+<form id="excelForm" enctype="multipart/form-data">
+  <input type="file" name="excel" accept=".xlsx,.xls" required>
+  <button type="submit">Subir Excel</button>
+</form>
+
+<hr>
+
+<!-- 📥 EXPORTAR -->
+<h3>Exportar Registros</h3>
+
+<a href="/api/paraescolar/exportar">
+  <button>Descargar Excel</button>
+</a>
+
+</div>
+
+<script>
+document.getElementById("excelForm").addEventListener("submit", async e => {
+  e.preventDefault();
+
+  const formData = new FormData(e.target);
+
+  try {
+    const resp = await fetch("/api/paraescolar/cargar-excel", {
+      method: "POST",
+      body: formData
+    });
+
+    const data = await resp.json();
+
+    if (data.ok) {
+      alert("✅ Excel cargado correctamente");
+    } else {
+      alert("❌ Error al cargar Excel");
+    }
+
+  } catch (error) {
+    console.error(error);
+    alert("Error de conexión");
+  }
+});
+</script>
+
+</body>
+</html>
