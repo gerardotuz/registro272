@@ -153,23 +153,46 @@ app.get("/api/paraescolar/exportar", async (req, res) => {
   try {
     const data = await Paraescolar.find().lean();
 
+    if (!data || data.length === 0) {
+      return res.status(400).json({ error: "No hay datos para exportar" });
+    }
+
     const wb = XLSX.utils.book_new();
-    const ws = XLSX.utils.json_to_sheet(data);
+
+    // Limpiar datos para Excel
+    const cleanData = data.map(item => ({
+      numero_control: item.numero_control,
+      curp: item.curp || "",
+      nombre: item.nombre || "",
+      grado: item.grado || "",
+      grupo: item.grupo || "",
+      paraescolar: item.paraescolar || "",
+      fecha_registro: item.fecha_registro || ""
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(cleanData);
     XLSX.utils.book_append_sheet(wb, ws, "Paraescolares");
 
-    // 👉 Generar archivo en memoria (buffer)
-    const buffer = XLSX.write(wb, { type: "buffer", bookType: "xlsx" });
+    // 👉 Generar ArrayBuffer REAL
+    const excelBuffer = XLSX.write(wb, {
+      bookType: "xlsx",
+      type: "array"
+    });
+
+    const buffer = Buffer.from(excelBuffer);
 
     res.setHeader("Content-Disposition", "attachment; filename=paraescolares.xlsx");
     res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+    res.setHeader("Content-Length", buffer.length);
 
-    res.send(buffer);
+    res.end(buffer);
 
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Error al exportar Excel" });
+  } catch (error) {
+    console.error("ERROR EXPORTAR:", error);
+    res.status(500).json({ error: "Error al generar Excel" });
   }
 });
+
 
 
 
