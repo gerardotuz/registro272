@@ -5,12 +5,18 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const path = require('path');
 const Paraescolar = require("./models/paraescolar.model");
+const multer = require("multer");
+const XLSX = require("xlsx");
 
 require('dotenv').config();
 
 const app = express();
 
-//  CORS
+/* =========================
+   CONFIGURACIÓN GENERAL
+========================= */
+
+// CORS
 const corsOptions = {
   origin: 'https://registro272.onrender.com',
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
@@ -22,35 +28,34 @@ app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-//  Archivos estáticos
-app.use(express.static(path.join(__dirname, 'public')));
-app.use('/pdfs', express.static(path.join(__dirname, 'public/pdfs')));
+// Upload temporal
+const upload = multer({ dest: "uploads/" });
 
-//  Rutas API existentes
-app.use('/api', require('./routers/alumno.js'));
-app.use('/api', require('./routers/auth.js'));
-app.use('/api', require('./routers/grupo.js'));
+/* =========================
+   CONEXIÓN MONGODB
+========================= */
 
-//  Rutas Dashboard API
-app.use('/api/dashboard', require('./routers/dashboard'));
-
-
-app.get('/dashboard', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'views', 'dashboard.html'));
-});
-
-//  Conexión MongoDB Atlas
 mongoose.connect(process.env.MONGO_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true
-}).then(() => console.log('✅ Conectado a MongoDB Atlas'))
-  .catch(err => console.error('❌ Error en la conexión', err));
+})
+.then(() => console.log('✅ Conectado a MongoDB Atlas'))
+.catch(err => console.error('❌ Error en la conexión', err));
 
+/* =========================
+   RUTAS API EXISTENTES
+========================= */
 
+app.use('/api', require('./routers/alumno.js'));
+app.use('/api', require('./routers/auth.js'));
+app.use('/api', require('./routers/grupo.js'));
+app.use('/api/dashboard', require('./routers/dashboard'));
 
-//para escolares
+/* =========================
+   MÓDULO PARAESCOLARES
+========================= */
 
-
+// Buscar alumno
 app.get("/api/paraescolar/:control", async (req, res) => {
   try {
     const alumno = await Paraescolar.findOne({
@@ -63,12 +68,12 @@ app.get("/api/paraescolar/:control", async (req, res) => {
 
     res.json(alumno);
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: "Error en servidor" });
   }
 });
 
-
-
+// Guardar paraescolar
 app.put("/api/paraescolar/:id", async (req, res) => {
   try {
     const { paraescolar } = req.body;
@@ -86,7 +91,6 @@ app.put("/api/paraescolar/:id", async (req, res) => {
     }
 
     const total = await Paraescolar.countDocuments({ paraescolar });
-
     if (total >= 50) {
       return res.status(400).json({
         error: "Este paraescolar ya alcanzó el límite de 50 alumnos"
@@ -106,13 +110,7 @@ app.put("/api/paraescolar/:id", async (req, res) => {
   }
 });
 
-
-
-
-const multer = require("multer");
-const XLSX = require("xlsx");
-const upload = multer({ dest: "uploads/" });
-
+// Cargar Excel
 app.post("/api/paraescolar/cargar-excel", upload.single("excel"), async (req, res) => {
   try {
     const workbook = XLSX.readFile(req.file.path);
@@ -120,32 +118,30 @@ app.post("/api/paraescolar/cargar-excel", upload.single("excel"), async (req, re
     const data = XLSX.utils.sheet_to_json(sheet);
 
     for (const fila of data) {
-  await Paraescolar.updateOne(
-    { numero_control: String(fila["No control"]).trim() },
-    {
-      $setOnInsert: {
-        curp: fila["Curp"] || "",
-        nombre: fila["Nombre"] || "",
-        grado: fila["Grado"] || "",
-        grupo: fila["Grupo"] || "",
-        bloqueado: false
-      }
-    },
-    { upsert: true }
-  );
-}
+      await Paraescolar.updateOne(
+        { numero_control: String(fila["No control"]).trim() },
+        {
+          $setOnInsert: {
+            curp: fila["Curp"] || "",
+            nombre: fila["Nombre"] || "",
+            grado: fila["Grado"] || "",
+            grupo: fila["Grupo"] || "",
+            bloqueado: false
+          }
+        },
+        { upsert: true }
+      );
+    }
 
-
-    res.json({ ok: true });
+    res.json({ ok: true, total: data.length });
 
   } catch (err) {
-    console.error(err);
+    console.error("ERROR CARGA EXCEL:", err);
     res.status(500).json({ error: "Error al cargar Excel" });
   }
 });
 
-
-
+// Exportar CSV
 app.get("/api/paraescolar/exportar", async (req, res) => {
   try {
     const data = await Paraescolar.find().lean();
@@ -154,7 +150,6 @@ app.get("/api/paraescolar/exportar", async (req, res) => {
       return res.status(400).send("No hay datos para exportar");
     }
 
-    // Encabezados CSV
     const headers = [
       "numero_control",
       "curp",
@@ -175,24 +170,6 @@ app.get("/api/paraescolar/exportar", async (req, res) => {
       item.fecha_registro || ""
     ]);
 
-
-
-
-
-
-
-
-
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
-
-
-const PORT = process.env.PORT || 3001;
-
-
-
-    // Construir CSV
     let csv = headers.join(",") + "\n";
     rows.forEach(row => {
       csv += row.map(v => `"${String(v).replace(/"/g, '""')}"`).join(",") + "\n";
@@ -200,7 +177,6 @@ const PORT = process.env.PORT || 3001;
 
     res.setHeader("Content-Type", "text/csv; charset=utf-8");
     res.setHeader("Content-Disposition", "attachment; filename=paraescolares.csv");
-
     res.send(csv);
 
   } catch (error) {
@@ -209,10 +185,30 @@ const PORT = process.env.PORT || 3001;
   }
 });
 
+/* =========================
+   ARCHIVOS ESTÁTICOS
+========================= */
 
+app.use(express.static(path.join(__dirname, 'public')));
+app.use('/pdfs', express.static(path.join(__dirname, 'public/pdfs')));
 
+app.get('/dashboard', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'views', 'dashboard.html'));
+});
 
+/* =========================
+   FALLBACK SPA
+========================= */
 
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+/* =========================
+   SERVIDOR
+========================= */
+
+const PORT = process.env.PORT || 3001;
 
 app.listen(PORT, () => {
   console.log(`🚀 Servidor escuchando en puerto ${PORT}`);
