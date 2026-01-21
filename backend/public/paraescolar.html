@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <title>Selección de Paraescolar</title>
 <link rel="stylesheet" href="/style.css">
+
 <style>
 body {
   font-family: Arial, sans-serif;
@@ -60,22 +61,8 @@ fieldset {
 <fieldset>
   <legend>Selecciona Paraescolar</legend>
 
-  <select id="paraescolar" required>
+  <select id="paraescolar" required disabled>
     <option value="">-- Selecciona --</option>
-    <option value="AJEDREZ">AJEDREZ</option>
-    <option value="ATLETISMO">ATLETISMO</option>
-    <option value="BANDA DE GUERRA">BANDA DE GUERRA</option>
-    <option value="BASQUETBOL">BASQUETBOL</option>
-    <option value="DANZA">DANZA</option>
-    <option value="ESCOLTA DE BANDERA">ESCOLTA DE BANDERA</option>
-    <option value="FOTOGRAFÍA">FOTOGRAFÍA</option>
-    <option value="FUTBOL">FUTBOL</option>
-    <option value="PINTURA">PINTURA</option>
-    <option value="TEATRO-CANTO">TEATRO-CANTO</option>
-    <option value="TOCHO BANDERA">TOCHO BANDERA</option>
-    <option value="VOLEIBOL">VOLEIBOL</option>
-    <option value="ORATORIA Y DECLAMACIÓN">ORATORIA Y DECLAMACIÓN</option>
-    <option value="MÚSICA">MÚSICA</option>
   </select>
 
 </fieldset>
@@ -123,6 +110,8 @@ async function buscarAlumno() {
     grado.value  = data.grado || "";
     grupo.value  = data.grupo || "";
 
+    await cargarCupos();   // 🔥 cargar cupos dinámicos
+
     if (data.bloqueado) {
       paraescolar.value = data.paraescolar;
       paraescolar.disabled = true;
@@ -144,7 +133,7 @@ document.getElementById("registroForm").addEventListener("submit", async e => {
   if (!alumno) return alert("⚠️ Primero busca tu número de control.");
   if (!paraescolar.value) return alert("⚠️ Selecciona un paraescolar.");
 
-  if (guardando) return; // evitar doble clic
+  if (guardando) return;
   guardando = true;
 
   try {
@@ -171,6 +160,7 @@ document.getElementById("registroForm").addEventListener("submit", async e => {
   }
 });
 
+// 🧹 Limpiar
 function limpiarFormulario() {
   alumno = null;
   curp.value = "";
@@ -180,6 +170,55 @@ function limpiarFormulario() {
   paraescolar.value = "";
   paraescolar.disabled = true;
 }
+
+// 🎯 Cargar cupos dinámicos
+async function cargarCupos() {
+  try {
+    const resp = await fetch("/api/paraescolar/cupos");
+    const cupos = await resp.json();
+
+    const select = document.getElementById("paraescolar");
+    select.innerHTML = `<option value="">-- SELECCIONA --</option>`;
+
+    const lista = [
+  "AJEDREZ",
+  "ATLETISMO",
+  "BANDA DE GUERRA",
+  "BASQUETBOL",
+  "DANZA",
+  "ESCOLTA DE BANDERA",
+  "FOTOGRAFÍA",
+  "FUTBOL",
+  "PINTURA",
+  "TEATRO-CANTO",
+  "TOCHO BANDERA",
+  "VOLEIBOL",
+  "ORATORIA Y DECLAMACIÓN",
+  "MÚSICA"
+];
+
+
+    lista.forEach(nombre => {
+      const disponibles = cupos[nombre] ?? 50;
+
+      const option = document.createElement("option");
+      option.value = nombre;
+
+      if (disponibles <= 0) {
+        option.disabled = true;
+        option.textContent = `${nombre} (CUPO LLENO)`;
+      } else {
+        option.textContent = `${nombre} (${disponibles} disponibles)`;
+      }
+
+      select.appendChild(option);
+    });
+
+  } catch (error) {
+    console.error("Error cargando cupos:", error);
+  }
+}
 </script>
+
 </body>
 </html>
