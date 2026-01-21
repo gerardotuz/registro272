@@ -51,6 +51,25 @@ input {
 <button onclick="descargarExcel()">Descargar Excel</button>
 
 
+  <hr>
+
+<h3>📊 Cupos por Paraescolar</h3>
+
+<button onclick="cargarEstadisticas()">Actualizar conteo</button>
+
+<table border="1" width="100%" style="margin-top:10px;">
+  <thead>
+    <tr>
+      <th>Paraescolar</th>
+      <th>Total inscritos</th>
+      <th>Disponibles</th>
+    </tr>
+  </thead>
+  <tbody id="tablaStats"></tbody>
+</table>
+
+
+
 </div>
 <script>
 async function descargarExcel() {
