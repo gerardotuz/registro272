@@ -221,12 +221,12 @@ app.get("/api/paraescolar/estadisticas", async (req, res) => {
     ]);
 
     res.json(stats);
-
   } catch (error) {
     console.error("ERROR ESTADISTICAS:", error);
     res.status(500).json({ error: "Error al generar estadísticas" });
   }
 });
+
 
 
 /* =========================
