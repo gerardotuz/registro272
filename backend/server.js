@@ -157,16 +157,20 @@ app.get("/api/paraescolar/exportar", async (req, res) => {
     const ws = XLSX.utils.json_to_sheet(data);
     XLSX.utils.book_append_sheet(wb, ws, "Paraescolares");
 
-    const filePath = "paraescolares.xlsx";
-    XLSX.writeFile(wb, filePath);
+    // 👉 Generar archivo en memoria (buffer)
+    const buffer = XLSX.write(wb, { type: "buffer", bookType: "xlsx" });
 
-    res.download(filePath);
+    res.setHeader("Content-Disposition", "attachment; filename=paraescolares.xlsx");
+    res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+
+    res.send(buffer);
 
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Error al exportar Excel" });
   }
 });
+
 
 
 
