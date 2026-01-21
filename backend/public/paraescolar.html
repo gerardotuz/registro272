@@ -22,6 +22,11 @@
 </nav>
 <h2>Formulario de Registro</h2>
 <form id="registroForm">
+ <div style="margin-bottom:20px;">
+  <input type="text" id="buscarCurp" placeholder="Ingresa CURP del alumno">
+  <button type="button" onclick="buscarAlumno()">Buscar</button>
+</div>
+
 <!-- Fieldsets integrados -->
 <fieldset>
 <legend>Datos del Alumno</legend>
@@ -103,6 +108,76 @@
   selects.forEach(select => {
     select.addEventListener('change', actualizarOpciones);
   });
+</script>
+<script>
+let alumnoId = null;
+
+async function buscarAlumno() {
+  const curp = document.getElementById("buscarCurp").value.trim();
+  if (!curp) {
+    alert("Ingresa una CURP");
+    return;
+  }
+
+  try {
+    const resp = await fetch(`/api/alumnos/curp/${curp}`);
+    const data = await resp.json();
+
+    if (!data) {
+      alert("Alumno no encontrado");
+      return;
+    }
+
+    alumnoId = data._id;
+
+    // Rellenar campos
+    document.querySelector("[name='nombres']").value = data.nombres || "";
+    document.querySelector("[name='primer_apellido']").value = data.primer_apellido || "";
+    document.querySelector("[name='segundo_apellido']").value = data.segundo_apellido || "";
+    document.querySelector("[name='curp']").value = data.curp || "";
+    document.querySelector("[name='grupo']").value = data.grupo || "";
+    document.querySelector("[name='turno']").value = data.turno || "";
+
+    // Bloquear edición
+    document.querySelectorAll("input").forEach(i => i.readOnly = true);
+
+  } catch (error) {
+    console.error(error);
+    alert("Error al consultar alumno");
+  }
+}
+
+// Guardar paraescolar
+document.getElementById("registroForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  if (!alumnoId) {
+    alert("Primero busca un alumno");
+    return;
+  }
+
+  const paraescolar = document.getElementById("paraescolar").value;
+
+  if (!paraescolar) {
+    alert("Selecciona un paraescolar");
+    return;
+  }
+
+  try {
+    const resp = await fetch(`/api/alumnos/${alumnoId}/paraescolar`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ paraescolar })
+    });
+
+    const result = await resp.json();
+    alert("Paraescolar guardado correctamente ✅");
+
+  } catch (error) {
+    console.error(error);
+    alert("Error al guardar paraescolar");
+  }
+});
 </script>
 
 
