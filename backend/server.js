@@ -229,6 +229,35 @@ app.get("/api/paraescolar/:control", async (req, res) => {
   }
 });
 
+
+// 🎯 Cupos disponibles por paraescolar
+app.get("/api/paraescolar/cupos", async (req, res) => {
+  try {
+    const limite = 50;
+
+    const conteos = await Paraescolar.aggregate([
+      { $match: { paraescolar: { $ne: null } } },
+      {
+        $group: {
+          _id: "$paraescolar",
+          total: { $sum: 1 }
+        }
+      }
+    ]);
+
+    const mapa = {};
+    conteos.forEach(c => {
+      mapa[c._id] = limite - c.total;
+    });
+
+    res.json(mapa);
+
+  } catch (error) {
+    console.error("ERROR CUPOS:", error);
+    res.status(500).json({ error: "Error al calcular cupos" });
+  }
+});
+
 /* =========================
    ARCHIVOS ESTÁTICOS
 ========================= */
