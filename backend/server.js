@@ -204,6 +204,31 @@ app.get("/api/paraescolar/exportar", async (req, res) => {
   }
 });
 
+
+
+// 📊 Contador por paraescolar
+app.get("/api/paraescolar/estadisticas", async (req, res) => {
+  try {
+    const stats = await Paraescolar.aggregate([
+      { $match: { paraescolar: { $ne: null } } },
+      {
+        $group: {
+          _id: "$paraescolar",
+          total: { $sum: 1 }
+        }
+      },
+      { $sort: { total: -1 } }
+    ]);
+
+    res.json(stats);
+
+  } catch (error) {
+    console.error("ERROR ESTADISTICAS:", error);
+    res.status(500).json({ error: "Error al generar estadísticas" });
+  }
+});
+
+
 /* =========================
    ARCHIVOS ESTÁTICOS
 ========================= */
