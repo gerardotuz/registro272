@@ -125,6 +125,36 @@ document.getElementById("excelForm").addEventListener("submit", async e => {
     alert("Error de conexión");
   }
 });
+
+
+async function cargarEstadisticas() {
+  try {
+    const resp = await fetch("/api/paraescolar/estadisticas");
+    const data = await resp.json();
+
+    const tbody = document.getElementById("tablaStats");
+    tbody.innerHTML = "";
+
+    data.forEach(item => {
+      const disponibles = 50 - item.total;
+
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${item._id}</td>
+        <td>${item.total}</td>
+        <td>${disponibles}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+  } catch (error) {
+    console.error(error);
+    alert("Error al cargar estadísticas");
+  }
+}
+
+
+  
 </script>
 
 </body>
