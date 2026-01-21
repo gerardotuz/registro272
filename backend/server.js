@@ -154,44 +154,47 @@ app.get("/api/paraescolar/exportar", async (req, res) => {
     const data = await Paraescolar.find().lean();
 
     if (!data || data.length === 0) {
-      return res.status(400).json({ error: "No hay datos para exportar" });
+      return res.status(400).send("No hay datos para exportar");
     }
 
-    const wb = XLSX.utils.book_new();
+    // Encabezados CSV
+    const headers = [
+      "numero_control",
+      "curp",
+      "nombre",
+      "grado",
+      "grupo",
+      "paraescolar",
+      "fecha_registro"
+    ];
 
-    // Limpiar datos para Excel
-    const cleanData = data.map(item => ({
-      numero_control: item.numero_control,
-      curp: item.curp || "",
-      nombre: item.nombre || "",
-      grado: item.grado || "",
-      grupo: item.grupo || "",
-      paraescolar: item.paraescolar || "",
-      fecha_registro: item.fecha_registro || ""
-    }));
+    const rows = data.map(item => [
+      item.numero_control || "",
+      item.curp || "",
+      item.nombre || "",
+      item.grado || "",
+      item.grupo || "",
+      item.paraescolar || "",
+      item.fecha_registro || ""
+    ]);
 
-    const ws = XLSX.utils.json_to_sheet(cleanData);
-    XLSX.utils.book_append_sheet(wb, ws, "Paraescolares");
-
-    // 👉 Generar ArrayBuffer REAL
-    const excelBuffer = XLSX.write(wb, {
-      bookType: "xlsx",
-      type: "array"
+    // Construir CSV
+    let csv = headers.join(",") + "\n";
+    rows.forEach(row => {
+      csv += row.map(v => `"${String(v).replace(/"/g, '""')}"`).join(",") + "\n";
     });
 
-    const buffer = Buffer.from(excelBuffer);
+    res.setHeader("Content-Type", "text/csv; charset=utf-8");
+    res.setHeader("Content-Disposition", "attachment; filename=paraescolares.csv");
 
-    res.setHeader("Content-Disposition", "attachment; filename=paraescolares.xlsx");
-    res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-    res.setHeader("Content-Length", buffer.length);
-
-    res.end(buffer);
+    res.send(csv);
 
   } catch (error) {
-    console.error("ERROR EXPORTAR:", error);
-    res.status(500).json({ error: "Error al generar Excel" });
+    console.error("ERROR EXPORTAR CSV:", error);
+    res.status(500).send("Error al generar CSV");
   }
 });
+
 
 
 
