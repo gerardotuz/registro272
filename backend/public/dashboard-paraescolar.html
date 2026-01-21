@@ -48,11 +48,38 @@ input {
 <!-- 📥 EXPORTAR -->
 <h3>Exportar Registros</h3>
 
-<a href="/api/paraescolar/exportar">
-  <button>Descargar Excel</button>
-</a>
+<button onclick="descargarExcel()">Descargar Excel</button>
+
 
 </div>
+<script>
+async function descargarExcel() {
+  try {
+    const resp = await fetch("/api/paraescolar/exportar");
+
+    if (!resp.ok) {
+      alert("Error al generar el Excel");
+      return;
+    }
+
+    const blob = await resp.blob();
+    const url = window.URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "paraescolares.xlsx";
+    document.body.appendChild(a);
+    a.click();
+
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+
+  } catch (error) {
+    console.error(error);
+    alert("Error al descargar archivo");
+  }
+}
+</script>
 
 <script>
 document.getElementById("excelForm").addEventListener("submit", async e => {
