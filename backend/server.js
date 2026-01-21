@@ -115,31 +115,50 @@ app.post("/api/paraescolar/cargar-excel", upload.single("excel"), async (req, re
   try {
     const workbook = XLSX.readFile(req.file.path);
     const sheet = workbook.Sheets[workbook.SheetNames[0]];
-    const data = XLSX.utils.sheet_to_json(sheet);
 
-    for (const fila of data) {
+    // Leer como arreglo (no como objeto)
+    const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+
+    // Eliminar encabezado
+    rows.shift();
+
+    let insertados = 0;
+
+    for (const fila of rows) {
+      const numero_control = String(fila[0] || "").trim();
+      const curp   = String(fila[1] || "").trim();
+      const nombre = String(fila[2] || "").trim();
+      const grado  = String(fila[3] || "").trim();
+      const grupo  = String(fila[4] || "").trim();
+
+      if (!numero_control) continue;
+
       await Paraescolar.updateOne(
-        { numero_control: String(fila["No control"]).trim() },
+        { numero_control },
         {
-          $setOnInsert: {
-            curp: fila["Curp"] || "",
-            nombre: fila["Nombre"] || "",
-            grado: fila["Grado"] || "",
-            grupo: fila["Grupo"] || "",
+          $set: {
+            numero_control,
+            curp,
+            nombre,
+            grado,
+            grupo,
             bloqueado: false
           }
         },
         { upsert: true }
       );
+
+      insertados++;
     }
 
-    res.json({ ok: true, total: data.length });
+    res.json({ ok: true, total: insertados });
 
   } catch (err) {
     console.error("ERROR CARGA EXCEL:", err);
     res.status(500).json({ error: "Error al cargar Excel" });
   }
 });
+
 
 // Exportar CSV
 app.get("/api/paraescolar/exportar", async (req, res) => {
