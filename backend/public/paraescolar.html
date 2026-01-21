@@ -88,37 +88,98 @@ fieldset {
 
 <script>
 let alumno = null;
+let guardando = false;
 
 // 🔍 Buscar alumno
 async function buscarAlumno() {
-  const control = document.getElementById("numero_control").value.trim();
-  if (!control) return alert("Ingresa el número de control");
+  const controlInput = document.getElementById("numero_control");
+  const control = controlInput.value.trim();
+
+  if (!control) {
+    alert("⚠️ Ingresa tu número de control.");
+    controlInput.focus();
+    return;
+  }
+
+  if (!/^[0-9]{8,20}$/.test(control)) {
+    alert("⚠️ El número de control debe ser numérico.");
+    return;
+  }
 
   try {
     const resp = await fetch(`/api/paraescolar/${control}`);
     const data = await resp.json();
 
     if (data.error) {
-      alert("Alumno no encontrado");
-      limpiar();
+      alert("❌ Alumno no encontrado.");
+      limpiarFormulario();
       return;
     }
 
     alumno = data;
 
-    // Mostrar datos
     curp.value   = data.curp || "";
     nombre.value = data.nombre || "";
     grado.value  = data.grado || "";
     grupo.value  = data.grupo || "";
 
-    // Si ya está bloqueado
     if (data.bloqueado) {
       paraescolar.value = data.paraescolar;
       paraescolar.disabled = true;
-      alert("⚠️ Este alumno ya tiene paraescolar asignado.");
+      alert("✅ Ya tienes un paraescolar asignado.");
     } else {
       paraescolar.disabled = false;
     }
 
-  } cat
+  } catch (error) {
+    console.error(error);
+    alert("❌ Error de conexión con el servidor.");
+  }
+}
+
+// 💾 Guardar selección
+document.getElementById("registroForm").addEventListener("submit", async e => {
+  e.preventDefault();
+
+  if (!alumno) return alert("⚠️ Primero busca tu número de control.");
+  if (!paraescolar.value) return alert("⚠️ Selecciona un paraescolar.");
+
+  if (guardando) return; // evitar doble clic
+  guardando = true;
+
+  try {
+    const resp = await fetch(`/api/paraescolar/${alumno._id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ paraescolar: paraescolar.value })
+    });
+
+    const result = await resp.json();
+
+    if (result.error) {
+      alert("❌ " + result.error);
+    } else {
+      alert("🎉 Paraescolar registrado correctamente.");
+      paraescolar.disabled = true;
+    }
+
+  } catch (error) {
+    console.error(error);
+    alert("❌ Error al guardar.");
+  } finally {
+    guardando = false;
+  }
+});
+
+function limpiarFormulario() {
+  alumno = null;
+  curp.value = "";
+  nombre.value = "";
+  grado.value = "";
+  grupo.value = "";
+  paraescolar.value = "";
+  paraescolar.disabled = true;
+}
+</script>
+</body>
+</html>
