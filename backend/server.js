@@ -230,7 +230,7 @@ app.get("/api/paraescolar/:control", async (req, res) => {
 });
 
 
-// 🎯 Cupos disponibles por paraescolar
+// 🎯 Cupos disponibles por paraescolar (normalizado)
 app.get("/api/paraescolar/cupos", async (req, res) => {
   try {
     const limite = 50;
@@ -238,8 +238,15 @@ app.get("/api/paraescolar/cupos", async (req, res) => {
     const conteos = await Paraescolar.aggregate([
       { $match: { paraescolar: { $ne: null } } },
       {
+        $project: {
+          nombre: {
+            $toUpper: { $trim: { input: "$paraescolar" } }
+          }
+        }
+      },
+      {
         $group: {
-          _id: "$paraescolar",
+          _id: "$nombre",
           total: { $sum: 1 }
         }
       }
@@ -257,6 +264,7 @@ app.get("/api/paraescolar/cupos", async (req, res) => {
     res.status(500).json({ error: "Error al calcular cupos" });
   }
 });
+
 
 /* =========================
    ARCHIVOS ESTÁTICOS
