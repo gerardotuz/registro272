@@ -211,23 +211,7 @@ app.get("/api/paraescolar/estadisticas", async (req, res) => {
   }
 });
 
-// Buscar alumno
-app.get("/api/paraescolar/:control", async (req, res) => {
-  try {
-    const alumno = await Paraescolar.findOne({
-      numero_control: req.params.control
-    });
 
-    if (!alumno) {
-      return res.status(404).json({ error: "Alumno no encontrado" });
-    }
-
-    res.json(alumno);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Error en servidor" });
-  }
-});
 
 
 // 🎯 Cupos disponibles por paraescolar (normalizado)
@@ -262,6 +246,26 @@ app.get("/api/paraescolar/cupos", async (req, res) => {
   } catch (error) {
     console.error("ERROR CUPOS:", error);
     res.status(500).json({ error: "Error al calcular cupos" });
+  }
+});
+
+
+
+// Buscar alumno
+app.get("/api/paraescolar/:control", async (req, res) => {
+  try {
+    const alumno = await Paraescolar.findOne({
+      numero_control: req.params.control
+    });
+
+    if (!alumno) {
+      return res.status(404).json({ error: "Alumno no encontrado" });
+    }
+
+    res.json(alumno);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Error en servidor" });
   }
 });
 
