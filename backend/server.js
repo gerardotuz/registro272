@@ -175,6 +175,7 @@ app.get("/api/paraescolar/exportar", async (req, res) => {
       "nombre",
       "grado",
       "grupo",
+      "turno",
       "paraescolar",
       "fecha_registro"
     ];
@@ -185,6 +186,7 @@ app.get("/api/paraescolar/exportar", async (req, res) => {
       item.nombre || "",
       item.grado || "",
       item.grupo || "",
+      item.turno || "", 
       item.paraescolar || "",
       item.fecha_registro || ""
     ]);
