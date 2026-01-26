@@ -8,6 +8,15 @@ const Paraescolar = require("./models/paraescolar.model");
 const multer = require("multer");
 const XLSX = require("xlsx");
 
+
+const fs = require("fs");
+
+// Crear carpeta uploads si no existe (Render)
+if (!fs.existsSync("uploads")) {
+  fs.mkdirSync("uploads");
+}
+
+
 require('dotenv').config();
 
 const app = express();
@@ -94,17 +103,18 @@ app.put("/api/paraescolar/:id", async (req, res) => {
   }
 });
 
-// Cargar Excel
 app.post("/api/paraescolar/cargar-excel", upload.single("excel"), async (req, res) => {
   try {
+
+    if (!req.file) {
+      return res.status(400).json({ error: "No se recibió archivo" });
+    }
+
     const workbook = XLSX.readFile(req.file.path);
     const sheet = workbook.Sheets[workbook.SheetNames[0]];
 
-    // Leer como arreglo (no como objeto)
     const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
-
-    // Eliminar encabezado
-    rows.shift();
+    rows.shift(); // eliminar encabezados
 
     let insertados = 0;
 
@@ -135,13 +145,17 @@ app.post("/api/paraescolar/cargar-excel", upload.single("excel"), async (req, re
       insertados++;
     }
 
+    // 🧹 Borrar archivo temporal
+    fs.unlinkSync(req.file.path);
+
     res.json({ ok: true, total: insertados });
 
   } catch (err) {
-    console.error("ERROR CARGA EXCEL:", err);
+    console.error("❌ ERROR CARGA EXCEL:", err);
     res.status(500).json({ error: "Error al cargar Excel" });
   }
 });
+
 
 
 // Exportar CSV
