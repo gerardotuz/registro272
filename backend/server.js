@@ -124,6 +124,7 @@ app.post("/api/paraescolar/cargar-excel", upload.single("excel"), async (req, re
       const nombre = String(fila[2] || "").trim();
       const grado  = String(fila[3] || "").trim();
       const grupo  = String(fila[4] || "").trim();
+      const turno  = String(fila[5] || "").trim(); 
 
       if (!numero_control) continue;
 
@@ -136,6 +137,7 @@ app.post("/api/paraescolar/cargar-excel", upload.single("excel"), async (req, re
             nombre,
             grado,
             grupo,
+            turno, 
             bloqueado: false
           }
         },
