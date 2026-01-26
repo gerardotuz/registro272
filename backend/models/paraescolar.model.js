@@ -7,6 +7,7 @@ const ParaescolarSchema = new mongoose.Schema({
   grado: String,
   grupo: String,
   paraescolar: { type: String, default: null },
+  turno: String,
   fecha_registro: Date,
   bloqueado: { type: Boolean, default: false }
 });
