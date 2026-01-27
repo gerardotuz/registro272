@@ -188,17 +188,20 @@ app.get("/api/paraescolar/exportar", async (req, res) => {
     }
 
     // 🧾 Construcción del Excel
-    const excelData = data.map((item, index) => ({
-      orden: index + 1,
-      numero_control: item.numero_control || "",
-      curp: item.curp || "",
-      nombre: item.nombre || "",
-      grado: item.grado || "",
-      grupo: item.grupo || "",
-      turno: item.turno || "",
-      paraescolar: item.paraescolar || "",
-      fecha_registro: formatearFechaMexico(item.fecha_registro)
-    }));
+   const excelData = data.map((item, index) => ({
+  orden: index + 1,
+  numero_control: item.numero_control ?? "",
+  curp: item.curp ?? "",
+  nombre: item.nombre ?? "",
+  grado: item.grado ?? "",
+  grupo: item.grupo ?? "",
+  turno: item.turno ?? "",
+  paraescolar: item.paraescolar ?? "",   // ✅ no se pierde
+  fecha_registro: item.fecha_registro
+    ? formatearFechaMexico(item.fecha_registro)
+    : ""                                  // ✅ no se pierde
+}));
+
 
     // Crear hoja Excel
     const worksheet = XLSX.utils.json_to_sheet(excelData);
