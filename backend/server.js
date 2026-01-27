@@ -170,6 +170,7 @@ app.get("/api/paraescolar/exportar", async (req, res) => {
     }
 
     const headers = [
+      "orden", 
       "numero_control",
       "curp",
       "nombre",
@@ -181,6 +182,7 @@ app.get("/api/paraescolar/exportar", async (req, res) => {
     ];
 
     const rows = data.map(item => [
+      index + 1,
       item.numero_control || "",
       item.curp || "",
       item.nombre || "",
