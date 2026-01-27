@@ -1,16 +1,18 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<link rel="icon" href="/favicon.ico" type="image/x-icon">
-<link rel="stylesheet" href="/style.css">
-<meta charset="UTF-8">
-<title>Dashboard Administrador</title>
+  <meta charset="UTF-8">
+  <title>Dashboard Paraescolar</title>
+  <link rel="icon" href="/favicon.ico" type="image/x-icon">
+  <link rel="stylesheet" href="/style.css">
 </head>
+
 <body>
+
+<!-- ================= NAV ================= -->
 <nav>
   <div class="nav-logo">
-    <img src="/logo.png" alt="Logo" />
+    <img src="/logo.png" alt="Logo">
   </div>
   <div class="nav-links">
     <a href="index.html">Inicio</a>
@@ -19,71 +21,154 @@
   </div>
 </nav>
 
-<h2>Cargar Excel de alumnos</h2>
-<form id="excelForm" enctype="multipart/form-data">
-  <input type="file" name="archivo" accept=".xlsx" required>
-  <button type="submit">Cargar</button>
+<!-- ================= TÍTULO ================= -->
+<h2>📊 Dashboard Paraescolar</h2>
+
+<!-- ================= CONTENIDO ================= -->
+<form>
+
+  <!-- 📤 CARGAR EXCEL -->
+  <fieldset>
+    <legend>📤 Cargar Excel de Alumnos</legend>
+
+    <div>
+      <label>Archivo Excel</label>
+      <input type="file" id="excelFile" accept=".xlsx,.xls" required>
+    </div>
+
+    <div>
+      <button type="button" onclick="subirExcel()">Subir Excel</button>
+    </div>
+
+  </fieldset>
+
+  <!-- 📥 EXPORTAR -->
+  <fieldset>
+    <legend>📥 Exportar Registros</legend>
+
+    <div>
+      <button type="button" onclick="descargarExcel()">Descargar Excel</button>
+    </div>
+
+  </fieldset>
+
+  <!-- 📊 ESTADÍSTICAS -->
+  <fieldset>
+    <legend>📊 Cupos por Paraescolar</legend>
+
+    <div>
+      <button type="button" onclick="cargarEstadisticas()">Actualizar conteo</button>
+    </div>
+
+    <div style="grid-column: 1 / -1;">
+      <table border="1" width="100%">
+        <thead>
+          <tr>
+            <th>Paraescolar</th>
+            <th>Total inscritos</th>
+            <th>Disponibles</th>
+          </tr>
+        </thead>
+        <tbody id="tablaStats"></tbody>
+      </table>
+    </div>
+
+  </fieldset>
+
 </form>
 
-<p id="cargando" style="display:none; color: darkblue; text-align:center; font-weight: bold; margin-top: 10px;">
-  ⏳ Cargando archivo, por favor espera...
-</p>
-
+<!-- ================= SCRIPTS ================= -->
 <script>
-  document.getElementById('excelForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const formData = new FormData(e.target);
-    const cargando = document.getElementById('cargando');
-    cargando.style.display = 'block';
+async function subirExcel() {
+  const fileInput = document.getElementById("excelFile");
 
-    try {
-      const res = await fetch('https://registro272.onrender.com/api/cargar-excel', {
-        method: 'POST',
-        body: formData
-      });
+  if (!fileInput.files.length) {
+    alert("⚠️ Selecciona un archivo Excel.");
+    return;
+  }
 
-      if (!res.ok) {
-        const errorText = await res.text();
-        throw new Error(`Error ${res.status}: ${errorText}`);
-      }
+  const formData = new FormData();
+  formData.append("excel", fileInput.files[0]);
 
-      const result = await res.json();
-      alert("✅ " + result.message);
-    } catch (error) {
-      alert("❌ Error al cargar el archivo: " + error.message);
-      console.error("Detalles del error:", error);
-    } finally {
-      cargando.style.display = 'none';
+  try {
+    const resp = await fetch("/api/paraescolar/cargar-excel", {
+      method: "POST",
+      body: formData
+    });
+
+    const data = await resp.json();
+
+    if (data.ok) {
+      alert(`✅ Excel cargado correctamente. Registros: ${data.total}`);
+      fileInput.value = "";
+    } else {
+      alert("❌ Error al cargar Excel.");
     }
-  });
-</script>
-<h2>Cargar grupos (Excel)</h2>
-<form id="formGrupos">
-  <input type="file" id="archivoGrupos" accept=".xlsx, .xls" required />
-  <button type="submit">Subir archivo</button>
-</form>
 
-<script>
-  document.getElementById('formGrupos').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const archivo = document.getElementById('archivoGrupos').files[0];
-    if (!archivo) return alert('Selecciona un archivo');
+  } catch (error) {
+    console.error(error);
+    alert("❌ Error de conexión.");
+  }
+}
 
-    const formData = new FormData();
-    formData.append('archivo', archivo);
+async function descargarExcel() {
+  try {
+    const resp = await fetch("/api/paraescolar/exportar");
 
-    try {
-      const res  = await fetch('/api/cargar-grupos', { method: 'POST', body: formData });
-      const json = await res.json();
-      if (!json.ok) throw new Error(json.msg);
-      alert(json.msg);
-    } catch (err) {
-      alert(err.message || 'Error al cargar archivo');
+    if (!resp.ok) {
+      alert("❌ Error al generar el Excel");
+      return;
     }
-  });
+
+    const blob = await resp.blob();
+    const url = window.URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "paraescolares.xlsx";
+    document.body.appendChild(a);
+    a.click();
+
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+
+  } catch (error) {
+    console.error(error);
+    alert("❌ Error al descargar archivo");
+  }
+}
+
+async function cargarEstadisticas() {
+  try {
+    const resp = await fetch("/api/paraescolar/estadisticas");
+    const data = await resp.json();
+
+    const tbody = document.getElementById("tablaStats");
+    tbody.innerHTML = "";
+
+    if (!Array.isArray(data)) {
+      alert("⚠️ No hay estadísticas disponibles.");
+      return;
+    }
+
+    data.forEach(item => {
+      const disponibles = 50 - item.total;
+
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${item._id}</td>
+        <td>${item.total}</td>
+        <td>${disponibles}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+  } catch (error) {
+    console.error(error);
+    alert("❌ Error al cargar estadísticas");
+  }
+}
 </script>
 
-<script src="scripts.js"></script>
 </body>
 </html>
-
