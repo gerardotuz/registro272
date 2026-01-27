@@ -1,72 +1,122 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<title>Dashboard Paraescolar</title>
-<link rel="stylesheet" href="/style.css">
-
-
+  <meta charset="UTF-8">
+  <title>Dashboard Paraescolar</title>
+  <link rel="icon" href="/favicon.ico" type="image/x-icon">
+  <link rel="stylesheet" href="/style.css">
 </head>
 
 <body>
+
+<!-- ================= NAV ================= -->
 <nav>
-<div class="nav-logo">
-<img alt="Logo" src="/logo.png"/>
-</div>
-<div class="nav-links">
-<a href="index.html">Inicio</a>
-<a href="consultar-grupo.html">Consultar grupo</a>
-
-<a href="login.html">Iniciar sesión</a>
-</div>
+  <div class="nav-logo">
+    <img src="/logo.png" alt="Logo">
+  </div>
+  <div class="nav-links">
+    <a href="index.html">Inicio</a>
+    <a href="dashboard.html">Dashboard</a>
+    <a href="login.html">Iniciar sesión</a>
+  </div>
 </nav>
-<div class="container">
 
+<!-- ================= TÍTULO ================= -->
 <h2>📊 Dashboard Paraescolar</h2>
 
-<!-- 📤 CARGAR EXCEL -->
-<h3>Cargar Excel de Alumnos</h3>
+<!-- ================= CONTENIDO ================= -->
+<form>
 
-<form id="excelForm" enctype="multipart/form-data">
-  <input type="file" name="excel" accept=".xlsx,.xls" required>
-  <button type="submit">Subir Excel</button>
+  <!-- 📤 CARGAR EXCEL -->
+  <fieldset>
+    <legend>📤 Cargar Excel de Alumnos</legend>
+
+    <div>
+      <label>Archivo Excel</label>
+      <input type="file" id="excelFile" accept=".xlsx,.xls" required>
+    </div>
+
+    <div>
+      <button type="button" onclick="subirExcel()">Subir Excel</button>
+    </div>
+
+  </fieldset>
+
+  <!-- 📥 EXPORTAR -->
+  <fieldset>
+    <legend>📥 Exportar Registros</legend>
+
+    <div>
+      <button type="button" onclick="descargarExcel()">Descargar Excel</button>
+    </div>
+
+  </fieldset>
+
+  <!-- 📊 ESTADÍSTICAS -->
+  <fieldset>
+    <legend>📊 Cupos por Paraescolar</legend>
+
+    <div>
+      <button type="button" onclick="cargarEstadisticas()">Actualizar conteo</button>
+    </div>
+
+    <div style="grid-column: 1 / -1;">
+      <table border="1" width="100%">
+        <thead>
+          <tr>
+            <th>Paraescolar</th>
+            <th>Total inscritos</th>
+            <th>Disponibles</th>
+          </tr>
+        </thead>
+        <tbody id="tablaStats"></tbody>
+      </table>
+    </div>
+
+  </fieldset>
+
 </form>
 
-<hr>
-
-<!-- 📥 EXPORTAR -->
-<h3>Exportar Registros</h3>
-
-<button onclick="descargarExcel()">Descargar Excel</button>
-
-
-  <hr>
-
-<h3>📊 Cupos por Paraescolar</h3>
-
-<button onclick="cargarEstadisticas()">Actualizar conteo</button>
-
-<table border="1" width="100%" style="margin-top:10px;">
-  <thead>
-    <tr>
-      <th>Paraescolar</th>
-      <th>Total inscritos</th>
-      <th>Disponibles</th>
-    </tr>
-  </thead>
-  <tbody id="tablaStats"></tbody>
-</table>
-
-
-
-</div>
+<!-- ================= SCRIPTS ================= -->
 <script>
+async function subirExcel() {
+  const fileInput = document.getElementById("excelFile");
+
+  if (!fileInput.files.length) {
+    alert("⚠️ Selecciona un archivo Excel.");
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append("excel", fileInput.files[0]);
+
+  try {
+    const resp = await fetch("/api/paraescolar/cargar-excel", {
+      method: "POST",
+      body: formData
+    });
+
+    const data = await resp.json();
+
+    if (data.ok) {
+      alert(`✅ Excel cargado correctamente. Registros: ${data.total}`);
+      fileInput.value = "";
+    } else {
+      alert("❌ Error al cargar Excel.");
+    }
+
+  } catch (error) {
+    console.error(error);
+    alert("❌ Error de conexión.");
+  }
+}
+
 async function descargarExcel() {
   try {
     const resp = await fetch("/api/paraescolar/exportar");
 
     if (!resp.ok) {
-      alert("Error al generar el Excel");
+      alert("❌ Error al generar el Excel");
       return;
     }
 
@@ -84,37 +134,9 @@ async function descargarExcel() {
 
   } catch (error) {
     console.error(error);
-    alert("Error al descargar archivo");
+    alert("❌ Error al descargar archivo");
   }
 }
-</script>
-
-<script>
-document.getElementById("excelForm").addEventListener("submit", async e => {
-  e.preventDefault();
-
-  const formData = new FormData(e.target);
-
-  try {
-    const resp = await fetch("/api/paraescolar/cargar-excel", {
-      method: "POST",
-      body: formData
-    });
-
-    const data = await resp.json();
-
-    if (data.ok) {
-      alert("✅ Excel cargado correctamente");
-    } else {
-      alert("❌ Error al cargar Excel");
-    }
-
-  } catch (error) {
-    console.error(error);
-    alert("Error de conexión");
-  }
-});
-
 
 async function cargarEstadisticas() {
   try {
@@ -123,6 +145,11 @@ async function cargarEstadisticas() {
 
     const tbody = document.getElementById("tablaStats");
     tbody.innerHTML = "";
+
+    if (!Array.isArray(data)) {
+      alert("⚠️ No hay estadísticas disponibles.");
+      return;
+    }
 
     data.forEach(item => {
       const disponibles = 50 - item.total;
@@ -138,12 +165,9 @@ async function cargarEstadisticas() {
 
   } catch (error) {
     console.error(error);
-    alert("Error al cargar estadísticas");
+    alert("❌ Error al cargar estadísticas");
   }
 }
-
-
-  
 </script>
 
 </body>
