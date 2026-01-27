@@ -158,53 +158,73 @@ app.post("/api/paraescolar/cargar-excel", upload.single("excel"), async (req, re
   }
 });
 
+function formatearFechaMexico(fechaUTC) {
+  if (!fechaUTC) return "";
+
+  const fecha = new Date(fechaUTC);
+
+  // Ajuste manual UTC-5 (México)
+  fecha.setHours(fecha.getHours() - 5);
+
+  const dia  = String(fecha.getDate()).padStart(2, "0");
+  const mes  = String(fecha.getMonth() + 1).padStart(2, "0");
+  const año  = fecha.getFullYear();
+  const hora = String(fecha.getHours()).padStart(2, "0");
+  const min  = String(fecha.getMinutes()).padStart(2, "0");
+
+  return `${dia}/${mes}/${año} ${hora}:${min}`;
+}
 
 
-// Exportar CSV
+
 app.get("/api/paraescolar/exportar", async (req, res) => {
   try {
-    const data = await Paraescolar.find().lean();
+    const data = await Paraescolar.find()
+      .sort({ fecha_registro: 1 })   // Orden por registro
+      .lean();
 
     if (!data || data.length === 0) {
       return res.status(400).send("No hay datos para exportar");
     }
 
-    const headers = [
-      "orden", 
-      "numero_control",
-      "curp",
-      "nombre",
-      "grado",
-      "grupo",
-      "turno",
-      "paraescolar",
-      "fecha_registro"
-    ];
+    // 🧾 Construcción del Excel
+    const excelData = data.map((item, index) => ({
+      orden: index + 1,
+      numero_control: item.numero_control || "",
+      curp: item.curp || "",
+      nombre: item.nombre || "",
+      grado: item.grado || "",
+      grupo: item.grupo || "",
+      turno: item.turno || "",
+      paraescolar: item.paraescolar || "",
+      fecha_registro: formatearFechaMexico(item.fecha_registro)
+    }));
 
-    const rows = data.map(item => [
-      index + 1,
-      item.numero_control || "",
-      item.curp || "",
-      item.nombre || "",
-      item.grado || "",
-      item.grupo || "",
-      item.turno || "", 
-      item.paraescolar || "",
-      item.fecha_registro || ""
-    ]);
+    // Crear hoja Excel
+    const worksheet = XLSX.utils.json_to_sheet(excelData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Paraescolares");
 
-    let csv = headers.join(",") + "\n";
-    rows.forEach(row => {
-      csv += row.map(v => `"${String(v).replace(/"/g, '""')}"`).join(",") + "\n";
+    // Generar buffer XLSX
+    const buffer = XLSX.write(workbook, {
+      type: "buffer",
+      bookType: "xlsx"
     });
 
-    res.setHeader("Content-Type", "text/csv; charset=utf-8");
-    res.setHeader("Content-Disposition", "attachment; filename=paraescolares.csv");
-    res.send(csv);
+    res.setHeader(
+      "Content-Disposition",
+      "attachment; filename=paraescolares.xlsx"
+    );
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    );
+
+    res.send(buffer);
 
   } catch (error) {
-    console.error("ERROR EXPORTAR CSV:", error);
-    res.status(500).send("Error al generar CSV");
+    console.error("ERROR EXPORTAR EXCEL:", error);
+    res.status(500).send("Error al generar Excel");
   }
 });
 
