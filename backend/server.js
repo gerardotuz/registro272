@@ -180,7 +180,7 @@ function formatearFechaMexico(fechaUTC) {
 app.get("/api/paraescolar/exportar", async (req, res) => {
   try {
     const data = await Paraescolar.find()
-      .sort({ fecha_registro: 1 })   // Orden por registro
+      .sort({ fecha_registro: -1 })   // Orden por registro
       .lean();
 
     if (!data || data.length === 0) {
