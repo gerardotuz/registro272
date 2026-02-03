@@ -216,33 +216,83 @@ formRegistro.addEventListener("submit", async e=>{
     sexo: sexo.value,
     fecha_nacimiento: fecha_nacimiento.value,
     edad: edad.value,
-    paraescolar: paraescolar.value,
     estado_nacimiento: estado.value,
     municipio_nacimiento: municipio.value,
-    ciudad_nacimiento: ciudad.value
+    ciudad_nacimiento: ciudad.value,
+    paraescolar: paraescolar.value
   };
 
-  try{
-    const resp = await fetch("/api/guardar", {   // 🔥 MISMO ENDPOINT
-      method:"POST",
-      headers:{ "Content-Type":"application/json" },
-      body: JSON.stringify(datos)
-    });
+  const resp = await fetch("/api/guardar", {
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body: JSON.stringify(datos)
+  });
 
-    const result = await resp.json();
+  const result = await resp.json();
 
-    if(result.pdfUrl){
-      window.open(result.pdfUrl, "_blank"); // 🔥 abre PDF automático
-      alert("Registro guardado correctamente");
-      formRegistro.reset();
-      cargarCupos();
-    }else{
-      alert("Error al generar PDF");
-    }
+  if(result.pdfUrl){
+    window.open(result.pdfUrl, "_blank");
+    alert("Registro guardado correctamente");
+  }else{
+    alert(result.error || "Error al guardar");
+  }
+});
+</script>
 
-  }catch(err){
-    console.error(err);
-    alert("Error de servidor");
+
+
+  <script>
+const estadosCURP = {
+  AS:"AGUASCALIENTES", BC:"BAJA CALIFORNIA", BS:"BAJA CALIFORNIA SUR",
+  CC:"CAMPECHE", CL:"COAHUILA", CM:"COLIMA", CS:"CHIAPAS", CH:"CHIHUAHUA",
+  DF:"CIUDAD DE MEXICO", DG:"DURANGO", GT:"GUANAJUATO", GR:"GUERRERO",
+  HG:"HIDALGO", JC:"JALISCO", MC:"MEXICO", MN:"MICHOACAN", MS:"MORELOS",
+  NT:"NAYARIT", NL:"NUEVO LEON", OC:"OAXACA", PL:"PUEBLA", QT:"QUERETARO",
+  QR:"QUINTANA ROO", SP:"SAN LUIS POTOSI", SL:"SINALOA", SR:"SONORA",
+  TC:"TABASCO", TS:"TAMAULIPAS", TL:"TLAXCALA", VZ:"VERACRUZ",
+  YN:"YUCATAN", ZS:"ZACATECAS"
+};
+
+function autocompletarEstado(curp){
+  if(curp.length !== 18) return;
+
+  const clave = curp.substring(11,13);
+  const estadoTexto = estadosCURP[clave];
+
+  if(estadoTexto){
+    document.getElementById("estado").value = estadoTexto;
+  }
+}
+
+curp.addEventListener("input", e=>{
+  autocompletarEstado(e.target.value.toUpperCase());
+});
+</script>
+<script>
+function extraerDatosCURP(curp){
+
+  const y = curp.substring(4,6);
+  const m = curp.substring(6,8);
+  const d = curp.substring(8,10);
+
+  const full = (y <= new Date().getFullYear()%100 ? "20":"19")+y;
+
+  const fecha = `${full}-${m}-${d}`;
+
+  const hoy = new Date();
+  let edad = hoy.getFullYear() - full;
+
+  const sexo = curp[10] === "H" ? "Masculino":"Femenino";
+
+  return { fecha, edad, sexo };
+}
+
+curp.addEventListener("input", ()=>{
+  if(curp.value.length===18){
+    const d = extraerDatosCURP(curp.value);
+    fecha_nacimiento.value = d.fecha;
+    edad.value = d.edad;
+    sexo.value = d.sexo;
   }
 });
 </script>
