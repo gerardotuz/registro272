@@ -13,7 +13,12 @@ const alumnoSchema = new mongoose.Schema({
     grupo: String,
     turno: String,
     carrera: String,
-    curp: String,
+    curp: {
+  type: String,
+  required: true,
+  unique: true
+},
+
     fecha_nacimiento: String,
     edad: Number,
     sexo: String,
