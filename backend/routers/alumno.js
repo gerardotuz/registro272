@@ -62,7 +62,34 @@ if (existe) {
 }
 
 
+// ===================================
+// GENERAR NUMERO DE CONTROL AUTOMATICO
+// ===================================
+async function generarNumeroControl() {
+
+  const year = new Date().getFullYear().toString().slice(-2); // 25
+
+  const ultimo = await Alumno.findOne({
+    numero_control: new RegExp(`^272${year}`)
+  })
+  .sort({ numero_control: -1 })
+  .lean();
+
+  let consecutivo = 1;
+
+  if (ultimo && ultimo.numero_control) {
+    const ult = parseInt(ultimo.numero_control.slice(-4));
+    consecutivo = ult + 1;
+  }
+
+  return `272${year}${String(consecutivo).padStart(4,"0")}`;
+}
+
+
 router.post('/guardar', async (req, res) => {
+  const numeroControl = await generarNumeroControl();
+req.body.numero_control = numeroControl;
+
   try {
     const data = req.body;
 
