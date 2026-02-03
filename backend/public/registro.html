@@ -1,139 +1,242 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Registro Online Alumno</title>
-  <link rel="stylesheet" href="/style.css">
-  <link rel="icon" href="/favicon.ico">
+<meta charset="UTF-8">
+<title>Registro Nuevo Alumno</title>
+
+<link rel="stylesheet" href="/style.css">
+<link rel="icon" href="/favicon.ico">
+
+<style>
+/* ===== ajustes visuales compatibles con tu sistema ===== */
+
+.container{
+  max-width: 900px;
+  margin: 40px auto;
+}
+
+fieldset{
+  margin-bottom: 20px;
+}
+
+.row{
+  display:grid;
+  grid-template-columns: 1fr 1fr;
+  gap:15px;
+}
+
+.row-3{
+  display:grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap:15px;
+}
+
+/* quitar iconos rojo/verde del CURP */
+.sin-icono:valid,
+.sin-icono:invalid{
+  background-image:none !important;
+  padding-right:12px !important;
+}
+
+button{
+  margin-top:15px;
+}
+</style>
 </head>
+
 
 <body>
 
-<!-- NAV igual a tu sistema -->
+<!-- ================= NAVBAR (igual a tus otros html) ================= -->
 <nav>
   <div class="nav-logo">
     <img src="/logo.png" alt="Logo">
   </div>
+
   <div class="nav-links">
     <a href="index.html">Inicio</a>
     <a href="login.html">Iniciar sesión</a>
   </div>
 </nav>
 
+
+<!-- ================= CONTENIDO ================= -->
+<div class="container">
+
 <h2>📝 Registro Nuevo Alumno</h2>
+
 
 <form id="registroRapido">
 
-  <!-- ================= CURP ================= -->
-  <fieldset>
-    <legend>Validación por CURP</legend>
+<!-- ========================================= -->
+<!-- VALIDACIÓN CURP -->
+<!-- ========================================= -->
+<fieldset>
+<legend>Validación por CURP</legend>
 
-   <input id="curpBuscar"
-       class="sin-icono"
-       maxlength="18"
-       placeholder="Ingresa CURP (18 caracteres)"
-       required>
+<div class="row">
+  <input
+    id="curpBuscar"
+    class="sin-icono"
+    placeholder="Ingresa CURP (18 caracteres)"
+    maxlength="18"
+    required
+  >
+
+  <button type="button" onclick="validarCURP()">
+    Validar CURP
+  </button>
+</div>
+
+</fieldset>
 
 
-    <button type="button" onclick="buscarCurp()">Validar CURP</button>
-  </fieldset>
+<!-- ========================================= -->
+<!-- DATOS BÁSICOS -->
+<!-- ========================================= -->
+<fieldset>
+<legend>Datos Básicos</legend>
+
+<div class="row">
+
+  <input id="nombre" placeholder="Nombre completo" required>
+
+  <input id="correo" type="email" placeholder="Correo">
+
+</div>
 
 
-  <!-- ================= DATOS BÁSICOS ================= -->
-  <fieldset>
-    <legend>Datos Básicos</legend>
+<div class="row-3">
 
-    <input id="nombre" name="nombre" placeholder="Nombre completo" required>
-    <input id="telefono" name="telefono" placeholder="Teléfono" required>
-    <input id="correo" name="correo" type="email" placeholder="Correo" required>
+  <input id="fecha_nacimiento" type="date" readonly>
 
-    <select id="turno" name="turno" required>
-      <option value="">Selecciona turno</option>
-      <option>Matutino</option>
-      <option>Vespertino</option>
-    </select>
+  <input id="edad" type="number" placeholder="Edad" readonly>
 
-    <select id="paraescolar" name="paraescolar" required>
-      <option value="">Selecciona paraescolar</option>
-      <option>FUTBOL</option>
-      <option>BASQUETBOL</option>
-      <option>VOLEIBOL</option>
-      <option>DANZA</option>
-      <option>BANDA DE GUERRA</option>
-      <option>AJEDREZ</option>
-      <option>PINTURA</option>
-      <option>MÚSICA</option>
-    </select>
-  </fieldset>
+  <select id="sexo" disabled>
+    <option value="">Sexo</option>
+    <option value="Masculino">Masculino</option>
+    <option value="Femenino">Femenino</option>
+  </select>
 
-  <button type="submit">Guardar Registro</button>
+</div>
+
+
+<div class="row">
+
+  <select id="turno" required>
+    <option value="">Selecciona turno</option>
+    <option>Matutino</option>
+    <option>Vespertino</option>
+  </select>
+
+
+  <select id="paraescolar" required>
+    <option value="">Selecciona paraescolar</option>
+    <option>AJEDREZ</option>
+    <option>ATLETISMO</option>
+    <option>BANDA DE GUERRA</option>
+    <option>BASQUETBOL</option>
+    <option>DANZA</option>
+    <option>ESCOLTA DE BANDERA</option>
+    <option>FOTOGRAFÍA</option>
+    <option>FUTBOL</option>
+    <option>PINTURA</option>
+    <option>TEATRO-CANTO</option>
+    <option>TOCHO BANDERA</option>
+    <option>VOLEIBOL</option>
+    <option>ORATORIA Y DECLAMACIÓN</option>
+    <option>MÚSICA</option>
+  </select>
+
+</div>
+
+</fieldset>
+
+
+<button type="submit">Guardar Registro</button>
 
 </form>
+</div>
 
 
-<!-- ================= SCRIPT ================= -->
+
+<!-- ===================================================== -->
+<!-- ================== SCRIPT ============================ -->
+<!-- ===================================================== -->
+
 <script>
-let alumnoExistente = null;
 
-/* ===== VALIDAR FORMATO CURP ===== */
-function validarCURP(curp){
-  const regex = /^[A-Z]{4}\d{6}[HM][A-Z]{5}[A-Z0-9]\d$/;
-  return regex.test(curp);
-}
+// forzar mayúsculas
+curpBuscar.addEventListener("input", ()=>{
+  curpBuscar.value = curpBuscar.value.toUpperCase();
+});
 
-/* ===== BUSCAR CURP ===== */
-async function buscarCurp(){
 
-  const curp = document.getElementById("curpBuscar").value.toUpperCase().trim();
+// ===============================
+// VALIDAR CURP
+// ===============================
+function validarCURP(){
 
-  if(!validarCURP(curp)){
+  const curp = curpBuscar.value.trim();
+
+  const regex = /^[A-Z]{4}[0-9]{6}[HM][A-Z]{5}[A-Z0-9]{2}$/;
+
+  if(!regex.test(curp)){
     alert("❌ CURP inválida");
     return;
   }
 
-  const resp = await fetch(`/api/alumno/curp/${curp}`);
-  const data = await resp.json();
+  const datos = extraerDatosCURP(curp);
 
-  if(data.encontrado){
-    alumnoExistente = data.alumno;
+  fecha_nacimiento.value = datos.fecha;
+  edad.value = datos.edad;
+  sexo.value = datos.sexo;
 
-    nombre.value = alumnoExistente.nombre || "";
-    turno.value = alumnoExistente.turno || "";
-
-    alert("✅ Alumno existente, datos cargados");
-  }else{
-    alert("🆕 Alumno nuevo, captura tus datos");
-  }
+  alert("✅ CURP válida. Datos autocompletados");
 }
 
-/* ===== GUARDAR ===== */
-document.getElementById("registroRapido").addEventListener("submit", async e => {
+
+// ===============================
+// EXTRAER DATOS DESDE CURP
+// ===============================
+function extraerDatosCURP(curp){
+
+  const year  = curp.substring(4,6);
+  const month = curp.substring(6,8);
+  const day   = curp.substring(8,10);
+  const sexoChar = curp.charAt(10);
+
+  const currentYear = new Date().getFullYear() % 100;
+  const fullYear = year <= currentYear ? "20"+year : "19"+year;
+
+  const fecha = `${fullYear}-${month}-${day}`;
+
+  const hoy = new Date();
+  const nacimiento = new Date(fecha);
+
+  let edad = hoy.getFullYear() - nacimiento.getFullYear();
+
+  if(hoy < new Date(hoy.getFullYear(), nacimiento.getMonth(), nacimiento.getDate())){
+    edad--;
+  }
+
+  return {
+    fecha,
+    edad,
+    sexo: sexoChar === "H" ? "Masculino" : "Femenino"
+  };
+}
+
+
+// ===============================
+// ENVÍO (luego lo conectamos a tu backend)
+// ===============================
+registroRapido.addEventListener("submit", e=>{
   e.preventDefault();
 
-  const datos = {
-    curp: curpBuscar.value.toUpperCase(),
-    nombre: nombre.value,
-    telefono: telefono.value,
-    correo: correo.value,
-    turno: turno.value,
-    paraescolar: paraescolar.value
-  };
-
-  const resp = await fetch("/api/registro-online", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(datos)
-  });
-
-  const result = await resp.json();
-
-  if(result.ok){
-    alert("🎉 Registro guardado correctamente");
-    location.reload();
-  }else{
-    alert("❌ Error al guardar");
-  }
+  alert("🎉 Registro listo (aquí conectaremos con backend después)");
 });
+
 </script>
 
 </body>
