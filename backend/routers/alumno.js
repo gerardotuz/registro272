@@ -50,6 +50,18 @@ router.get('/folio/:folio', async (req, res) => {
 });
 
 
+// ===============================
+// 🚫 PREVENIR DOBLE REGISTRO
+// ===============================
+const existe = await Alumno.findOne({ curp: req.body.curp });
+
+if (existe) {
+  return res.status(400).json({
+    error: "Este alumno ya está registrado previamente"
+  });
+}
+
+
 router.post('/guardar', async (req, res) => {
   try {
     const data = req.body;
