@@ -341,3 +341,24 @@ const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`🚀 Servidor escuchando en puerto ${PORT}`);
 });
+
+
+app.get("/api/alumno/curp/:curp", async (req,res)=>{
+  const alumno = await Paraescolar.findOne({ curp: req.params.curp });
+  res.json({ encontrado: !!alumno, alumno });
+});
+
+
+app.post("/api/registro-online", async (req,res)=>{
+  try{
+    await Paraescolar.updateOne(
+      { curp: req.body.curp },
+      { $set: req.body },
+      { upsert:true }
+    );
+
+    res.json({ ok:true });
+  }catch(e){
+    res.status(500).json({ ok:false });
+  }
+});
