@@ -186,67 +186,72 @@ fetch("/catalogo.json")
 
 
 /* ================= GUARDAR ================= */
+<script>
 formRegistro.addEventListener("submit", async e=>{
   e.preventDefault();
 
-  const datos = {
-    curp: curp.value,
-    nombres: nombres.value,
-    primer_apellido: apellido1.value,
-    segundo_apellido: apellido2.value,
-    sexo: sexo.value,
-    fecha_nacimiento: fecha_nacimiento.value,
-    edad: edad.value,
-    estado_nacimiento: estado.value,
-    municipio_nacimiento: municipio.value,
-    ciudad_nacimiento: ciudad.value,
-    paraescolar: paraescolar.value
+  const payload = {
+
+    folio: Date.now().toString(),
+
+    datos_alumno:{
+      curp: curp.value,
+      nombres: nombres.value,
+      primer_apellido: apellido1.value,
+      segundo_apellido: apellido2.value,
+      sexo: sexo.value,
+      fecha_nacimiento: fecha_nacimiento.value,
+      edad: edad.value
+    },
+
+    datos_generales:{
+      estado_nacimiento: estado.value,
+      municipio_nacimiento: municipio.value,
+      ciudad_nacimiento: ciudad.value,
+      paraescolar: paraescolar.value,
+      correo_alumno: "TEMP@TEMP.COM" // obligatorio backend
+    }
+
   };
 
   try{
 
-    const resp = await fetch("/api/guardar", {
+    const resp = await fetch("/api/guardar",{
       method:"POST",
-      headers:{ "Content-Type":"application/json" },
-      body: JSON.stringify(datos)
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(payload)
     });
 
     const result = await resp.json();
 
-    // ❌ error backend
-    if(result.error){
-      alert(result.error);
-      return;
-    }
+    if(result.numero_control){
 
-    // ===============================
-    // ✅ REGISTRO EXITOSO
-    // ===============================
-
-    // mostrar número
-    resultadoRegistro.innerHTML = `
+      resultadoRegistro.innerHTML = `
       ✅ Registro completado<br>
       🎓 Tu número de control es:
       <span style="color:#800000;font-size:20px">
-        ${result.numero_control}
+      ${result.numero_control}
       </span>
-    `;
+      `;
 
-    // deshabilitar TODO el formulario
-    const inputs = formRegistro.querySelectorAll("input, select, button");
+      formRegistro.querySelectorAll("input,select,button")
+        .forEach(i=>i.disabled=true);
 
-    inputs.forEach(i => i.disabled = true);
+      if(result.pdf_url){
+        window.open(result.pdf_url,"_blank");
+      }
 
-    // abrir PDF automático
-    if(result.pdfUrl){
-      window.open(result.pdfUrl, "_blank");
+    }else{
+      alert(result.message || "Error");
     }
 
   }catch(err){
-    alert("Error del servidor");
     console.error(err);
+    alert("Error servidor");
   }
 });
+</script>
+
 
 
 </script>
