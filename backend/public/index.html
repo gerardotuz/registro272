@@ -21,13 +21,16 @@
     <a href="login.html">Iniciar sesión</a>
   </div>
 </nav>
+<div class="row" style="max-width:600px;margin:auto">
+  <input id="curpIndex" placeholder="Ingresa tu CURP" maxlength="18">
+
+  <button id="btnValidarIndex">
+    Validar
+  </button>
+</div>
 
 
-  <h2>Consulta tu folio</h2>
-  <form id="folioForm">
-    <input type="text" id="folio" placeholder="Ingresa tu folio para registrarte" required>
-    <button type="submit">Buscar</button>
-  </form>
+
   <form id="reimprimirForm">
   <input type="text" id="folioReimpresion" placeholder="Ingresa tu folio para reimprimir" required />
   <button type="submit">Reimprimir PDF</button>
@@ -64,5 +67,40 @@
 
   verificarServidor();
 </script>
+
+
+  <script>
+
+const btn = document.getElementById("btnValidarIndex");
+const curpInput = document.getElementById("curpIndex");
+
+curpInput.addEventListener("input",()=>{
+  curpInput.value = curpInput.value.toUpperCase();
+});
+
+btn.onclick = async ()=>{
+
+  const curp = curpInput.value.trim();
+
+  if(curp.length !== 18){
+    alert("CURP inválida");
+    return;
+  }
+
+  // 🔍 consultar padrón (mini renapo)
+  const resp = await fetch(`/api/padron/${curp}`);
+  const alumno = await resp.json();
+
+  if(!alumno){
+    alert("CURP no encontrada en padrón");
+    return;
+  }
+
+  // 👉 redirigir con la curp
+  window.location.href = `/formulario.html?curp=${curp}`;
+}
+
+</script>
+
 </body>
 </html>
