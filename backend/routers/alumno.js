@@ -105,7 +105,8 @@ if (existe?.registro_completado) {
 }
 
 
-    if (!data.folio || !data.datos_alumno?.curp || !data.datos_generales?.correo_alumno) {
+   if (!data.datos_alumno?.curp)
+ {
       return res.status(400).json({ message: 'Faltan datos obligatorios' });
     }
 
