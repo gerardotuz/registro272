@@ -157,11 +157,13 @@ req.body.numero_control = numeroControl;
     const nombreArchivo = `${datosAnidados.datos_alumno?.curp || 'formulario'}.pdf`;
     await generarPDF(datosAnidados, nombreArchivo);
 
-    res.status(200).json({
-      message: 'Registro exitoso y PDF generado',
-      pdf_url: `/pdfs/${nombreArchivo}`,
-      alumno: actualizado
-    });
+  res.status(200).json({
+  message: 'Registro exitoso y PDF generado',
+  pdf_url: `/pdfs/${nombreArchivo}`,
+  numero_control: actualizado.numero_control,   // 👈 NUEVO
+  alumno: actualizado
+});
+
 
   } catch (err) {
     console.error('Error al guardar o generar PDF:', err);
