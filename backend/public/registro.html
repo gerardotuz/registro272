@@ -185,25 +185,25 @@ function autocompletarEstado(curp){
 form.addEventListener("submit",async e=>{
   e.preventDefault();
 
-  const payload={
-    folio:Date.now().toString(),
-    datos_alumno:{
-      curp:curp.value,
-      nombres:nombres.value,
-      primer_apellido:apellido1.value,
-      segundo_apellido:apellido2.value,
-      sexo:sexo.value,
-      fecha_nacimiento:fecha.value,
-      edad:edad.value
-    },
-    datos_generales:{
-      estado_nacimiento:estado.value,
-      municipio_nacimiento:municipio.value,
-      ciudad_nacimiento:ciudad.value,
-      paraescolar:paraescolar.value,
-      correo_alumno:"TEMP@TEMP.COM"
-    }
-  };
+ const payload={
+  folio: Date.now().toString(),
+
+  datos_alumno:{
+    curp:curp.value,
+    nombres:nombres.value,
+    primer_apellido:apellido1.value,
+    segundo_apellido:apellido2.value,
+    sexo:sexo.value,
+    fecha_nacimiento:fecha.value,
+    edad:edad.value
+  },
+
+  datos_generales:{
+    paraescolar:paraescolar.value,
+    correo_alumno:"temp@registro.com" // ← obligatorio SIEMPRE
+  }
+};
+
 
   const resp=await fetch("/api/guardar",{
     method:"POST",
