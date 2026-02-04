@@ -25,10 +25,25 @@
 <!-- Fieldsets integrados -->
 <fieldset>
 <legend>Datos del Alumno</legend>
-<input name="nombres" placeholder="Nombres" required="" type="text"/>
-<input name="primer_apellido" placeholder="Primer Apellido" required="" type="text"/>
-<input name="segundo_apellido" placeholder="Segundo Apellido" required="" type="text"/>
-<input name="curp" placeholder="CURP" required="" type="text"/>
+  
+<div style="display:grid;grid-template-columns:2fr 2fr 2fr 2fr 1fr;gap:10px">
+
+  <input id="nombres" name="nombres" placeholder="Nombres" required type="text"/>
+
+  <input id="primer_apellido" name="primer_apellido" placeholder="Primer Apellido" required type="text"/>
+
+  <input id="segundo_apellido" name="segundo_apellido" placeholder="Segundo Apellido" required type="text"/>
+
+  <input id="curp" name="curp" placeholder="CURP" maxlength="18" required type="text"/>
+
+  <button type="button" id="btnValidarCurp">
+    Validar
+  </button>
+
+</div>
+
+
+  
 <div>
   <label for="fecha_nacimiento">Fecha de Nacimiento</label>
   <input id="fecha_nacimiento" name="fecha_nacimiento" required type="date"/>
