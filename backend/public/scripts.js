@@ -289,3 +289,41 @@ if (reimprimirForm) {
     }
   });
 }
+
+
+/* =================================
+   🔎 AUTOCOMPLETAR DESDE PADRÓN CURP
+================================= */
+
+const inputCurp = document.querySelector('input[name="curp"]');
+
+if (inputCurp) {
+
+  inputCurp.addEventListener("blur", async () => {
+
+    const curp = inputCurp.value.trim().toUpperCase();
+
+    if (curp.length !== 18) return;
+
+    try {
+
+      const resp = await fetch(`/api/padron/${curp}`);
+      const data = await resp.json();
+
+      if (!data) return; // no existe en padrón
+
+      // 🔹 AUTOCOMPLETAR CAMPOS
+      document.querySelector('input[name="nombres"]').value = data.nombres || "";
+      document.querySelector('input[name="primer_apellido"]').value = data.primer_apellido || "";
+      document.querySelector('input[name="segundo_apellido"]').value = data.segundo_apellido || "";
+
+      console.log("✅ Datos cargados desde padrón");
+
+    } catch (err) {
+      console.error("Error padrón:", err);
+    }
+
+  });
+
+}
+
