@@ -80,102 +80,75 @@ async function generarNumeroControl() {
 
 router.post('/guardar', async (req, res) => {
 
-  // ===============================
-// 🔒 BLOQUEAR TRAS REGISTRO
-// ===============================
-req.body.bloqueado = true;
-
-  const numeroControl = await generarNumeroControl();
-req.body.numero_control = numeroControl;
-  
-
   try {
+
     const data = req.body;
+
     // ===============================
-// 🚫 PREVENIR DOBLE REGISTRO
-// ===============================
-const existe = await Alumno.findOne({
-  "datos_alumno.curp": data.datos_alumno?.curp
-});
+    // 🚫 PREVENIR DOBLE REGISTRO (por CURP)
+    // ===============================
+    const existe = await Alumno.findOne({
+      "datos_alumno.curp": data.datos_alumno?.curp
+    });
 
-if (existe?.registro_completado) {
-  return res.status(400).json({
-    message: "Este alumno ya completó su registro"
-  });
-}
+    if (existe?.registro_completado) {
+      return res.status(400).json({
+        message: "Este alumno ya completó su registro"
+      });
+    }
 
-
-   if (!data.datos_alumno?.curp)
- {
+    // ===============================
+    // VALIDAR DATOS OBLIGATORIOS
+    // ===============================
+    if (!data.folio || !data.datos_alumno?.curp || !data.datos_generales?.correo_alumno) {
       return res.status(400).json({ message: 'Faltan datos obligatorios' });
     }
 
-    const yaRegistrado = await Alumno.findOne({ folio: data.folio });
-
-    if (yaRegistrado?.registro_completado) {
-      return res.status(403).json({ message: 'Este folio ya fue registrado y no se puede modificar.' });
-    }
-
+    // ===============================
+    // CONVERTIR A MAYÚSCULAS
+    // ===============================
     const upperCaseData = toUpperData(data);
 
-    // Asegura campos
-    const estadoCivilNum = parseInt(data.datos_alumno?.estado_civil);
-    if (!isNaN(estadoCivilNum)) upperCaseData.datos_alumno.estado_civil = estadoCivilNum;
-
-    const dg = upperCaseData.datos_generales;
-    dg.primera_opcion  = data.datos_generales.primera_opcion  || '';
-    dg.segunda_opcion  = data.datos_generales.segunda_opcion  || '';
-    dg.tercera_opcion  = data.datos_generales.tercera_opcion  || '';
-    dg.cuarta_opcion   = data.datos_generales.cuarta_opcion   || '';
-
-    dg.estado_nacimiento_general  = data.datos_generales.estado_nacimiento_general  || '';
-    dg.municipio_nacimiento_general = data.datos_generales.municipio_nacimiento_general || '';
-    dg.ciudad_nacimiento_general  = data.datos_generales.ciudad_nacimiento_general  || '';
-
-    // Chequeo de cupo
-    const nuevoPara = data.datos_generales?.paraescolar;
-    if (nuevoPara) {
-      const paraPrevio = yaRegistrado?.datos_generales?.paraescolar;
-      const estaCambiando = !!paraPrevio && paraPrevio.toUpperCase() !== nuevoPara.toUpperCase();
-
-      // Si es nuevo registro o cambia de paraescolar, validar cupo
-      if (!yaRegistrado || estaCambiando) {
-        const ok = await puedeAsignarParaescolar(nuevoPara);
-        if (!ok) {
-          return res.status(400).json({ message: `El paraescolar ${nuevoPara} ya alcanzó el límite de ${MAX_PARAESCOLAR} alumno(s).` });
-        }
-      }
-    }
-
-    // Marcar registro completado
+    // ===============================
+    // 🔒 MARCAR REGISTRO
+    // ===============================
     upperCaseData.registro_completado = true;
+    upperCaseData.bloqueado = true;
 
-    // Guardar / upsert
+    // ===============================
+    // 🎓 GENERAR NÚMERO DE CONTROL
+    // ===============================
+    upperCaseData.numero_control = await generarNumeroControl();
+
+    // ===============================
+    // GUARDAR
+    // ===============================
     const actualizado = await Alumno.findOneAndUpdate(
       { folio: data.folio },
       upperCaseData,
       { upsert: true, new: true }
     );
 
-    // Generar PDF
+    // ===============================
+    // GENERAR PDF
+    // ===============================
     const datosAnidados = flattenToNested(upperCaseData);
     const nombreArchivo = `${datosAnidados.datos_alumno?.curp || 'formulario'}.pdf`;
     await generarPDF(datosAnidados, nombreArchivo);
 
-  res.status(200).json({
-  message: 'Registro exitoso y PDF generado',
-  pdf_url: `/pdfs/${nombreArchivo}`,
-  numero_control: actualizado.numero_control,
-  alumno: actualizado
-});
-
-
+    res.status(200).json({
+      message: 'Registro exitoso y PDF generado',
+      pdf_url: `/pdfs/${nombreArchivo}`,
+      numero_control: actualizado.numero_control,
+      alumno: actualizado
+    });
 
   } catch (err) {
-    console.error('Error al guardar o generar PDF:', err);
+    console.error(err);
     res.status(500).json({ message: err.message });
   }
 });
+
 
 
 router.post('/cargar-excel', upload.single('archivo'), async (req, res) => {
