@@ -185,40 +185,61 @@ function autocompletarEstado(curp){
 form.addEventListener("submit",async e=>{
   e.preventDefault();
 
- const payload={
-  folio: Date.now().toString(),
+  const payload = {
+    folio: Date.now().toString(),
 
-  datos_alumno:{
-    curp:curp.value,
-    nombres:nombres.value,
-    primer_apellido:apellido1.value,
-    segundo_apellido:apellido2.value,
-    sexo:sexo.value,
-    fecha_nacimiento:fecha.value,
-    edad:edad.value
-  },
+    datos_alumno:{
+      curp:curp.value,
+      nombres:nombres.value,
+      primer_apellido:apellido1.value,
+      segundo_apellido:apellido2.value,
+      sexo:sexo.value,
+      fecha_nacimiento:fecha.value,
+      edad:edad.value
+    },
 
-  datos_generales:{
-    paraescolar:paraescolar.value,
-    correo_alumno:"temp@registro.com" // ← obligatorio SIEMPRE
-  }
-};
+    datos_generales:{
+      paraescolar:paraescolar.value,
+      correo_alumno:"temp@registro.com"
+    },
 
+    registro_completado:true // ⭐ ESTA ERA LA CLAVE
+  };
 
-  const resp=await fetch("/api/guardar",{
-    method:"POST",
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify(payload)
-  });
+  try{
 
-  const result=await resp.json();
+    const resp = await fetch("/api/guardar",{
+      method:"POST",
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(payload)
+    });
 
-  if(result.numero_control){
-    resultado.innerHTML=`✅ Registro completado<br>Número: ${result.numero_control}`;
-    form.querySelectorAll("input,select,button").forEach(i=>i.disabled=true);
-    if(result.pdf_url) window.open(result.pdf_url);
+    const result = await resp.json();
+
+    if(!resp.ok){
+      alert(result.message || "Error al guardar");
+      return;
+    }
+
+    resultado.innerHTML = `
+      ✅ Registro completado<br>
+      🎓 Número de control:
+      <span style="color:#800000">${result.numero_control}</span>
+    `;
+
+    form.querySelectorAll("input,select,button")
+        .forEach(i=>i.disabled=true);
+
+    if(result.pdf_url){
+      window.open(result.pdf_url,"_blank");
+    }
+
+  }catch(err){
+    console.error(err);
+    alert("Error servidor");
   }
 });
+
 
 </script>
 
