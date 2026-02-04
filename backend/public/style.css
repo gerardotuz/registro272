@@ -219,10 +219,10 @@ label {
 }
 .row-5{
   display:grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap:15px;
-  align-items:end;
 }
+
 
 .btn-validar{
   height:42px;
