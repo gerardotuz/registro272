@@ -285,6 +285,57 @@
   });
 </script>
 
+<script>
+/* =========================================
+   VALIDAR CURP + AUTOCARGAR DESDE PADRÓN
+========================================= */
+
+const inputCurp = document.querySelector('input[name="curp"]');
+const inputNombres = document.querySelector('input[name="nombres"]');
+const inputAp1 = document.querySelector('input[name="primer_apellido"]');
+const inputAp2 = document.querySelector('input[name="segundo_apellido"]');
+
+inputCurp.addEventListener("blur", async () => {
+
+  const curp = inputCurp.value.trim().toUpperCase();
+
+  if(curp.length !== 18) return;
+
+  // regex CURP real
+  const regex = /^[A-Z]{4}[0-9]{6}[HM][A-Z]{5}[A-Z0-9]{2}$/;
+
+  if(!regex.test(curp)){
+    alert("CURP inválida");
+    return;
+  }
+
+  try{
+
+    const resp = await fetch(`/api/padron/${curp}`);
+    const alumno = await resp.json();
+
+    if(!alumno){
+      alert("⚠️ CURP no encontrada en padrón");
+      return;
+    }
+
+    // AUTOLLENAR
+    inputNombres.value = alumno.nombres || "";
+    inputAp1.value = alumno.primer_apellido || "";
+    inputAp2.value = alumno.segundo_apellido || "";
+
+    // bloquear edición
+    inputNombres.readOnly = true;
+    inputAp1.readOnly = true;
+    inputAp2.readOnly = true;
+
+  }catch(err){
+    console.error(err);
+    alert("Error consultando padrón");
+  }
+
+});
+</script>
 
 
   
