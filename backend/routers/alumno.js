@@ -50,16 +50,7 @@ router.get('/folio/:folio', async (req, res) => {
 });
 
 
-// ===============================
-// 🚫 PREVENIR DOBLE REGISTRO
-// ===============================
-const existe = await Alumno.findOne({ curp: req.body.curp });
 
-if (existe && existe.bloqueado) {
-  return res.status(400).json({
-    error: "Este alumno ya completó su registro"
-  });
-}
 
 
 
@@ -100,6 +91,19 @@ req.body.numero_control = numeroControl;
 
   try {
     const data = req.body;
+    // ===============================
+// 🚫 PREVENIR DOBLE REGISTRO
+// ===============================
+const existe = await Alumno.findOne({
+  "datos_alumno.curp": data.datos_alumno?.curp
+});
+
+if (existe?.registro_completado) {
+  return res.status(400).json({
+    message: "Este alumno ya completó su registro"
+  });
+}
+
 
     if (!data.folio || !data.datos_alumno?.curp || !data.datos_generales?.correo_alumno) {
       return res.status(400).json({ message: 'Faltan datos obligatorios' });
@@ -160,9 +164,10 @@ req.body.numero_control = numeroControl;
   res.status(200).json({
   message: 'Registro exitoso y PDF generado',
   pdf_url: `/pdfs/${nombreArchivo}`,
-  numero_control: actualizado.numero_control,   // 👈 NUEVO
+  numero_control: actualizado.numero_control,
   alumno: actualizado
 });
+
 
 
   } catch (err) {
