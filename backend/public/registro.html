@@ -182,63 +182,62 @@ function autocompletarEstado(curp){
 
 /* ================= GUARDAR ================= */
 
-form.addEventListener("submit",async e=>{
+form.addEventListener("submit", async e => {
   e.preventDefault();
 
   const payload = {
     folio: Date.now().toString(),
 
-    datos_alumno:{
-      curp:curp.value,
-      nombres:nombres.value,
-      primer_apellido:apellido1.value,
-      segundo_apellido:apellido2.value,
-      sexo:sexo.value,
-      fecha_nacimiento:fecha.value,
-      edad:edad.value
+    datos_alumno: {
+      curp: curp.value,
+      nombres: nombres.value,
+      primer_apellido: apellido1.value,
+      segundo_apellido: apellido2.value,
+      sexo: sexo.value,
+      fecha_nacimiento: fecha.value,
+      edad: edad.value
     },
 
-    datos_generales:{
-      paraescolar:paraescolar.value,
-      correo_alumno:"temp@registro.com"
-    },
-
-    registro_completado:true // ⭐ ESTA ERA LA CLAVE
+    datos_generales: {
+      paraescolar: paraescolar.value,
+      correo_alumno: "temp@registro.com"
+    }
   };
 
-  try{
+  try {
 
-    const resp = await fetch("/api/guardar",{
-      method:"POST",
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify(payload)
+    const resp = await fetch("/api/guardar", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
     });
 
     const result = await resp.json();
 
-    if(!resp.ok){
-      alert(result.message || "Error al guardar");
+    // 🔴 SI ERROR DEL BACKEND
+    if (!resp.ok) {
+      resultado.innerHTML = `❌ ${result.message || "Error al guardar"}`;
       return;
     }
 
+    // ✅ ÉXITO
     resultado.innerHTML = `
-      ✅ Registro completado<br>
-      🎓 Número de control:
-      <span style="color:#800000">${result.numero_control}</span>
+      ✅ Registro completado <br>
+      🎓 Número de control: <b>${result.numero_control}</b>
     `;
 
-    form.querySelectorAll("input,select,button")
-        .forEach(i=>i.disabled=true);
+    // bloquear formulario
+    form.querySelectorAll("input,select,button").forEach(i => i.disabled = true);
 
-    if(result.pdf_url){
-      window.open(result.pdf_url,"_blank");
-    }
+    // abrir PDF
+    if (result.pdf_url) window.open(result.pdf_url, "_blank");
 
-  }catch(err){
+  } catch (err) {
+    resultado.innerHTML = "❌ Error del servidor";
     console.error(err);
-    alert("Error servidor");
   }
 });
+
 
 
 </script>
