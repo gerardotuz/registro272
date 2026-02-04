@@ -55,11 +55,12 @@ router.get('/folio/:folio', async (req, res) => {
 // ===============================
 const existe = await Alumno.findOne({ curp: req.body.curp });
 
-if (existe) {
+if (existe && existe.bloqueado) {
   return res.status(400).json({
-    error: "Este alumno ya está registrado previamente"
+    error: "Este alumno ya completó su registro"
   });
 }
+
 
 
 // ===================================
@@ -87,8 +88,15 @@ async function generarNumeroControl() {
 
 
 router.post('/guardar', async (req, res) => {
+
+  // ===============================
+// 🔒 BLOQUEAR TRAS REGISTRO
+// ===============================
+req.body.bloqueado = true;
+
   const numeroControl = await generarNumeroControl();
 req.body.numero_control = numeroControl;
+  
 
   try {
     const data = req.body;
