@@ -29,7 +29,25 @@
 <input name="primer_apellido" placeholder="Primer Apellido" required="" type="text"/>
 <input name="segundo_apellido" placeholder="Segundo Apellido" required="" type="text"/>
 <input name="curp" placeholder="CURP" required="" type="text"/>
+<div>
+  <label for="fecha_nacimiento">Fecha de Nacimiento</label>
+  <input id="fecha_nacimiento" name="fecha_nacimiento" required type="date"/>
+</div>
 
+<div>
+  <label for="edad">Edad (solo número en años)</label>
+  <input id="edad" name="edad" type="number" placeholder="Ej. 14" min="13" max="25" required>
+</div>
+
+
+<div>
+  <label for="sexo">Sexo</label>
+  <select id="sexo" name="sexo" required>
+    <option value="">Selecciona sexo</option>
+    <option value="femenino">Femenino</option>
+    <option value="masculino">Masculino</option>
+  </select>
+</div>
 
 <div>
   <label for="primera_opcion">1ERA OPCIÓN</label>
@@ -105,30 +123,9 @@
 </div>
 
 
- <div>
-  <label for="turno">Turno</label>
-  <input id="turno" name="turno" placeholder="Turno" readonly type="text"/>
-</div>
-
-<div>
-  <label for="fecha_nacimiento">Fecha de Nacimiento</label>
-  <input id="fecha_nacimiento" name="fecha_nacimiento" required type="date"/>
-</div>
-
-<div>
-  <label for="edad">Edad (solo número en años)</label>
-  <input id="edad" name="edad" type="number" placeholder="Ej. 14" min="13" max="25" required>
-</div>
 
 
-<div>
-  <label for="sexo">Sexo</label>
-  <select id="sexo" name="sexo" required>
-    <option value="">Selecciona sexo</option>
-    <option value="femenino">Femenino</option>
-    <option value="masculino">Masculino</option>
-  </select>
-</div>
+
 
 <!-- Bloque de Estado/Municipio/Ciudad de nacimiento -->
 <div>
