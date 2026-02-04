@@ -39,6 +39,7 @@ router.post("/padron/cargar-excel", upload.single("archivo"), async (req,res)=>{
 
 });
 
+
 router.get("/padron/:curp", async (req,res)=>{
 
   const alumno = await Padron.findOne({
@@ -50,3 +51,8 @@ router.get("/padron/:curp", async (req,res)=>{
   res.json(alumno);
 });
 
+
+/* =================================
+   ⭐ ESTA LÍNEA FALTABA
+================================= */
+module.exports = router;
