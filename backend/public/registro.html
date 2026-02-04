@@ -92,7 +92,7 @@
 
 <!-- ================= SCRIPTS ================= -->
 
-<script src="/catalogo.json"></script>
+
 
 <script>
 
@@ -251,40 +251,7 @@ formRegistro.addEventListener("submit", async e=>{
 
 </script>
 
-  <script>
-formRegistro.addEventListener("submit", async e=>{
-  e.preventDefault();
-
-  const datos = {
-    curp: curp.value,
-    nombres: nombres.value,
-    primer_apellido: apellido1.value,
-    segundo_apellido: apellido2.value,
-    sexo: sexo.value,
-    fecha_nacimiento: fecha_nacimiento.value,
-    edad: edad.value,
-    estado_nacimiento: estado.value,
-    municipio_nacimiento: municipio.value,
-    ciudad_nacimiento: ciudad.value,
-    paraescolar: paraescolar.value
-  };
-
-  const resp = await fetch("/api/guardar", {
-    method:"POST",
-    headers:{ "Content-Type":"application/json" },
-    body: JSON.stringify(datos)
-  });
-
-  const result = await resp.json();
-
-  if(result.pdfUrl){
-    window.open(result.pdfUrl, "_blank");
-    alert("Registro guardado correctamente");
-  }else{
-    alert(result.error || "Error al guardar");
-  }
-});
-</script>
+ 
 
 
 
