@@ -38,3 +38,15 @@ router.post("/padron/cargar-excel", upload.single("archivo"), async (req,res)=>{
   }
 
 });
+
+router.get("/padron/:curp", async (req,res)=>{
+
+  const alumno = await Padron.findOne({
+    curp: req.params.curp.toUpperCase()
+  });
+
+  if(!alumno) return res.json(null);
+
+  res.json(alumno);
+});
+
