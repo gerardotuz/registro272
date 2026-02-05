@@ -319,6 +319,26 @@ function extraerDatosCURP(curp){
   };
 }
 
+/* =========================
+   RESET CUANDO CAMBIA LA CURP  ✅ PASO 1
+========================= */
+
+const curpInput = document.querySelector('[name="curp"]');
+
+curpInput.addEventListener("input", () => {
+
+  // 🔹 Limpiar mensaje de resultado (si existe)
+  const pdfLink = document.getElementById("pdfLink");
+  if (pdfLink) pdfLink.innerHTML = "";
+
+  // 🔹 Reactivar todos los campos (por si venía bloqueado)
+  document
+    .querySelectorAll("#registroForm input, #registroForm select, #registroForm button")
+    .forEach(el => el.disabled = false);
+
+});
+
+
 
 /* =========================
    AL CARGAR LA PAGINA
