@@ -11,20 +11,16 @@ document.addEventListener('DOMContentLoaded', () => {
     e.preventDefault();
 
     const camposObligatorios = [
-      'nombres','primer_apellido','segundo_apellido','curp','carrera',
-      'periodo_semestral','semestre','fecha_nacimiento','edad','sexo',
+      'nombres','primer_apellido','segundo_apellido','curp',
+      'fecha_nacimiento','edad','sexo',
       'estado_nacimiento','municipio_nacimiento','ciudad_nacimiento','estado_civil',
       'primera_opcion','segunda_opcion','tercera_opcion','cuarta_opcion',
       'colonia','domicilio','codigo_postal','telefono_alumno','correo_alumno',
       'tipo_sangre','contacto_emergencia_nombre','contacto_emergencia_telefono',
-      'habla_lengua_indigena_respuesta','numero_seguro_social','unidad_medica_familiar',
-      'enfermedad_cronica_o_alergia_respuesta','enfermedad_cronica_o_alergia_detalle',
-      'discapacidad','entrega_diagnostico','detalle_enfermedad',
+      'habla_lengua_indigena_respuesta',
       'nombre_secundaria','regimen','promedio_general','modalidad',
       'nombre_padre','telefono_padre','nombre_madre','telefono_madre',
-      'vive_con','persona_emergencia_nombre','persona_emergencia_parentesco','persona_emergencia_telefono',
-      'responsable_emergencia_nombre','responsable_emergencia_telefono','responsable_emergencia_parentesco','carta_poder',
-      'paraescolar'
+      'vive_con'
     ];
 
     for (const campo of camposObligatorios) {
