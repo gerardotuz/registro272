@@ -300,6 +300,56 @@
 </script>
 
 <script>
+
+const estados = {
+  AS:"AGUASCALIENTES", BC:"BAJA CALIFORNIA", BS:"BAJA CALIFORNIA SUR",
+  CC:"CAMPECHE", CL:"COAHUILA", CM:"COLIMA", CS:"CHIAPAS", CH:"CHIHUAHUA",
+  DF:"CIUDAD DE MEXICO", DG:"DURANGO", GT:"GUANAJUATO", GR:"GUERRERO",
+  HG:"HIDALGO", JC:"JALISCO", MC:"MEXICO", MN:"MICHOACAN", MS:"MORELOS",
+  NT:"NAYARIT", NL:"NUEVO LEON", OC:"OAXACA", PL:"PUEBLA", QT:"QUERETARO",
+  QR:"QUINTANA ROO", SP:"SAN LUIS POTOSI", SL:"SINALOA", SR:"SONORA",
+  TC:"TABASCO", TS:"TAMAULIPAS", TL:"TLAXCALA", VZ:"VERACRUZ",
+  YN:"YUCATAN", ZS:"ZACATECAS"
+};
+
+window.onload = ()=>{
+
+  const params = new URLSearchParams(window.location.search);
+  const curp = params.get("curp");
+
+  if(!curp) return;
+
+  document.querySelector("[name='curp']").value = curp;
+
+  // FECHA
+  const y=curp.substring(4,6);
+  const m=curp.substring(6,8);
+  const d=curp.substring(8,10);
+
+  const full=(y<=new Date().getFullYear()%100?"20":"19")+y;
+
+  document.querySelector("[name='fecha_nacimiento']").value = `${full}-${m}-${d}`;
+
+  // EDAD
+  document.querySelector("[name='edad']").value =
+    new Date().getFullYear() - full;
+
+  // SEXO
+  document.querySelector("[name='sexo']").value =
+    curp[10]==="H"?"masculino":"femenino";
+
+  // ESTADO
+  const clave = curp.substring(11,13);
+  document.querySelector("[name='estado_nacimiento']").value =
+    estados[clave] || "";
+
+};
+
+</script>
+
+
+  
+<script>
 /* =========================================
    VALIDAR CURP + AUTOCARGAR DESDE PADRÓN
 ========================================= */
