@@ -263,3 +263,17 @@ label {
   }
 }
 
+/* Quitar iconos validación */
+.sin-icono:valid,
+.sin-icono:invalid,
+.sin-icono:focus{
+  background-image:none !important;
+  box-shadow:none !important;
+  padding-right:12px !important;
+}
+.row-4 input{
+  width:100%;
+  box-sizing:border-box;
+}
+
+
