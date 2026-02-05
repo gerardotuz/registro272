@@ -25,8 +25,10 @@ async function cargarCatalogo() {
 
     if (!estadoNac || !estadoRes) return;
 
-    // ===== ESTADOS ÚNICOS =====
-    const estadosUnicos = [...new Set(catalogo.map(e => e.estado))];
+    // ===== ESTADOS ÚNICOS (NORMALIZADOS) =====
+    const estadosUnicos = [
+      ...new Set(catalogo.map(e => e.estado.toUpperCase()))
+    ];
 
     estadoNac.innerHTML = `<option value="">-- SELECCIONA ESTADO --</option>`;
     estadoRes.innerHTML = `<option value="">-- SELECCIONA ESTADO --</option>`;
@@ -46,8 +48,8 @@ async function cargarCatalogo() {
       const municipios = [
         ...new Set(
           catalogo
-            .filter(e => e.estado === estadoNac.value)
-            .map(e => e.municipio)
+            .filter(e => e.estado.toUpperCase() === estadoNac.value.toUpperCase())
+            .map(e => e.municipio.toUpperCase())
         )
       ];
 
@@ -60,10 +62,12 @@ async function cargarCatalogo() {
 
       catalogo
         .filter(e =>
-          e.estado === estadoNac.value &&
-          e.municipio === municipioNac.value
+          e.estado.toUpperCase() === estadoNac.value.toUpperCase() &&
+          e.municipio.toUpperCase() === municipioNac.value.toUpperCase()
         )
-        .forEach(c => ciudadNac.add(new Option(c.localidad, c.localidad)));
+        .forEach(c =>
+          ciudadNac.add(new Option(c.localidad.toUpperCase(), c.localidad.toUpperCase()))
+        );
     });
 
     // ===== RESIDENCIA =====
@@ -76,8 +80,8 @@ async function cargarCatalogo() {
       const municipios = [
         ...new Set(
           catalogo
-            .filter(e => e.estado === estadoRes.value)
-            .map(e => e.municipio)
+            .filter(e => e.estado.toUpperCase() === estadoRes.value.toUpperCase())
+            .map(e => e.municipio.toUpperCase())
         )
       ];
 
@@ -90,17 +94,18 @@ async function cargarCatalogo() {
 
       catalogo
         .filter(e =>
-          e.estado === estadoRes.value &&
-          e.municipio === municipioRes.value
+          e.estado.toUpperCase() === estadoRes.value.toUpperCase() &&
+          e.municipio.toUpperCase() === municipioRes.value.toUpperCase()
         )
-        .forEach(c => ciudadRes.add(new Option(c.localidad, c.localidad)));
+        .forEach(c =>
+          ciudadRes.add(new Option(c.localidad.toUpperCase(), c.localidad.toUpperCase()))
+        );
     });
 
   } catch (err) {
     console.error("❌ Error cargando catálogo:", err);
   }
 }
-
 
 /* =========================
    INICIALIZACIÓN
@@ -110,13 +115,12 @@ document.addEventListener("DOMContentLoaded", () => {
   cargarCatalogo();
 
   const form = document.getElementById("registroForm");
-
   if (!form) return;
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    // VALIDAR CAMPOS REQUIRED (NO SE ELIMINAN)
+    // ✅ VALIDAR CAMPOS REQUIRED (NO SE ELIMINAN)
     const obligatorios = form.querySelectorAll("[required]");
     for (const campo of obligatorios) {
       if (!campo.value || !campo.value.trim()) {
