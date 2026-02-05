@@ -15,6 +15,11 @@ async function cargarCatalogo() {
     const res = await fetch("/catalogo.json");
     const catalogo = await res.json();
 
+    // ⛑️ FILTRAR SOLO REGISTROS VÁLIDOS
+    const datosValidos = catalogo.filter(e =>
+      e.estado && e.municipio && e.localidad
+    );
+
     const estadoNac = document.getElementById("estado_nacimiento");
     const municipioNac = document.getElementById("municipio_nacimiento");
     const ciudadNac = document.getElementById("ciudad_nacimiento");
@@ -25,9 +30,11 @@ async function cargarCatalogo() {
 
     if (!estadoNac || !estadoRes) return;
 
-    // ===== ESTADOS ÚNICOS (NORMALIZADOS) =====
+    // ===== ESTADOS ÚNICOS =====
     const estadosUnicos = [
-      ...new Set(catalogo.map(e => e.estado.toUpperCase()))
+      ...new Set(
+        datosValidos.map(e => e.estado.toString().toUpperCase())
+      )
     ];
 
     estadoNac.innerHTML = `<option value="">-- SELECCIONA ESTADO --</option>`;
@@ -38,7 +45,8 @@ async function cargarCatalogo() {
       estadoRes.add(new Option(estado, estado));
     });
 
-    // ===== NACIMIENTO =====
+    /* ========= NACIMIENTO ========= */
+
     estadoNac.addEventListener("change", () => {
       municipioNac.innerHTML = `<option value="">-- SELECCIONA MUNICIPIO --</option>`;
       ciudadNac.innerHTML = `<option value="">-- SELECCIONA CIUDAD --</option>`;
@@ -47,8 +55,8 @@ async function cargarCatalogo() {
 
       const municipios = [
         ...new Set(
-          catalogo
-            .filter(e => e.estado.toUpperCase() === estadoNac.value.toUpperCase())
+          datosValidos
+            .filter(e => e.estado.toUpperCase() === estadoNac.value)
             .map(e => e.municipio.toUpperCase())
         )
       ];
@@ -60,17 +68,20 @@ async function cargarCatalogo() {
       ciudadNac.innerHTML = `<option value="">-- SELECCIONA CIUDAD --</option>`;
       ciudadNac.disabled = false;
 
-      catalogo
+      datosValidos
         .filter(e =>
-          e.estado.toUpperCase() === estadoNac.value.toUpperCase() &&
-          e.municipio.toUpperCase() === municipioNac.value.toUpperCase()
+          e.estado.toUpperCase() === estadoNac.value &&
+          e.municipio.toUpperCase() === municipioNac.value
         )
         .forEach(c =>
-          ciudadNac.add(new Option(c.localidad.toUpperCase(), c.localidad.toUpperCase()))
+          ciudadNac.add(
+            new Option(c.localidad.toUpperCase(), c.localidad.toUpperCase())
+          )
         );
     });
 
-    // ===== RESIDENCIA =====
+    /* ========= RESIDENCIA ========= */
+
     estadoRes.addEventListener("change", () => {
       municipioRes.innerHTML = `<option value="">-- SELECCIONA MUNICIPIO --</option>`;
       ciudadRes.innerHTML = `<option value="">-- SELECCIONA CIUDAD --</option>`;
@@ -79,8 +90,8 @@ async function cargarCatalogo() {
 
       const municipios = [
         ...new Set(
-          catalogo
-            .filter(e => e.estado.toUpperCase() === estadoRes.value.toUpperCase())
+          datosValidos
+            .filter(e => e.estado.toUpperCase() === estadoRes.value)
             .map(e => e.municipio.toUpperCase())
         )
       ];
@@ -92,13 +103,15 @@ async function cargarCatalogo() {
       ciudadRes.innerHTML = `<option value="">-- SELECCIONA CIUDAD --</option>`;
       ciudadRes.disabled = false;
 
-      catalogo
+      datosValidos
         .filter(e =>
-          e.estado.toUpperCase() === estadoRes.value.toUpperCase() &&
-          e.municipio.toUpperCase() === municipioRes.value.toUpperCase()
+          e.estado.toUpperCase() === estadoRes.value &&
+          e.municipio.toUpperCase() === municipioRes.value
         )
         .forEach(c =>
-          ciudadRes.add(new Option(c.localidad.toUpperCase(), c.localidad.toUpperCase()))
+          ciudadRes.add(
+            new Option(c.localidad.toUpperCase(), c.localidad.toUpperCase())
+          )
         );
     });
 
@@ -113,98 +126,4 @@ async function cargarCatalogo() {
 
 document.addEventListener("DOMContentLoaded", () => {
   cargarCatalogo();
-
-  const form = document.getElementById("registroForm");
-  if (!form) return;
-
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
-
-    // ✅ VALIDAR CAMPOS REQUIRED (NO SE ELIMINAN)
-    const obligatorios = form.querySelectorAll("[required]");
-    for (const campo of obligatorios) {
-      if (!campo.value || !campo.value.trim()) {
-        alert(`⚠️ Completa el campo: ${campo.name}`);
-        campo.focus();
-        return;
-      }
-    }
-
-    const formData = new FormData(form);
-
-    const nuevoRegistro = {
-      datos_alumno: {
-        nombres: formData.get("nombres"),
-        primer_apellido: formData.get("primer_apellido"),
-        segundo_apellido: formData.get("segundo_apellido"),
-        curp: formData.get("curp"),
-        fecha_nacimiento: formData.get("fecha_nacimiento"),
-        edad: formData.get("edad"),
-        sexo: formData.get("sexo"),
-        estado_civil: formData.get("estado_civil"),
-        nacionalidad: formData.get("nacionalidad"),
-        pais_extranjero: formData.get("pais_extranjero"),
-        primera_opcion: formData.get("primera_opcion"),
-        segunda_opcion: formData.get("segunda_opcion"),
-        tercera_opcion: formData.get("tercera_opcion"),
-        cuarta_opcion: formData.get("cuarta_opcion")
-      },
-      datos_generales: {
-        colonia: formData.get("colonia"),
-        domicilio: formData.get("domicilio"),
-        codigo_postal: formData.get("codigo_postal"),
-        telefono_alumno: formData.get("telefono_alumno"),
-        correo_alumno: formData.get("correo_alumno")
-      },
-      secundaria_origen: {
-        nombre_secundaria: formData.get("nombre_secundaria"),
-        regimen: formData.get("regimen"),
-        promedio_general: formData.get("promedio_general"),
-        modalidad: formData.get("modalidad")
-      },
-      tutor_responsable: {
-        nombre_padre: formData.get("nombre_padre"),
-        telefono_padre: formData.get("telefono_padre"),
-        nombre_madre: formData.get("nombre_madre"),
-        telefono_madre: formData.get("telefono_madre"),
-        vive_con: formData.get("vive_con")
-      }
-    };
-
-    try {
-      const res = await fetch(`${BASE_URL}/api/guardar`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(nuevoRegistro)
-      });
-
-      const result = await res.json();
-
-      if (!res.ok) {
-        alert(result.message || "❌ Error al guardar");
-        return;
-      }
-
-      alert(`✅ Registro exitoso\nFolio asignado: ${result.alumno.folio}`);
-
-      if (result.pdf_url) {
-        window.open(result.pdf_url, "_blank");
-      }
-
-      deshabilitarFormulario();
-
-    } catch (err) {
-      console.error(err);
-      alert("❌ Error de conexión con el servidor");
-    }
-  });
 });
-
-/* =========================
-   BLOQUEAR FORMULARIO
-========================= */
-
-function deshabilitarFormulario() {
-  const form = document.getElementById("registroForm");
-  Array.from(form.elements).forEach(el => el.disabled = true);
-}
