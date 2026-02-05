@@ -237,3 +237,26 @@ label {
 .btn-validar:hover{
   opacity:.9;
 }
+
+.row-4{
+  display:grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap:15px;
+  margin-bottom:15px;
+}
+
+.row-4 input{
+  width:100%;
+}
+@media (max-width: 900px){
+  .row-4{
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 500px){
+  .row-4{
+    grid-template-columns: 1fr;
+  }
+}
+
