@@ -101,6 +101,16 @@ async function generarPDF(datos, nombreArchivo = 'formulario.pdf') {
     doc.image(logoPath, 50, y, { width: 500 });
     y += 80;
   }
+// 📌 FOLIO DEL ALUMNO
+doc
+  .fontSize(11)
+  .fillColor('#000')
+  .text(`FOLIO: ${datos.folio || alumno.folio || 'NO ASIGNADO'}`, 50, y, {
+    align: 'right',
+    width: 500
+  });
+
+y += 30;
 
   y = drawSectionTitle('Datos del Alumno', y);
   y = drawBox('Nombres', alumno.nombres, marginX, y);
