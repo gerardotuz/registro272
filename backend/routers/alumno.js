@@ -120,14 +120,10 @@ async function generarFolio() {
 
 
 router.post('/guardar', async (req, res) => {
-
   try {
-
     const data = req.body;
 
-    // ===============================
-    // 🚫 PREVENIR DOBLE REGISTRO (por CURP)
-    // ===============================
+    // 🚫 PREVENIR DOBLE REGISTRO POR CURP
     const existe = await Alumno.findOne({
       "datos_alumno.curp": data.datos_alumno?.curp
     });
@@ -138,56 +134,25 @@ router.post('/guardar', async (req, res) => {
       });
     }
 
-    // ===============================
-    // VALIDAR DATOS OBLIGATORIOS
-    // ===============================
-    if (!data.datos_alumno?.curp || !data.datos_generales?.correo_alumno) {
-  return res.status(400).json({ message: 'Faltan datos obligatorios' });
-}
+    // 🎓 GENERAR FOLIO AQUÍ (SOLO UNA VEZ)
+    const folio = await generarFolio();
+    data.folio = folio;
 
-
-    // ===============================
-    // CONVERTIR A MAYÚSCULAS
-    // ===============================
-    const upperCaseData = toUpperData(data);
-
-    // ===============================
     // 🔒 MARCAR REGISTRO
-    // ===============================
-    upperCaseData.registro_completado = true;
-    upperCaseData.bloqueado = true;
-    // ===============================
-// 🆔 GENERAR FOLIO
-// ===============================
-upperCaseData.folio = await generarFolio();
+    data.registro_completado = true;
+    data.bloqueado = true;
 
+    const actualizado = await Alumno.create(data);
 
-    // ===============================
-    // 🎓 GENERAR NÚMERO DE CONTROL
-    // ===============================
-    upperCaseData.numero_control = await generarNumeroControl();
-
-    // ===============================
-    // GUARDAR
-    // ===============================
-  const actualizado = await Alumno.findOneAndUpdate(
-  { "datos_alumno.curp": upperCaseData.datos_alumno.curp },
-  upperCaseData,
-  { upsert: true, new: true }
-);
-
-    // ===============================
-    // GENERAR PDF
-    // ===============================
-    const datosAnidados = flattenToNested(upperCaseData);
-    const nombreArchivo = `${datosAnidados.datos_alumno?.curp || 'formulario'}.pdf`;
-    await generarPDF(datosAnidados, nombreArchivo);
+    // 📄 GENERAR PDF
+    const datosAnidados = flattenToNested(actualizado.toObject());
+    const nombreArchivo = `${folio}.pdf`;
+    const pdfUrl = await generarPDF(datosAnidados, nombreArchivo);
 
     res.status(200).json({
-      message: 'Registro exitoso y PDF generado',
-      pdf_url: `/pdfs/${nombreArchivo}`,
-      numero_control: actualizado.numero_control,
-      alumno: actualizado
+      message: "Registro exitoso",
+      folio,
+      pdf_url: pdfUrl
     });
 
   } catch (err) {
@@ -195,6 +160,7 @@ upperCaseData.folio = await generarFolio();
     res.status(500).json({ message: err.message });
   }
 });
+
 
 
 
