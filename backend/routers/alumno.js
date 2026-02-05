@@ -152,11 +152,11 @@ upperCaseData.folio = await generarFolio();
     // ===============================
     // GUARDAR
     // ===============================
-    const actualizado = await Alumno.findOneAndUpdate(
-      { folio: data.folio },
-      upperCaseData,
-      { upsert: true, new: true }
-    );
+  const actualizado = await Alumno.findOneAndUpdate(
+  { "datos_alumno.curp": upperCaseData.datos_alumno.curp },
+  upperCaseData,
+  { upsert: true, new: true }
+);
 
     // ===============================
     // GENERAR PDF
