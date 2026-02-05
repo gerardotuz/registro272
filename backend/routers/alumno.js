@@ -99,6 +99,24 @@ async function generarNumeroControl() {
 
   return `272${year}${String(consecutivo).padStart(4,"0")}`;
 }
+async function generarFolio() {
+  const prefijo = "CBTIS272-";
+
+  const ultimo = await Alumno.findOne({
+    folio: { $regex: `^${prefijo}` }
+  })
+  .sort({ folio: -1 })
+  .lean();
+
+  let consecutivo = 1;
+
+  if (ultimo?.folio) {
+    const num = parseInt(ultimo.folio.replace(prefijo, ""));
+    consecutivo = num + 1;
+  }
+
+  return `${prefijo}${String(consecutivo).padStart(4, "0")}`;
+}
 
 
 router.post('/guardar', async (req, res) => {
