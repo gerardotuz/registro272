@@ -13,7 +13,7 @@ const BASE_URL = window.location.origin.includes("localhost")
 async function cargarCatalogo() {
   try {
     const res = await fetch("/catalogo.json");
-    const data = await res.json();
+    const catalogo = await res.json();
 
     const estadoNac = document.getElementById("estado_nacimiento");
     const municipioNac = document.getElementById("municipio_nacimiento");
@@ -25,58 +25,73 @@ async function cargarCatalogo() {
 
     if (!estadoNac || !estadoRes) return;
 
+    // ===== ESTADOS ÚNICOS =====
+    const estadosUnicos = [...new Set(catalogo.map(e => e.estado))];
+
     estadoNac.innerHTML = `<option value="">-- SELECCIONA ESTADO --</option>`;
     estadoRes.innerHTML = `<option value="">-- SELECCIONA ESTADO --</option>`;
 
-    data.forEach(e => {
-      estadoNac.add(new Option(e.estado, e.estado));
-      estadoRes.add(new Option(e.estado, e.estado));
+    estadosUnicos.forEach(estado => {
+      estadoNac.add(new Option(estado, estado));
+      estadoRes.add(new Option(estado, estado));
     });
 
-    // NACIMIENTO
+    // ===== NACIMIENTO =====
     estadoNac.addEventListener("change", () => {
       municipioNac.innerHTML = `<option value="">-- SELECCIONA MUNICIPIO --</option>`;
       ciudadNac.innerHTML = `<option value="">-- SELECCIONA CIUDAD --</option>`;
       municipioNac.disabled = false;
       ciudadNac.disabled = true;
 
-      data
-        .filter(d => d.estado === estadoNac.value)
-        .forEach(m => municipioNac.add(new Option(m.municipio, m.municipio)));
+      const municipios = [
+        ...new Set(
+          catalogo
+            .filter(e => e.estado === estadoNac.value)
+            .map(e => e.municipio)
+        )
+      ];
+
+      municipios.forEach(m => municipioNac.add(new Option(m, m)));
     });
 
     municipioNac.addEventListener("change", () => {
       ciudadNac.innerHTML = `<option value="">-- SELECCIONA CIUDAD --</option>`;
       ciudadNac.disabled = false;
 
-      data
-        .filter(d =>
-          d.estado === estadoNac.value &&
-          d.municipio === municipioNac.value
+      catalogo
+        .filter(e =>
+          e.estado === estadoNac.value &&
+          e.municipio === municipioNac.value
         )
         .forEach(c => ciudadNac.add(new Option(c.localidad, c.localidad)));
     });
 
-    // RESIDENCIA
+    // ===== RESIDENCIA =====
     estadoRes.addEventListener("change", () => {
       municipioRes.innerHTML = `<option value="">-- SELECCIONA MUNICIPIO --</option>`;
       ciudadRes.innerHTML = `<option value="">-- SELECCIONA CIUDAD --</option>`;
       municipioRes.disabled = false;
       ciudadRes.disabled = true;
 
-      data
-        .filter(d => d.estado === estadoRes.value)
-        .forEach(m => municipioRes.add(new Option(m.municipio, m.municipio)));
+      const municipios = [
+        ...new Set(
+          catalogo
+            .filter(e => e.estado === estadoRes.value)
+            .map(e => e.municipio)
+        )
+      ];
+
+      municipios.forEach(m => municipioRes.add(new Option(m, m)));
     });
 
     municipioRes.addEventListener("change", () => {
       ciudadRes.innerHTML = `<option value="">-- SELECCIONA CIUDAD --</option>`;
       ciudadRes.disabled = false;
 
-      data
-        .filter(d =>
-          d.estado === estadoRes.value &&
-          d.municipio === municipioRes.value
+      catalogo
+        .filter(e =>
+          e.estado === estadoRes.value &&
+          e.municipio === municipioRes.value
         )
         .forEach(c => ciudadRes.add(new Option(c.localidad, c.localidad)));
     });
@@ -85,6 +100,7 @@ async function cargarCatalogo() {
     console.error("❌ Error cargando catálogo:", err);
   }
 }
+
 
 /* =========================
    INICIALIZACIÓN
