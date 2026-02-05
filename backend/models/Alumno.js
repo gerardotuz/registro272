@@ -3,10 +3,7 @@ const mongoose = require('mongoose');
 const alumnoSchema = new mongoose.Schema({
   folio: { type: String, required: true, unique: true },
 
-numero_control: {   // 👈 AGREGA ESTO
-  type: String,
-  unique: true
-},
+
 
 registro_completado: { type: Boolean, default: false },
 
