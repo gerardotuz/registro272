@@ -50,6 +50,29 @@ router.get('/folio/:folio', async (req, res) => {
 });
 
 
+// ===================================
+// GENERAR FOLIO AUTOMÁTICO
+// Ejemplo: REG-26-0001
+// ===================================
+async function generarFolio() {
+  const year = new Date().getFullYear().toString().slice(-2); // 26
+  const prefijo = `REG-${year}-`;
+
+  const ultimo = await Alumno.findOne({
+    folio: new RegExp(`^${prefijo}`)
+  })
+  .sort({ folio: -1 })
+  .lean();
+
+  let consecutivo = 1;
+
+  if (ultimo?.folio) {
+    const ult = parseInt(ultimo.folio.split("-").pop());
+    consecutivo = ult + 1;
+  }
+
+  return `${prefijo}${String(consecutivo).padStart(4, "0")}`;
+}
 
 
 
@@ -100,9 +123,10 @@ router.post('/guardar', async (req, res) => {
     // ===============================
     // VALIDAR DATOS OBLIGATORIOS
     // ===============================
-    if (!data.folio || !data.datos_alumno?.curp || !data.datos_generales?.correo_alumno) {
-      return res.status(400).json({ message: 'Faltan datos obligatorios' });
-    }
+    if (!data.datos_alumno?.curp || !data.datos_generales?.correo_alumno) {
+  return res.status(400).json({ message: 'Faltan datos obligatorios' });
+}
+
 
     // ===============================
     // CONVERTIR A MAYÚSCULAS
@@ -114,6 +138,11 @@ router.post('/guardar', async (req, res) => {
     // ===============================
     upperCaseData.registro_completado = true;
     upperCaseData.bloqueado = true;
+    // ===============================
+// 🆔 GENERAR FOLIO
+// ===============================
+upperCaseData.folio = await generarFolio();
+
 
     // ===============================
     // 🎓 GENERAR NÚMERO DE CONTROL
