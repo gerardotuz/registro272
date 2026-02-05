@@ -56,7 +56,7 @@ router.get('/folio/:folio', async (req, res) => {
 // ===================================
 async function generarFolio() {
   const year = new Date().getFullYear().toString().slice(-2); // 26
-  const prefijo = `REG-${year}-`;
+  const prefijo = `CBTIS272-${year}-`;
 
   const ultimo = await Alumno.findOne({
     folio: new RegExp(`^${prefijo}`)
