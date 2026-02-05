@@ -17,7 +17,6 @@ document.addEventListener('DOMContentLoaded', () => {
       'primera_opcion','segunda_opcion','tercera_opcion','cuarta_opcion',
       'colonia','domicilio','codigo_postal','telefono_alumno','correo_alumno',
       'tipo_sangre','contacto_emergencia_nombre','contacto_emergencia_telefono',
-      'habla_lengua_indigena_respuesta',
       'nombre_secundaria','regimen','promedio_general','modalidad',
       'nombre_padre','telefono_padre','nombre_madre','telefono_madre',
       'vive_con'
