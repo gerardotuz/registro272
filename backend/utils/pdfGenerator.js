@@ -163,21 +163,14 @@ y += GAP_Y;
   y += GAP_Y;
   y = drawBox('Correo Electrónico', generales.correo_alumno, marginX, y, 500);
   y += GAP_Y;
-  y = drawBox('Tipo de Sangre', generales.tipo_sangre, marginX, y);
-  y = drawBox('Paraescolar', generales.paraescolar, marginX + 260, y);
-  y += GAP_Y;
+ 
   y = drawBox('Primera Opción', generales.primera_opcion, marginX, y);
   y = drawBox('Segunda Opción', generales.segunda_opcion, marginX + 260, y);
   y += GAP_Y;
   y = drawBox('Tercera Opción', generales.tercera_opcion, marginX, y);
   y = drawBox('Cuarta Opción', generales.cuarta_opcion, marginX + 260, y);
   y += GAP_Y;
-  y = drawBox('¿Entrega Diagnóstico?', generales.entrega_diagnostico, marginX, y);
-  y = drawMultilineBox('Detalle Enfermedad', generales.detalle_enfermedad, marginX + 260, y);
-  y += GAP_Y;
-  y = drawBox('Lengua Indígena', generales.habla_lengua_indigena?.respuesta, marginX, y);
-  y = drawBox('¿Cuál?', generales.habla_lengua_indigena?.cual, marginX + 260, y);
-  y += GAP_Y;
+
 
   y = drawSectionTitle('Estado de Residencia', y);
   y = drawBox('Estado (General)', lugarGeneral.estado, marginX, y);
