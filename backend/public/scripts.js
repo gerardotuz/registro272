@@ -7,6 +7,14 @@ const BASE_URL = window.location.origin.includes("localhost")
   : "https://registro272.onrender.com";
 
 /* =========================
+   FUNCION PARA MAYUSCULAS
+========================= */
+
+function toUpper(value) {
+  return typeof value === "string" ? value.toUpperCase() : value;
+}
+
+/* =========================
    INICIALIZACIÓN
 ========================= */
 
@@ -20,7 +28,7 @@ document.addEventListener("DOMContentLoaded", () => {
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    // 🔒 VALIDAR CAMPOS REQUIRED
+    // 🔒 VALIDAR REQUIRED
     const obligatorios = form.querySelectorAll("[required]");
     for (const campo of obligatorios) {
       if (!campo.value || !campo.value.trim()) {
@@ -32,93 +40,102 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const formData = new FormData(form);
 
+    /* =========================
+       OBTENER CLAVES NUMERICAS
+    ========================== */
+
+    function obtenerClave(selectId) {
+      const select = document.getElementById(selectId);
+      return select?.selectedOptions[0]?.dataset.clave
+        ? Number(select.selectedOptions[0].dataset.clave)
+        : null;
+    }
+
     const nuevoRegistro = {
-  datos_alumno: {
-    nombres: formData.get("nombres"),
-    primer_apellido: formData.get("primer_apellido"),
-    segundo_apellido: formData.get("segundo_apellido"),
-    curp: formData.get("curp"),
-    fecha_nacimiento: formData.get("fecha_nacimiento"),
-    edad: Number(formData.get("edad")),
-    sexo: formData.get("sexo"),
-    estado_nacimiento: formData.get("estado_nacimiento"),
-    municipio_nacimiento: formData.get("municipio_nacimiento"),
-    ciudad_nacimiento: formData.get("ciudad_nacimiento"),
-    estado_civil: Number(formData.get("estado_civil")),
-    nacionalidad: formData.get("nacionalidad"),
-    pais_extranjero: formData.get("pais_extranjero"),
-  },
+      datos_alumno: {
+        nombres: toUpper(formData.get("nombres")),
+        primer_apellido: toUpper(formData.get("primer_apellido")),
+        segundo_apellido: toUpper(formData.get("segundo_apellido")),
+        curp: toUpper(formData.get("curp")),
+        fecha_nacimiento: formData.get("fecha_nacimiento"),
+        edad: Number(formData.get("edad")),
+        sexo: toUpper(formData.get("sexo")),
+        estado_nacimiento: obtenerClave("estado_nacimiento"),
+        municipio_nacimiento: obtenerClave("municipio_nacimiento"),
+        ciudad_nacimiento: obtenerClave("ciudad_nacimiento"),
+        estado_civil: Number(formData.get("estado_civil")),
+        nacionalidad: toUpper(formData.get("nacionalidad")),
+        pais_extranjero: toUpper(formData.get("pais_extranjero"))
+      },
 
-  datos_generales: {
-    colonia: formData.get("colonia"),
-    domicilio: formData.get("domicilio"),
-    codigo_postal: formData.get("codigo_postal"),
-    telefono_alumno: formData.get("telefono_alumno"),
-    correo_alumno: formData.get("correo_alumno"),
-    tipo_sangre: formData.get("tipo_sangre"),
-    paraescolar: formData.get("paraescolar"),
-    entrega_diagnostico: formData.get("entrega_diagnostico"),
-    detalle_enfermedad: formData.get("detalle_enfermedad"),
-    carta_poder: formData.get("carta_poder"),
+      datos_generales: {
+        colonia: toUpper(formData.get("colonia")),
+        domicilio: toUpper(formData.get("domicilio")),
+        codigo_postal: formData.get("codigo_postal"),
+        telefono_alumno: formData.get("telefono_alumno"),
+        correo_alumno: toUpper(formData.get("correo_alumno")),
+        tipo_sangre: toUpper(formData.get("tipo_sangre")),
+        paraescolar: toUpper(formData.get("paraescolar")),
+        entrega_diagnostico: toUpper(formData.get("entrega_diagnostico")),
+        detalle_enfermedad: toUpper(formData.get("detalle_enfermedad")),
+        carta_poder: toUpper(formData.get("carta_poder")),
 
-    responsable_emergencia: {
-      nombre: formData.get("responsable_emergencia_nombre"),
-      telefono: formData.get("responsable_emergencia_telefono"),
-      parentesco: formData.get("responsable_emergencia_parentesco")
-    },
+        responsable_emergencia: {
+          nombre: toUpper(formData.get("responsable_emergencia_nombre")),
+          telefono: formData.get("responsable_emergencia_telefono"),
+          parentesco: toUpper(formData.get("responsable_emergencia_parentesco"))
+        },
 
-    contacto_emergencia_nombre: formData.get("contacto_emergencia_nombre"),
-    contacto_emergencia_telefono: formData.get("contacto_emergencia_telefono"),
+        contacto_emergencia_nombre: toUpper(formData.get("contacto_emergencia_nombre")),
+        contacto_emergencia_telefono: formData.get("contacto_emergencia_telefono"),
 
-    habla_lengua_indigena: {
-      respuesta: formData.get("habla_lengua_indigena_respuesta"),
-      cual: formData.get("habla_lengua_indigena_cual")
-    },
+        habla_lengua_indigena: {
+          respuesta: toUpper(formData.get("habla_lengua_indigena_respuesta")),
+          cual: toUpper(formData.get("habla_lengua_indigena_cual"))
+        },
 
-    primera_opcion: formData.get("primera_opcion"),
-    segunda_opcion: formData.get("segunda_opcion"),
-    tercera_opcion: formData.get("tercera_opcion"),
-    cuarta_opcion: formData.get("cuarta_opcion"),
+        primera_opcion: toUpper(formData.get("primera_opcion")),
+        segunda_opcion: toUpper(formData.get("segunda_opcion")),
+        tercera_opcion: toUpper(formData.get("tercera_opcion")),
+        cuarta_opcion: toUpper(formData.get("cuarta_opcion")),
 
-    estado_nacimiento_general: formData.get("estado_nacimiento_general"),
-    municipio_nacimiento_general: formData.get("municipio_nacimiento_general"),
-    ciudad_nacimiento_general: formData.get("ciudad_nacimiento_general")
-  },
+        estado_nacimiento_general: obtenerClave("estado_nacimiento_general"),
+        municipio_nacimiento_general: obtenerClave("municipio_nacimiento_general"),
+        ciudad_nacimiento_general: obtenerClave("ciudad_nacimiento_general")
+      },
 
-  datos_medicos: {
-    numero_seguro_social: formData.get("numero_seguro_social"),
-    unidad_medica_familiar: formData.get("unidad_medica_familiar"),
-    enfermedad_cronica_o_alergia: {
-      respuesta: formData.get("enfermedad_cronica_respuesta"),
-      detalle: formData.get("enfermedad_cronica_detalle")
-    },
-    discapacidad: formData.get("discapacidad")
-  },
+      datos_medicos: {
+        numero_seguro_social: formData.get("numero_seguro_social"),
+        unidad_medica_familiar: toUpper(formData.get("unidad_medica_familiar")),
+        enfermedad_cronica_o_alergia: {
+          respuesta: toUpper(formData.get("enfermedad_cronica_respuesta")),
+          detalle: toUpper(formData.get("enfermedad_cronica_detalle"))
+        },
+        discapacidad: toUpper(formData.get("discapacidad"))
+      },
 
-  secundaria_origen: {
-    nombre_secundaria: formData.get("nombre_secundaria"),
-    regimen: formData.get("regimen"),
-    promedio_general: Number(formData.get("promedio_general")),
-    modalidad: formData.get("modalidad")
-  },
+      secundaria_origen: {
+        nombre_secundaria: toUpper(formData.get("nombre_secundaria")),
+        regimen: toUpper(formData.get("regimen")),
+        promedio_general: Number(formData.get("promedio_general")),
+        modalidad: toUpper(formData.get("modalidad"))
+      },
 
-  tutor_responsable: {
-    nombre_padre: formData.get("nombre_padre"),
-    telefono_padre: formData.get("telefono_padre"),
-    nombre_madre: formData.get("nombre_madre"),
-    telefono_madre: formData.get("telefono_madre"),
-    vive_con: formData.get("vive_con")
-  },
+      tutor_responsable: {
+        nombre_padre: toUpper(formData.get("nombre_padre")),
+        telefono_padre: formData.get("telefono_padre"),
+        nombre_madre: toUpper(formData.get("nombre_madre")),
+        telefono_madre: formData.get("telefono_madre"),
+        vive_con: toUpper(formData.get("vive_con"))
+      },
 
-  persona_emergencia: {
-    nombre: formData.get("persona_emergencia_nombre"),
-    parentesco: formData.get("persona_emergencia_parentesco"),
-    telefono: formData.get("persona_emergencia_telefono")
-  }
-};
+      persona_emergencia: {
+        nombre: toUpper(formData.get("persona_emergencia_nombre")),
+        parentesco: toUpper(formData.get("persona_emergencia_parentesco")),
+        telefono: formData.get("persona_emergencia_telefono")
+      }
+    };
 
-
-     
     try {
       const res = await fetch(`${BASE_URL}/api/guardar`, {
         method: "POST",
@@ -128,19 +145,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const result = await res.json();
 
-     if (!res.ok) {
-  alert(result.message || "❌ Error al guardar");
-  return;
-}
+      if (!res.ok) {
+        alert(result.message || "❌ Error al guardar");
+        return;
+      }
 
-alert(`✅ Registro exitoso\nFolio asignado: ${result.folio}`);
+      alert(`✅ Registro exitoso\nFolio asignado: ${result.folio}`);
 
-if (result.pdf_url) {
-  window.open(result.pdf_url, "_blank");
-}
+      if (result.pdf_url) {
+        window.open(result.pdf_url, "_blank");
+      }
 
-deshabilitarFormulario();
-
+      deshabilitarFormulario();
 
     } catch (err) {
       console.error(err);
@@ -150,7 +166,7 @@ deshabilitarFormulario();
 });
 
 /* =========================
-   CARGA DE CATÁLOGO (CORRECTA)
+   CATÁLOGO CON CLAVES
 ========================= */
 
 function cargarCatalogo(sufijo) {
@@ -174,6 +190,7 @@ function cargarSelectores(sufijo, data) {
   data.forEach(est => {
     const opt = document.createElement("option");
     opt.value = est.nombre;
+    opt.dataset.clave = est.clave;
     opt.dataset.municipios = JSON.stringify(est.municipios || []);
     opt.textContent = est.nombre;
     estado.appendChild(opt);
@@ -192,6 +209,7 @@ function cargarSelectores(sufijo, data) {
     municipios.forEach(m => {
       const opt = document.createElement("option");
       opt.value = m.nombre;
+      opt.dataset.clave = m.clave;
       opt.dataset.localidades = JSON.stringify(m.localidades || []);
       opt.textContent = m.nombre;
       municipio.appendChild(opt);
@@ -209,6 +227,7 @@ function cargarSelectores(sufijo, data) {
     localidades.forEach(l => {
       const opt = document.createElement("option");
       opt.value = l.nombre;
+      opt.dataset.clave = l.clave;
       opt.textContent = l.nombre;
       ciudad.appendChild(opt);
     });
