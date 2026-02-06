@@ -50,29 +50,7 @@ router.get('/folio/:folio', async (req, res) => {
 });
 
 
-// ===================================
-// GENERAR FOLIO AUTOMÁTICO
-// Ejemplo: REG-26-0001
-// ===================================
-async function generarFolio() {
-  const year = new Date().getFullYear().toString().slice(-2); // 26
-  const prefijo = `CBTIS272-${year}-`;
 
-  const ultimo = await Alumno.findOne({
-    folio: new RegExp(`^${prefijo}`)
-  })
-  .sort({ folio: -1 })
-  .lean();
-
-  let consecutivo = 1;
-
-  if (ultimo?.folio) {
-    const ult = parseInt(ultimo.folio.split("-").pop());
-    consecutivo = ult + 1;
-  }
-
-  return `${prefijo}${String(consecutivo).padStart(4, "0")}`;
-}
 
 
 
@@ -80,25 +58,7 @@ async function generarFolio() {
 // ===================================
 // GENERAR NUMERO DE CONTROL AUTOMATICO
 // ===================================
-async function generarNumeroControl() {
 
-  const year = new Date().getFullYear().toString().slice(-2); // 25
-
-  const ultimo = await Alumno.findOne({
-    numero_control: new RegExp(`^272${year}`)
-  })
-  .sort({ numero_control: -1 })
-  .lean();
-
-  let consecutivo = 1;
-
-  if (ultimo && ultimo.numero_control) {
-    const ult = parseInt(ultimo.numero_control.slice(-4));
-    consecutivo = ult + 1;
-  }
-
-  return `272${year}${String(consecutivo).padStart(4,"0")}`;
-}
 async function generarFolio() {
   const prefijo = "CBTIS272-";
 
