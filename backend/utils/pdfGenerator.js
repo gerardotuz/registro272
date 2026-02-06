@@ -111,7 +111,7 @@ doc
   .fontSize(20)
   .fillColor('#7A1E2C')
   .font('Helvetica-Bold')
-  .text(data.folio, 400, 150);
+  .text(datos.folio, 400, 150);
   
 doc.fillColor('black');
 
