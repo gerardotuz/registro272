@@ -41,7 +41,7 @@ document.addEventListener("DOMContentLoaded", () => {
         fecha_nacimiento: formData.get("fecha_nacimiento"),
         edad: formData.get("edad"),
         sexo: formData.get("sexo"),
-        estado_civil: formData.get("estado_civil"),
+        estado_civil: Number(formData.get("estado_civil")),
         nacionalidad: formData.get("nacionalidad"),
         pais_extranjero: formData.get("pais_extranjero"),
         primera_opcion: formData.get("primera_opcion"),
