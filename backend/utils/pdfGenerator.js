@@ -119,7 +119,7 @@ doc.fillColor('black');
   .fontSize(18)
   .fillColor('#7A1E2C')
   .font('Helvetica-Bold')
-  .text(`FOLIO: ${data.folio}`, 0, 150, {
+  .text(`FOLIO: ${datos.folio}`, 0, 150, {
     align: 'right'
   });
 
