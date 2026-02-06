@@ -33,44 +33,92 @@ document.addEventListener("DOMContentLoaded", () => {
     const formData = new FormData(form);
 
     const nuevoRegistro = {
-      datos_alumno: {
-        nombres: formData.get("nombres"),
-        primer_apellido: formData.get("primer_apellido"),
-        segundo_apellido: formData.get("segundo_apellido"),
-        curp: formData.get("curp"),
-        fecha_nacimiento: formData.get("fecha_nacimiento"),
-        edad: formData.get("edad"),
-        sexo: formData.get("sexo"),
-        estado_civil: Number(formData.get("estado_civil")),
-        nacionalidad: formData.get("nacionalidad"),
-        pais_extranjero: formData.get("pais_extranjero"),
-        primera_opcion: formData.get("primera_opcion"),
-        segunda_opcion: formData.get("segunda_opcion"),
-        tercera_opcion: formData.get("tercera_opcion"),
-        cuarta_opcion: formData.get("cuarta_opcion")
-      },
-      datos_generales: {
-        colonia: formData.get("colonia"),
-        domicilio: formData.get("domicilio"),
-        codigo_postal: formData.get("codigo_postal"),
-        telefono_alumno: formData.get("telefono_alumno"),
-        correo_alumno: formData.get("correo_alumno")
-      },
-      secundaria_origen: {
-        nombre_secundaria: formData.get("nombre_secundaria"),
-        regimen: formData.get("regimen"),
-        promedio_general: formData.get("promedio_general"),
-        modalidad: formData.get("modalidad")
-      },
-      tutor_responsable: {
-        nombre_padre: formData.get("nombre_padre"),
-        telefono_padre: formData.get("telefono_padre"),
-        nombre_madre: formData.get("nombre_madre"),
-        telefono_madre: formData.get("telefono_madre"),
-        vive_con: formData.get("vive_con")
-      }
-    };
+  datos_alumno: {
+    nombres: formData.get("nombres"),
+    primer_apellido: formData.get("primer_apellido"),
+    segundo_apellido: formData.get("segundo_apellido"),
+    curp: formData.get("curp"),
+    fecha_nacimiento: formData.get("fecha_nacimiento"),
+    edad: Number(formData.get("edad")),
+    sexo: formData.get("sexo"),
+    estado_nacimiento: formData.get("estado_nacimiento"),
+    municipio_nacimiento: formData.get("municipio_nacimiento"),
+    ciudad_nacimiento: formData.get("ciudad_nacimiento"),
+    estado_civil: Number(formData.get("estado_civil")),
+    nacionalidad: formData.get("nacionalidad"),
+    pais_extranjero: formData.get("pais_extranjero"),
+  },
 
+  datos_generales: {
+    colonia: formData.get("colonia"),
+    domicilio: formData.get("domicilio"),
+    codigo_postal: formData.get("codigo_postal"),
+    telefono_alumno: formData.get("telefono_alumno"),
+    correo_alumno: formData.get("correo_alumno"),
+    tipo_sangre: formData.get("tipo_sangre"),
+    paraescolar: formData.get("paraescolar"),
+    entrega_diagnostico: formData.get("entrega_diagnostico"),
+    detalle_enfermedad: formData.get("detalle_enfermedad"),
+    carta_poder: formData.get("carta_poder"),
+
+    responsable_emergencia: {
+      nombre: formData.get("responsable_emergencia_nombre"),
+      telefono: formData.get("responsable_emergencia_telefono"),
+      parentesco: formData.get("responsable_emergencia_parentesco")
+    },
+
+    contacto_emergencia_nombre: formData.get("contacto_emergencia_nombre"),
+    contacto_emergencia_telefono: formData.get("contacto_emergencia_telefono"),
+
+    habla_lengua_indigena: {
+      respuesta: formData.get("habla_lengua_indigena_respuesta"),
+      cual: formData.get("habla_lengua_indigena_cual")
+    },
+
+    primera_opcion: formData.get("primera_opcion"),
+    segunda_opcion: formData.get("segunda_opcion"),
+    tercera_opcion: formData.get("tercera_opcion"),
+    cuarta_opcion: formData.get("cuarta_opcion"),
+
+    estado_nacimiento_general: formData.get("estado_nacimiento_general"),
+    municipio_nacimiento_general: formData.get("municipio_nacimiento_general"),
+    ciudad_nacimiento_general: formData.get("ciudad_nacimiento_general")
+  },
+
+  datos_medicos: {
+    numero_seguro_social: formData.get("numero_seguro_social"),
+    unidad_medica_familiar: formData.get("unidad_medica_familiar"),
+    enfermedad_cronica_o_alergia: {
+      respuesta: formData.get("enfermedad_cronica_respuesta"),
+      detalle: formData.get("enfermedad_cronica_detalle")
+    },
+    discapacidad: formData.get("discapacidad")
+  },
+
+  secundaria_origen: {
+    nombre_secundaria: formData.get("nombre_secundaria"),
+    regimen: formData.get("regimen"),
+    promedio_general: Number(formData.get("promedio_general")),
+    modalidad: formData.get("modalidad")
+  },
+
+  tutor_responsable: {
+    nombre_padre: formData.get("nombre_padre"),
+    telefono_padre: formData.get("telefono_padre"),
+    nombre_madre: formData.get("nombre_madre"),
+    telefono_madre: formData.get("telefono_madre"),
+    vive_con: formData.get("vive_con")
+  },
+
+  persona_emergencia: {
+    nombre: formData.get("persona_emergencia_nombre"),
+    parentesco: formData.get("persona_emergencia_parentesco"),
+    telefono: formData.get("persona_emergencia_telefono")
+  }
+};
+
+
+     
     try {
       const res = await fetch(`${BASE_URL}/api/guardar`, {
         method: "POST",
