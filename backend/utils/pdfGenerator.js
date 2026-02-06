@@ -103,25 +103,19 @@ async function generarPDF(datos, nombreArchivo = 'formulario.pdf') {
   }
 // 📌 FOLIO DEL ALUMNO
 doc
-  .fontSize(10)
-  .fillColor('#555')
-  .text('FOLIO DE REGISTRO', 400, 135);
+  .roundedRect(350, y - 10, 200, 40, 8)
+  .stroke('#7A1E2C');
 
 doc
-  .fontSize(20)
+  .fontSize(16)
   .fillColor('#7A1E2C')
-  .font('Helvetica-Bold')
-  .text(datos.folio, 400, 150);
-  
-doc.fillColor('black');
-
-  doc
-  .fontSize(18)
-  .fillColor('#7A1E2C')
-  .font('Helvetica-Bold')
-  .text(`FOLIO: ${datos.folio}`, 0, 150, {
-    align: 'right'
+  .text(datos.folio || '', 350, y, {
+    width: 200,
+    align: 'center'
   });
+
+y += 50;
+
 
 doc.fillColor('black');
 
