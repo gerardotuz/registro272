@@ -119,15 +119,9 @@ y += 30;
   y = drawBox('Segundo Apellido', alumno.segundo_apellido, marginX, y);
   y = drawBox('CURP', alumno.curp, marginX + 260, y);
   y += GAP_Y;
-  y = drawBox('Carrera', alumno.carrera, marginX, y);
-  y = drawBox('Periodo Semestral', alumno.periodo_semestral, marginX + 260, y);
-  y += GAP_Y;
-  y = drawBox('Semestre', alumno.semestre, marginX, y);
-  y = drawBox('Grupo', alumno.grupo, marginX + 260, y);
-  y += GAP_Y;
-  y = drawBox('Turno', alumno.turno, marginX, y);
-  y = drawBox('Estado Civil', estadoCivilTexto, marginX + 260, y);
-  y += GAP_Y;
+  
+  y = drawBox('Estado Civil', estadoCivilTexto, marginX, y);
+y += GAP_Y;
   y = drawBox('Fecha de Nacimiento', alumno.fecha_nacimiento, marginX, y);
   y = drawBox('Edad', alumno.edad, marginX + 260, y);
   y += GAP_Y;
@@ -174,14 +168,7 @@ y += 30;
   y = drawBox('Ciudad (General)', lugarGeneral.ciudad, marginX, y);
   y += GAP_Y;
 
-  y = drawSectionTitle('Datos Médicos', y);
-  y = drawBox('NSS', medicos.numero_seguro_social, marginX, y);
-  y = drawBox('Unidad Médica', medicos.unidad_medica_familiar, marginX + 260, y);
-  y += GAP_Y;
-  y = drawBox('¿Alergia o Enfermedad?', medicos.enfermedad_cronica_o_alergia?.respuesta, marginX, y);
-  y = drawMultilineBox('Detalle', medicos.enfermedad_cronica_o_alergia?.detalle, marginX + 260, y);
-  y = drawBox('Discapacidad', medicos.discapacidad, marginX, y);
-  y += GAP_Y;
+
 
   y = drawSectionTitle('Secundaria de Origen', y);
   y = drawBox('Nombre', secundaria.nombre_secundaria, marginX, y);
@@ -200,12 +187,7 @@ y += 30;
   y += GAP_Y;
   y = drawBox('Vive con', tutor.vive_con, marginX, y);
   y += GAP_Y;
-  y = drawBox('Emergencia Adicional', generales.responsable_emergencia?.nombre, marginX, y);
-  y = drawBox('Teléfono', generales.responsable_emergencia?.telefono, marginX + 260, y);
-  y += GAP_Y;
-  y = drawBox('Parentesco', generales.responsable_emergencia?.parentesco, marginX, y);
-  y = drawBox('¿Carta Poder?', generales.carta_poder, marginX + 260, y);
-  y += GAP_Y;
+
 
   if (fs.existsSync(footerPath)) {
     if (y + 100 > PAGE_HEIGHT) {
