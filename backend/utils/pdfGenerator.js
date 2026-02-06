@@ -1,7 +1,7 @@
 const PDFDocument = require('pdfkit');
 const fs = require('fs');
 const path = require('path');
-const { PDFDocument: PDFLibDocument } = require('pdf-lib'); // para fusionar PDFs
+// const { PDFDocument: PDFLibDocument } = require('pdf-lib'); // para fusionar PDFs
 
 const catalogoPath = path.resolve(__dirname, './catalogo.json');
 const catalogo = JSON.parse(fs.readFileSync(catalogoPath, 'utf8'));
@@ -211,25 +211,12 @@ y += GAP_Y;
   doc.end();
 
   return new Promise((resolve, reject) => {
-    stream.on('finish', async () => {
-      try {
-        const generatedPDF = await PDFLibDocument.load(fs.readFileSync(rutaPDF));
-        const anexosPDF = await PDFLibDocument.load(
-          fs.readFileSync(path.join(__dirname, '../public/assets/LISTA_DE_COTEJO_2025.pdf'))
-        );
-
-        const totalPages = anexosPDF.getPageCount();
-        const copiedPages = await generatedPDF.copyPages(anexosPDF, [...Array(totalPages).keys()]);
-        copiedPages.forEach(page => generatedPDF.addPage(page));
-
-        fs.writeFileSync(rutaPDF, await generatedPDF.save());
-        resolve(`/pdfs/${nombreArchivo}`);
-      } catch (err) {
-        reject(err);
-      }
-    });
-    stream.on('error', reject);
+  stream.on('finish', () => {
+    resolve(`/pdfs/${nombreArchivo}`);
   });
+  stream.on('error', reject);
+});
+
 }
 
 module.exports = generarPDF;
