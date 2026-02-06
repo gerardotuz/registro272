@@ -80,15 +80,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const result = await res.json();
 
-      if (!res.ok) {
-        alert(result.message || "❌ Error al guardar");
-        return;
-      }
+     if (!res.ok) {
+  alert(result.message || "❌ Error al guardar");
+  return;
+}
 
-      alert(`✅ Registro exitoso\nFolio: ${result.alumno.folio}`);
-      if (result.pdf_url) window.open(result.pdf_url, "_blank");
+alert(`✅ Registro exitoso\nFolio asignado: ${result.folio}`);
 
-      deshabilitarFormulario();
+if (result.pdf_url) {
+  window.open(result.pdf_url, "_blank");
+}
+
+deshabilitarFormulario();
+
 
     } catch (err) {
       console.error(err);
