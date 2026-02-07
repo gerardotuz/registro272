@@ -345,10 +345,7 @@ app.listen(PORT, () => {
 });
 
 
-app.get("/api/alumno/curp/:curp", async (req,res)=>{
-  const alumno = await Paraescolar.findOne({ curp: req.params.curp });
-  res.json({ encontrado: !!alumno, alumno });
-});
+
 
 
 app.post("/api/registro-online", async (req,res)=>{
