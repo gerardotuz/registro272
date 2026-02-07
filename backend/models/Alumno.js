@@ -86,7 +86,7 @@ bloqueado: {
   secundaria_origen: {
     nombre_secundaria: String,
     regimen: String,
-    estudias: Number,
+    estudias: String,
     modalidad: String
   },
 
