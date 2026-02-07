@@ -270,6 +270,7 @@ router.delete('/dashboard/alumnos/:id', async (req, res) => {
 });
 
 
+// VALIDAR CURP EN ALUMNOS REGISTRADOS
 router.get('/curp/:curp', async (req, res) => {
   try {
     const alumno = await Alumno.findOne({
@@ -277,19 +278,19 @@ router.get('/curp/:curp', async (req, res) => {
     });
 
     if (!alumno) {
-      return res.json({ existe: false });
+      return res.json({ registrado: false });
     }
 
-    return res.json({
-      existe: true,
-      folio: alumno.folio,
-      registro_completado: alumno.registro_completado
+    res.json({
+      registrado: true,
+      folio: alumno.folio
     });
 
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
 });
+
 
 
 
