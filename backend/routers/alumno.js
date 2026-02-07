@@ -181,7 +181,10 @@ router.get('/reimprimir/:folio', async (req, res) => {
 router.get('/dashboard/alumnos', async (req, res) => {
   const { folio, apellidos } = req.query;
   const query = {};
-  if (folio) query.folio = folio;
+  if (folio) {
+  query.folio = { $regex: folio, $options: 'i' };
+}
+
   if (apellidos) query['datos_alumno.primer_apellido'] = { $regex: apellidos, $options: 'i' };
 
   try {
