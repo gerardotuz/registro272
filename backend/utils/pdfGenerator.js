@@ -99,22 +99,33 @@ async function generarPDF(datos, nombreArchivo = 'formulario.pdf') {
   // ENCABEZADO
   if (fs.existsSync(logoPath)) {
     doc.image(logoPath, 50, y, { width: 500 });
-    y += 80;
+    y += 55;
   }
 // 📌 FOLIO DEL ALUMNO
+const folioBoxX = 340;
+const folioBoxY = y - 5;
+const folioBoxWidth = 210;
+const folioBoxHeight = 38;
+
 doc
-  .roundedRect(350, y - 10, 200, 40, 8)
-  .stroke('#7A1E2C');
+  .lineWidth(2)
+  .strokeColor('#7A1E2C')
+  .roundedRect(folioBoxX, folioBoxY, folioBoxWidth, folioBoxHeight, 10)
+  .stroke();
 
 doc
   .fontSize(16)
   .fillColor('#7A1E2C')
-  .text(datos.folio || '', 350, y, {
-    width: 200,
+  .font('Helvetica-Bold')
+  .text(datos.folio || '', folioBoxX, folioBoxY + 10, {
+    width: folioBoxWidth,
     align: 'center'
   });
 
-y += 50;
+doc.fillColor('black');
+
+y += 45;
+
 
 
 doc.fillColor('black');
