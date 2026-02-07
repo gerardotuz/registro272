@@ -260,6 +260,30 @@ router.delete('/dashboard/alumnos/:id', async (req, res) => {
   }
 });
 
+
+router.get('/curp/:curp', async (req, res) => {
+  try {
+    const alumno = await Alumno.findOne({
+      "datos_alumno.curp": req.params.curp.toUpperCase()
+    });
+
+    if (!alumno) {
+      return res.json({ existe: false });
+    }
+
+    return res.json({
+      existe: true,
+      folio: alumno.folio,
+      registro_completado: alumno.registro_completado
+    });
+
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+
+
 router.get('/exportar-excel', async (req, res) => {
   try {
     const alumnos = await Alumno.find({ registro_completado: true }).lean();
