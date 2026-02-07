@@ -74,47 +74,50 @@ document.getElementById("reimprimirForm").addEventListener("submit", function(e)
 </script>
 
 
-  <script>
-const formCurp = document.getElementById("validarCurpForm");
-const curpInput = document.getElementById("curpIndex");
+<script>
+document.addEventListener("DOMContentLoaded", () => {
 
-curpInput.addEventListener("input", () => {
-  curpInput.value = curpInput.value.toUpperCase();
-});
+  const formCurp = document.getElementById("validarCurpForm");
+  const curpInput = document.getElementById("curpIndex");
 
-formCurp.addEventListener("submit", async (e) => {
-  e.preventDefault();
+  if (!formCurp || !curpInput) return;
 
-  const curp = curpInput.value.trim();
+  curpInput.addEventListener("input", () => {
+    curpInput.value = curpInput.value.toUpperCase();
+  });
 
-  const regex = /^[A-Z]{4}[0-9]{6}[HM][A-Z]{5}[A-Z0-9]{2}$/;
+  formCurp.addEventListener("submit", async (e) => {
+    e.preventDefault();
 
-  if (!regex.test(curp)) {
-    alert("CURP inválida");
-    return;
-  }
+    const curp = curpInput.value.trim().toUpperCase();
 
-  try {
-    const res = await fetch(`/api/curp/${curp}`);
-    const data = await res.json();
+    const regex = /^[A-Z]{4}[0-9]{6}[HM][A-Z]{5}[A-Z0-9]{2}$/;
 
-    if (!data.existe) {
+    if (!regex.test(curp)) {
+      alert("CURP inválida");
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/alumno/curp/${curp}`);
+      const data = await res.json();
+
+      if (data.encontrado) {
+        alert(`⚠️ Esta CURP ya está registrada.\nFolio: ${data.alumno.folio}`);
+        return;
+      }
+
       window.location.href = `/formulario.html?curp=${curp}`;
-      return;
+
+    } catch (err) {
+      console.error(err);
+      alert("Error al validar CURP");
     }
+  });
 
-    if (data.registro_completado) {
-      alert(`⚠️ Esta CURP ya está registrada.\n\nFolio asignado: ${data.folio}`);
-      return;
-    }
-
-    window.location.href = `/formulario.html?curp=${curp}`;
-
-  } catch (err) {
-    console.error(err);
-    alert("Error al validar CURP");
-  }
 });
+</script>
+
 
 
 
