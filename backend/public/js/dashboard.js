@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
     resultadosTable.innerHTML = '';
     const folio = searchFolio.value.trim();
     const apellidos = searchApellidos.value.trim();
-    const res = await fetch(`/api/dashboard/alumnos?folio=${folio}&apellidos=${apellidos}`);
+    const res = await fetch(`${BASE_URL}/api/dashboard/alumnos?folio=${folio}&apellidos=${apellidos}`);
     const data = await res.json();
 
     data.forEach(alumno => {
