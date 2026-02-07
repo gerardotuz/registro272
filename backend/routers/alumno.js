@@ -159,23 +159,24 @@ router.post('/cargar-excel', upload.single('archivo'), async (req, res) => {
   }
 });
 
+
+
 router.get('/reimprimir/:folio', async (req, res) => {
   try {
     const alumno = await Alumno.findOne({ folio: req.params.folio });
-    if (!alumno || !alumno.registro_completado) {
-      return res.status(404).json({ message: 'Folio no registrado o incompleto.' });
+
+    if (!alumno) {
+      return res.status(404).json({ message: 'Folio no encontrado' });
     }
 
-    const datosAnidados = flattenToNested(alumno.toObject());
-    const nombreArchivo = `${datosAnidados.datos_alumno?.curp || 'formulario'}.pdf`;
-    await generarPDF(datosAnidados, nombreArchivo);
+    res.json({ pdf_url: `/pdfs/${req.params.folio}.pdf` });
 
-    res.json({ pdf: `/pdfs/${nombreArchivo}` });
   } catch (err) {
-    console.error('❌ Error al reimprimir PDF:', err);
-    res.status(500).json({ message: 'Error interno al generar PDF.' });
+    console.error(err);
+    res.status(500).json({ message: 'Error interno' });
   }
 });
+
 
 // ---------- Dashboard: búsqueda ----------
 router.get('/dashboard/alumnos', async (req, res) => {
