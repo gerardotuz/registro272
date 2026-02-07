@@ -103,51 +103,35 @@ formCurp.addEventListener("submit", async (e) => {
 </script>
 
 <script>
-document.addEventListener("DOMContentLoaded", () => {
+document.getElementById("reimprimirForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
 
-  const formReimpresion = document.getElementById("reimprimirForm");
-  const inputFolio = document.getElementById("folioReimpresion");
+  const folio = document.getElementById("folioReimpresion").value.trim().toUpperCase();
 
-  if (!formReimpresion) {
-    console.error("No se encontró el formulario de reimpresión");
+  if (!folio) {
+    alert("Ingresa un folio válido");
     return;
   }
 
-  formReimpresion.addEventListener("submit", async (e) => {
-    e.preventDefault();
+  try {
+    const res = await fetch(`/api/reimprimir/${folio}`);
 
-    const folio = inputFolio.value.trim().toUpperCase();
+    const data = await res.json();
 
-    if (!folio) {
-      alert("Ingresa un folio válido");
+    if (!res.ok) {
+      alert(data.message || "Folio no encontrado");
       return;
     }
 
-    try {
-      const res = await fetch(`/api/reimprimir/${folio}`);
+    window.open(data.pdf, "_blank");
 
-      if (!res.ok) {
-        alert("Folio no encontrado");
-        return;
-      }
-
-      const data = await res.json();
-
-      if (data.pdf_url) {
-        window.open(data.pdf_url, "_blank");
-      } else {
-        alert("No se encontró el PDF");
-      }
-
-    } catch (error) {
-      console.error("Error al reimprimir:", error);
-      alert("Error al conectar con el servidor");
-    }
-
-  });
-
+  } catch (err) {
+    console.error(err);
+    alert("Error al generar PDF");
+  }
 });
 </script>
+
 
 
 
