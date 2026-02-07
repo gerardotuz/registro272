@@ -113,7 +113,7 @@ legend {
   color: #333;
 }
 
-/* Inputs y selects */
+/* Inputs y selects 
 input[type="text"],
 input[type="email"],
 input[type="password"],
@@ -131,7 +131,7 @@ select {
   background-repeat: no-repeat;
   background-position: right 12px center;
   background-size: 20px;
-}
+} */
 
 input:focus, select:focus {
   border-color: #89042e;
@@ -253,7 +253,7 @@ label {
   grid-column: 1 / -1;   /* ⭐ ESTA LÍNEA ES LA CLAVE */
 }
 
-}
+
 
 .row-4 input{
   width:100%;
