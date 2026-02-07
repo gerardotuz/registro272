@@ -192,7 +192,7 @@ y += GAP_Y;
   y += GAP_Y;
   y = drawBox('Vive con', tutor.vive_con, marginX, y);
   y += GAP_Y;
-y += 30; // espacio adicional antes del footer
+y += 60; // espacio adicional antes del footer
 
 
   if (fs.existsSync(footerPath)) {
