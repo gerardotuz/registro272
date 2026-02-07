@@ -163,48 +163,7 @@
 <input name="municipio_codigo" type="hidden"/>
 <input name="ciudad_codigo" type="hidden"/>
 </fieldset>
-<fieldset>
-<legend>DATOS GENERALES DEL ALUMNO</legend>
-<input name="colonia" placeholder="SMZ, COLONIA, FRACCIONAMIENTO" type="text"/>
-<input name="domicilio" placeholder=" CALLE MZ LT EDIFICIO DEPTO" type="text"/>
-<input name="codigo_postal" placeholder="CÓDIGO POSTAL" type="text"/>
-<input name="telefono_alumno" placeholder="TÉLEFONO DEL ALUMNO" type="number"/>
-<input name="correo_alumno" placeholder="CORREO" required="" type="email"/>
-
-
-
-
-  
-<!-- Selección de lugar de nacimiento en DATOS GENERALES -->
-<div>
-  <label for="estado_nacimiento_general">Estado de Residencia</label>
-  <select id="estado_nacimiento_general" name="estado_nacimiento_general" required>
-    <option value="">-- Selecciona Estado --</option>
-    <!-- Opciones dinámicas aquí -->
-  </select>
-</div>
-
-<div>
-  <label for="municipio_nacimiento_general">Municipio de Residencia</label>
-  <select id="municipio_nacimiento_general" name="municipio_nacimiento_general" required disabled>
-    <option value="">-- Selecciona Municipio --</option>
-  </select>
-</div>
-
-<div>
-  <label for="ciudad_nacimiento_general">Ciudad de Residencia</label>
-  <select id="ciudad_nacimiento_general" name="ciudad_nacimiento_general" required disabled>
-    <option value="">-- Selecciona Ciudad --</option>
-  </select>
-</div>
-
-<!-- Inputs ocultos para guardar claves -->
-<input type="hidden" name="estado_codigo_general" />
-<input type="hidden" name="municipio_codigo_general" />
-<input type="hidden" name="ciudad_codigo_general" />
-
-  
-</fieldset>
+ 
   
 <fieldset> 
 <legend>Secundaria de Origen</legend>
