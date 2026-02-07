@@ -39,21 +39,7 @@
   <input type="text" id="folioReimpresion" placeholder="Ingresa tu folio para reimprimir" required />
   <button type="submit">Reimprimir PDF</button>
 </form>
-  <script>
-    document.getElementById('folioForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const folio = document.getElementById('folio').value.trim();
-      const res = await fetch(`https://registro272.onrender.com/api/folio/${folio}`);
-      if (res.ok) {
-        const data = await res.json();
-        localStorage.setItem('alumnoFolio', folio);
-        localStorage.setItem('datosPrecargados', JSON.stringify(data));
-        window.location.href = 'formulario.html';
-      } else {
-        alert('Folio no encontrado');
-      }
-    });
-  </script>
+
   <script src="scripts.js"></script>
 <div id="alerta-servidor" style="display:none; background-color:#ffcdd2; color:#b71c1c; padding:10px; text-align:center; font-weight:bold;">
   ⚠️ El servidor está experimentando una alta demanda. Si no carga correctamente, intenta más tarde.
@@ -74,10 +60,6 @@
 
 
   <script>
-const BASE_URL = window.location.origin.includes("localhost")
-  ? "http://localhost:3001"
-  : "https://registro272.onrender.com";
-
 const formCurp = document.getElementById("validarCurpForm");
 const curpInput = document.getElementById("curpIndex");
 
@@ -98,21 +80,19 @@ formCurp.addEventListener("submit", async (e) => {
   }
 
   try {
-    const res = await fetch(`${BASE_URL}/api/curp/${curp}`);
+    const res = await fetch(`/api/curp/${curp}`);
     const data = await res.json();
 
     if (!data.existe) {
-      // No existe → ir a capturar
       window.location.href = `/formulario.html?curp=${curp}`;
       return;
     }
 
     if (data.registro_completado) {
-      alert(`⚠️ Esta CURP ya está registrada.\n\nFolio asignado: ${data.folio}\n\nPuedes reimprimir tu PDF.`);
+      alert(`⚠️ Esta CURP ya está registrada.\n\nFolio asignado: ${data.folio}`);
       return;
     }
 
-    // Existe pero no completado
     window.location.href = `/formulario.html?curp=${curp}`;
 
   } catch (err) {
@@ -121,6 +101,7 @@ formCurp.addEventListener("submit", async (e) => {
   }
 });
 </script>
+
 
 
 
