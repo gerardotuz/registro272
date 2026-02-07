@@ -44,6 +44,21 @@
 <div id="alerta-servidor" style="display:none; background-color:#ffcdd2; color:#b71c1c; padding:10px; text-align:center; font-weight:bold;">
   ⚠️ El servidor está experimentando una alta demanda. Si no carga correctamente, intenta más tarde.
 </div>
+<script>
+document.getElementById("reimprimirForm").addEventListener("submit", function(e) {
+  e.preventDefault();
+
+  const folio = document.getElementById("folioReimpresion").value.trim();
+
+  if (!folio) {
+    alert("Ingresa un folio válido");
+    return;
+  }
+
+  // 🔥 Abrir directamente el endpoint que genera el PDF
+  window.open(`/api/reimprimir/${folio}`, "_blank");
+});
+</script>
 
 <script>
   async function verificarServidor() {
@@ -100,37 +115,7 @@ formCurp.addEventListener("submit", async (e) => {
     alert("Error al validar CURP");
   }
 });
-</script>
 
-<script>
-document.getElementById("reimprimirForm").addEventListener("submit", async (e) => {
-  e.preventDefault();
-
-  const folio = document.getElementById("folioReimpresion").value.trim().toUpperCase();
-
-  if (!folio) {
-    alert("Ingresa un folio válido");
-    return;
-  }
-
-  try {
-    const res = await fetch(`/api/reimprimir/${folio}`);
-
-    const data = await res.json();
-
-    if (!res.ok) {
-      alert(data.message || "Folio no encontrado");
-      return;
-    }
-
-    window.open(data.pdf, "_blank");
-
-  } catch (err) {
-    console.error(err);
-    alert("Error al generar PDF");
-  }
-});
-</script>
 
 
 
