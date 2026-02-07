@@ -161,12 +161,17 @@ y += GAP_Y;
 
 
  
-  y = drawBox('Primera Opción', generales.primera_opcion, marginX, y);
-  y = drawBox('Segunda Opción', generales.segunda_opcion, marginX + 260, y);
-  y += GAP_Y;
-  y = drawBox('Tercera Opción', generales.tercera_opcion, marginX, y);
-  y = drawBox('Cuarta Opción', generales.cuarta_opcion, marginX + 260, y);
-  y += GAP_Y;
+y = drawBox('Primera Opción', generales.primera_opcion, marginX, y);
+y = drawBox('Segunda Opción', generales.segunda_opcion, marginX + 260, y);
+y += GAP_Y;
+
+y = drawBox('Tercera Opción', generales.tercera_opcion, marginX, y);
+y = drawBox('Cuarta Opción', generales.cuarta_opcion, marginX + 260, y);
+y += GAP_Y;
+
+y = drawBox('Quinta Opción', generales.quinta_opcion, marginX, y);
+y += GAP_Y;
+
 
 
 
