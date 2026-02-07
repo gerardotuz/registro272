@@ -151,7 +151,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
-      alert(`✅ Registro exitoso\nFolio asignado: ${result.folio}`);
+      alert(`✅ Registro exitoso - Guarda tu Folio\nFolio asignado: ${result.folio}`);
 
       if (result.pdf_url) {
         window.open(result.pdf_url, "_blank");
