@@ -365,15 +365,4 @@ app.post("/api/registro-online", async (req,res)=>{
   }
 });
 
-router.get('/reimprimir/:folio', async (req, res) => {
-  const { folio } = req.params;
-
-  const alumno = await Alumno.findOne({ folio });
-
-  if (!alumno) {
-    return res.status(404).json({ message: "No encontrado" });
-  }
-
-  res.json({ pdf_url: `/pdfs/${folio}.pdf` });
-});
 
