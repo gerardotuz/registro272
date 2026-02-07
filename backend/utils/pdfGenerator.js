@@ -143,8 +143,10 @@ y += 30;
   y = drawBox('CURP', alumno.curp, marginX + 260, y);
   y += GAP_Y;
   
-  y = drawBox('Estado Civil', estadoCivilTexto, marginX, y);
+ y = drawBox('Estado Civil', estadoCivilTexto, marginX, y);
+y = drawBox('Nacionalidad', alumno.nacionalidad, marginX + 260, y);
 y += GAP_Y;
+
   y = drawBox('Fecha de Nacimiento', alumno.fecha_nacimiento, marginX, y);
   y = drawBox('Edad', alumno.edad, marginX + 260, y);
   y += GAP_Y;
@@ -154,9 +156,9 @@ y += GAP_Y;
   y = drawBox('Municipio de Nacimiento', municipio, marginX, y);
   y = drawBox('Ciudad de Nacimiento', ciudad, marginX + 260, y);
   y += GAP_Y;
-  y = drawBox('Nacionalidad', alumno.nacionalidad, marginX, y);
-  y = drawBox('País (si extranjero)', alumno.pais_extranjero, marginX + 260, y);
-  y += GAP_Y;
+ y = drawBox('País (si extranjero)', alumno.pais_extranjero, marginX, y);
+y += GAP_Y;
+
 
 
 
