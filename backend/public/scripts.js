@@ -118,7 +118,8 @@ document.addEventListener("DOMContentLoaded", () => {
       secundaria_origen: {
         nombre_secundaria: toUpper(formData.get("nombre_secundaria")),
         regimen: toUpper(formData.get("regimen")),
-        promedio_general: Number(formData.get("promedio_general")),
+         estudia: toUpper(formData.get("estudia")),
+       /* promedio_general: Number(formData.get("promedio_general")), */
         modalidad: toUpper(formData.get("modalidad"))
       },
 
