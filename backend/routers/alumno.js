@@ -359,7 +359,7 @@ router.get('/exportar-excel', async (req, res) => {
       // SECUNDARIA ORIGEN
       nombre_secundaria: al.secundaria_origen?.nombre_secundaria || '',
       regimen: al.secundaria_origen?.regimen || '',
-      promedio_general: al.secundaria_origen?.promedio_general || '',
+      estudias: al.secundaria_origen?.estudias || '',
       modalidad: al.secundaria_origen?.modalidad || '',
 
       // TUTOR RESPONSABLE
