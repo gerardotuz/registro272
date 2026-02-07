@@ -102,6 +102,52 @@ formCurp.addEventListener("submit", async (e) => {
 });
 </script>
 
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+
+  const formReimpresion = document.getElementById("reimprimirForm");
+  const inputFolio = document.getElementById("folioReimpresion");
+
+  if (!formReimpresion) {
+    console.error("No se encontró el formulario de reimpresión");
+    return;
+  }
+
+  formReimpresion.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const folio = inputFolio.value.trim().toUpperCase();
+
+    if (!folio) {
+      alert("Ingresa un folio válido");
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/reimprimir/${folio}`);
+
+      if (!res.ok) {
+        alert("Folio no encontrado");
+        return;
+      }
+
+      const data = await res.json();
+
+      if (data.pdf_url) {
+        window.open(data.pdf_url, "_blank");
+      } else {
+        alert("No se encontró el PDF");
+      }
+
+    } catch (error) {
+      console.error("Error al reimprimir:", error);
+      alert("Error al conectar con el servidor");
+    }
+
+  });
+
+});
+</script>
 
 
 
