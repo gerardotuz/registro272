@@ -283,4 +283,9 @@ label {
   box-sizing:border-box;
 }
 
+#validarCurpForm,
+#reimprimirForm{
+  max-width: 600px;
+  margin: 25px auto;
+}
 
