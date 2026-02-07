@@ -99,7 +99,7 @@ async function generarPDF(datos, nombreArchivo = 'formulario.pdf') {
   // ENCABEZADO
   if (fs.existsSync(logoPath)) {
     doc.image(logoPath, 50, y, { width: 500 });
-    y += 55;
+    y += 65;
   }
 // 📌 FOLIO DEL ALUMNO
 const folioBoxX = 340;
