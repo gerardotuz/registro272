@@ -54,6 +54,7 @@ document.addEventListener('DOMContentLoaded', () => {
       .then(res => res.json())
       .then(alumno => {
         document.getElementById('editId').value = alumno._id;
+        document.getElementById('folio').value = alumno.folio || '';
         const da = alumno.datos_alumno || {};
         document.getElementById('primer_apellido').value = da.primer_apellido || '';
         document.getElementById('segundo_apellido').value = da.segundo_apellido || '';
