@@ -148,15 +148,7 @@ y += GAP_Y;
   y += GAP_Y;
 
 
-  y = drawSectionTitle('Datos Generales', y);
-  y = drawBox('Colonia', generales.colonia, marginX, y);
-  y = drawBox('Domicilio', generales.domicilio, marginX + 260, y);
-  y += GAP_Y;
-  y = drawBox('Código Postal', generales.codigo_postal, marginX, y);
-  y = drawBox('Teléfono', generales.telefono_alumno, marginX + 260, y);
-  y += GAP_Y;
-  y = drawBox('Correo Electrónico', generales.correo_alumno, marginX, y, 500);
-  y += GAP_Y;
+
  
   y = drawBox('Primera Opción', generales.primera_opcion, marginX, y);
   y = drawBox('Segunda Opción', generales.segunda_opcion, marginX + 260, y);
@@ -166,12 +158,6 @@ y += GAP_Y;
   y += GAP_Y;
 
 
-  y = drawSectionTitle('Estado de Residencia', y);
-  y = drawBox('Estado (General)', lugarGeneral.estado, marginX, y);
-  y = drawBox('Municipio (General)', lugarGeneral.municipio, marginX + 260, y);
-  y += GAP_Y;
-  y = drawBox('Ciudad (General)', lugarGeneral.ciudad, marginX, y);
-  y += GAP_Y;
 
 
 
