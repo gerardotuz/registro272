@@ -118,7 +118,7 @@ document.addEventListener("DOMContentLoaded", () => {
       secundaria_origen: {
         nombre_secundaria: toUpper(formData.get("nombre_secundaria")),
         regimen: toUpper(formData.get("regimen")),
-         estudia: toUpper(formData.get("estudia")),
+         estudia: toUpper(formData.get("estudias")),
        /* promedio_general: Number(formData.get("promedio_general")), */
         modalidad: toUpper(formData.get("modalidad"))
       },
