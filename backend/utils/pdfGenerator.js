@@ -157,21 +157,17 @@ y += GAP_Y;
   y = drawBox('Ciudad de Nacimiento', ciudad, marginX + 260, y);
   y += GAP_Y;
  y = drawBox('País (si extranjero)', alumno.pais_extranjero, marginX, y);
+  y = drawBox('Primera Opción', generales.primera_opcion, marginX, + 260, y);
 y += GAP_Y;
 
+y = drawBox('Segunda Opción', generales.segunda_opcion, marginX , y);
+
+y = drawBox('Tercera Opción', generales.tercera_opcion, marginX, + 260, y);
+  y += GAP_Y;
+y = drawBox('Cuarta Opción', generales.cuarta_opcion, marginX , y);
 
 
-
- 
-y = drawBox('Primera Opción', generales.primera_opcion, marginX, y);
-y = drawBox('Segunda Opción', generales.segunda_opcion, marginX + 260, y);
-y += GAP_Y;
-
-y = drawBox('Tercera Opción', generales.tercera_opcion, marginX, y);
-y = drawBox('Cuarta Opción', generales.cuarta_opcion, marginX + 260, y);
-y += GAP_Y;
-
-y = drawBox('Quinta Opción', generales.quinta_opcion, marginX, y);
+y = drawBox('Quinta Opción', generales.quinta_opcion, marginX, + 260, y);
 y += GAP_Y;
 
 
