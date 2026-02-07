@@ -183,7 +183,7 @@ y += GAP_Y;
   y = drawBox('Nombre', secundaria.nombre_secundaria, marginX, y);
   y = drawBox('Régimen', secundaria.regimen, marginX + 260, y);
   y += GAP_Y;
-  y = drawBox('Promedio', secundaria.promedio_general, marginX, y);
+  y = drawBox('¿Estudias Actualmente?', secundaria.estudias, marginX, y);
   y = drawBox('Modalidad', secundaria.modalidad, marginX + 260, y);
   y += GAP_Y;
 
