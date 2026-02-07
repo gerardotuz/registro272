@@ -22,18 +22,16 @@
   </div>
 </nav>
 
-
-  <h3>Ingresa tu CURP</h3>
-
-  <input id="curpIndex" maxlength="18" placeholder="CURP" >
-
- <button type="button" id="btnValidarCurp">
-  Validar
-</button>
-
-
-
-
+<form id="validarCurpForm">
+  <input 
+    type="text" 
+    id="curpIndex" 
+    maxlength="18" 
+    placeholder="Ingresa tu CURP" 
+    required
+  />
+  <button type="submit">Validar CURP</button>
+</form>
 
 
 
@@ -76,25 +74,25 @@
 
 
   <script>
+const formCurp = document.getElementById("validarCurpForm");
 const curpInput = document.getElementById("curpIndex");
-const btn = document.getElementById("btnValidarCurp");
 
-curpInput.addEventListener("input",()=>{
+curpInput.addEventListener("input", () => {
   curpInput.value = curpInput.value.toUpperCase();
 });
 
-btn.addEventListener("click",()=>{
+formCurp.addEventListener("submit", (e) => {
+  e.preventDefault();
 
   const curp = curpInput.value.trim();
 
-  const regex=/^[A-Z]{4}[0-9]{6}[HM][A-Z]{5}[A-Z0-9]{2}$/;
+  const regex = /^[A-Z]{4}[0-9]{6}[HM][A-Z]{5}[A-Z0-9]{2}$/;
 
-  if(!regex.test(curp)){
+  if (!regex.test(curp)) {
     alert("CURP inválida");
     return;
   }
 
-  // enviar a formulario
   window.location.href = `/formulario.html?curp=${curp}`;
 });
 </script>
