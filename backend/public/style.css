@@ -288,4 +288,17 @@ label {
   max-width: 600px;
   margin: 25px auto;
 }
+/* ===== UNIFICAR ALTURA DE TODOS LOS CAMPOS ===== */
+
+input[type="text"],
+input[type="date"],
+input[type="number"],
+input[type="email"],
+select {
+  height: 48px;
+  padding: 10px 14px;
+  font-size: 15px;
+  border-radius: 8px;
+  box-sizing: border-box;
+}
 
