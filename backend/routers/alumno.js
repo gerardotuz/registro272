@@ -169,13 +169,21 @@ router.get('/reimprimir/:folio', async (req, res) => {
       return res.status(404).json({ message: 'Folio no encontrado' });
     }
 
-    res.json({ pdf_url: `/pdfs/${req.params.folio}.pdf` });
+    const datosAnidados = flattenToNested(alumno.toObject());
+    const nombreArchivo = `${alumno.folio}.pdf`;
+
+    const rutaPDF = await generarPDF(datosAnidados, nombreArchivo);
+
+    const fullPath = path.join(__dirname, '../public', rutaPDF);
+
+    res.sendFile(fullPath);
 
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Error interno' });
+    console.error("❌ Error al reimprimir:", err);
+    res.status(500).json({ message: 'Error interno al generar PDF' });
   }
 });
+
 
 
 // ---------- Dashboard: búsqueda ----------
