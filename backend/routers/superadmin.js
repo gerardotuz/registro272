@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const mongoose = require("mongoose");
-const alumnoSchema = require("../models/alumno").schema;
+const alumnoSchema = require("../models/Alumno").schema;
 
 const uri = process.env.MONGO_URI;
 
@@ -29,7 +29,11 @@ router.get("/totales", async (req, res) => {
   for (const db of planteles) {
     const conn = getConnection(db);
     const Alumno = conn.model("Alumno", alumnoSchema);
-    resultados[db] = await Alumno.countDocuments();
+
+    resultados[db] = await Alumno.countDocuments({
+      registro_completado: true
+    });
+
     await conn.close();
   }
 
@@ -49,7 +53,10 @@ router.get("/plantel/:db", async (req, res) => {
   const conn = getConnection(db);
   const Alumno = conn.model("Alumno", alumnoSchema);
 
-  const alumnos = await Alumno.find().lean();
+  const alumnos = await Alumno.find({
+    registro_completado: true
+  }).lean();
+
   await conn.close();
 
   res.json(alumnos);
@@ -59,23 +66,33 @@ router.get("/plantel/:db", async (req, res) => {
    BUSCAR CURP GLOBAL
 ================================ */
 router.get("/buscar/:curp", async (req, res) => {
-  const curp = req.params.curp;
+  const curp = req.params.curp.toUpperCase();
 
   for (const db of planteles) {
     const conn = getConnection(db);
     const Alumno = conn.model("Alumno", alumnoSchema);
 
-    const alumno = await Alumno.findOne({ curp });
+    const alumno = await Alumno.findOne({
+      "datos_alumno.curp": curp
+    }).lean();
+
     await conn.close();
 
     if (alumno) {
-      return res.json({ encontrado: true, plantel: db, alumno });
+      return res.json({
+        encontrado: true,
+        plantel: db,
+        alumno
+      });
     }
   }
 
   res.json({ encontrado: false });
 });
 
+/* ===============================
+   EXPORTAR GENERAL
+================================ */
 router.get("/exportar-general", async (req, res) => {
   const XLSX = require("xlsx");
   let datos = [];
@@ -84,13 +101,16 @@ router.get("/exportar-general", async (req, res) => {
     const conn = getConnection(db);
     const Alumno = conn.model("Alumno", alumnoSchema);
 
-    const alumnos = await Alumno.find().lean();
+    const alumnos = await Alumno.find({
+      registro_completado: true
+    }).lean();
 
     alumnos.forEach(a => {
       datos.push({
         plantel: db,
-        nombre: a.datos_alumno?.nombres,
-        curp: a.datos_alumno?.curp
+        nombre: a.datos_alumno?.nombres || "",
+        curp: a.datos_alumno?.curp || "",
+        folio: a.folio || ""
       });
     });
 
@@ -106,11 +126,12 @@ router.get("/exportar-general", async (req, res) => {
     bookType: "xlsx"
   });
 
-  res.setHeader("Content-Disposition", "attachment; filename=general.xlsx");
+  res.setHeader(
+    "Content-Disposition",
+    "attachment; filename=general.xlsx"
+  );
+
   res.send(buffer);
 });
 
-
 module.exports = router;
-
-
