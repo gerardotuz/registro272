@@ -40,14 +40,23 @@ app.use(express.urlencoded({ extended: true }));
 // Upload temporal
 const upload = multer({ dest: "uploads/" });
 
-/* =========================
-   CONEXIÓN MONGODB
-========================= */
+// ============================================
+// CONEXIONES MULTIPLES A LAS 8 BASES
+// ============================================
 
-mongoose.connect(process.env.MONGO_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-})
+const conexiones = {
+  registro272: mongoose.createConnection(process.env.MONGO_URI_272),
+  registro214: mongoose.createConnection(process.env.MONGO_URI_214),
+  registro253: mongoose.createConnection(process.env.MONGO_URI_253),
+  registro301: mongoose.createConnection(process.env.MONGO_URI_301),
+  registro309: mongoose.createConnection(process.env.MONGO_URI_309),
+  registro72: mongoose.createConnection(process.env.MONGO_URI_72),
+  registro28: mongoose.createConnection(process.env.MONGO_URI_28),
+  registro111: mongoose.createConnection(process.env.MONGO_URI_111),
+};
+
+module.exports.conexiones = conexiones;
+
 .then(() => console.log('✅ Conectado a MongoDB Atlas'))
 .catch(err => console.error('❌ Error en la conexión', err));
 
