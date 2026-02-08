@@ -20,7 +20,6 @@ const AlumnoSchema = require('../models/Alumno').schema;
 async function curpExisteEnOtroPlantel(curpActual, plantelActual) {
   for (const key in conexiones) {
 
-    // 🔒 Saltar el plantel actual
     if (key === plantelActual) continue;
 
     const AlumnoModel = conexiones[key].model("Alumno", AlumnoSchema);
@@ -36,6 +35,7 @@ async function curpExisteEnOtroPlantel(curpActual, plantelActual) {
 
   return { existe: false };
 }
+
 
 
 
@@ -114,24 +114,23 @@ async function generarFolio() {
 router.post('/guardar', async (req, res) => {
   try {
     const data = req.body;
-    // ================================
-// VALIDAR CURP GLOBAL
-// ================================
 
-const curp = req.body.datos_alumno?.curp?.toUpperCase();
+    const curp = data.datos_alumno?.curp?.toUpperCase();
 
-const resultado = await curpExisteEnOtroPlantel(curp, process.env.PLANTEL_ID);
+    const resultado = await curpExisteEnOtroPlantel(
+      curp,
+      process.env.PLANTEL_ID
+    );
 
-if (resultado.existe) {
-  return res.status(400).json({
-    error: `La CURP ya está registrada en el plantel ${resultado.plantel}`
-  });
-}
+    if (resultado.existe) {
+      return res.status(400).json({
+        error: `La CURP ya está registrada en el plantel ${resultado.plantel}`
+      });
+    }
 
-
-    // 🚫 PREVENIR DOBLE REGISTRO POR CURP
+    // 🚫 Validación local
     const existe = await Alumno.findOne({
-      "datos_alumno.curp": data.datos_alumno?.curp
+      "datos_alumno.curp": curp
     });
 
     if (existe?.registro_completado) {
@@ -140,17 +139,14 @@ if (resultado.existe) {
       });
     }
 
-    // 🎓 GENERAR FOLIO AQUÍ (SOLO UNA VEZ)
     const folio = await generarFolio();
     data.folio = folio;
 
-    // 🔒 MARCAR REGISTRO
     data.registro_completado = true;
     data.bloqueado = true;
 
     const actualizado = await Alumno.create(data);
 
-    // 📄 GENERAR PDF
     const datosAnidados = flattenToNested(actualizado.toObject());
     const nombreArchivo = `${folio}.pdf`;
     const pdfUrl = await generarPDF(datosAnidados, nombreArchivo);
@@ -166,6 +162,7 @@ if (resultado.existe) {
     res.status(500).json({ message: err.message });
   }
 });
+
 
 
 
