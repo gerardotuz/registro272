@@ -363,20 +363,3 @@ app.post("/api/registro-online", async (req,res)=>{
 });
 
 
-const mongoose = require("mongoose");
-
-const uri = process.env.MONGO_URI;
-
-const conexiones = {
-  registro214: mongoose.createConnection(uri, { dbName: "registro214" }),
-  registro253: mongoose.createConnection(uri, { dbName: "registro253" }),
-  registro272: mongoose.createConnection(uri, { dbName: "registro272" }),
-  registro301: mongoose.createConnection(uri, { dbName: "registro301" }),
-  registro309: mongoose.createConnection(uri, { dbName: "registro309" }),
-  registro311: mongoose.createConnection(uri, { dbName: "registro311" }),
-  registro72: mongoose.createConnection(uri, { dbName: "registro72" }),
-  registro28: mongoose.createConnection(uri, { dbName: "registro28" })
-};
-
-
-
