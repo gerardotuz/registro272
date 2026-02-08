@@ -1,60 +1,116 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const mongoose = require('mongoose');
-const { conexiones } = require('../server');
+const mongoose = require("mongoose");
+const alumnoSchema = require("../models/alumno").schema;
 
-const AlumnoSchema = require('../models/Alumno').schema;
+const uri = process.env.MONGO_URI;
 
-function getModelo(nombreConexion) {
-  return conexiones[nombreConexion].model('Alumno', AlumnoSchema);
+const planteles = [
+  "registro214",
+  "registro253",
+  "registro272",
+  "registro301",
+  "registro309",
+  "registro311",
+  "registro72",
+  "registro28"
+];
+
+function getConnection(dbName) {
+  return mongoose.createConnection(uri, { dbName });
 }
 
-// ===============================
-// TOTAL POR PLANTEL
-// ===============================
-router.get('/totales', async (req, res) => {
-  try {
-    const resultado = {};
+/* ===============================
+   TOTAL POR PLANTEL
+================================ */
+router.get("/totales", async (req, res) => {
+  const resultados = {};
 
-    for (const key in conexiones) {
-      const Modelo = getModelo(key);
-      const total = await Modelo.countDocuments({ registro_completado: true });
-      resultado[key] = total;
-    }
-
-    res.json(resultado);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
+  for (const db of planteles) {
+    const conn = getConnection(db);
+    const Alumno = conn.model("Alumno", alumnoSchema);
+    resultados[db] = await Alumno.countDocuments();
+    await conn.close();
   }
+
+  res.json(resultados);
 });
 
-// ===============================
-// BUSQUEDA GLOBAL POR CURP
-// ===============================
-router.get('/buscar/:curp', async (req, res) => {
-  try {
-    const curp = req.params.curp.toUpperCase();
-    const encontrado = [];
+/* ===============================
+   LISTADO POR PLANTEL
+================================ */
+router.get("/plantel/:db", async (req, res) => {
+  const db = req.params.db;
 
-    for (const key in conexiones) {
-      const Modelo = getModelo(key);
-      const alumno = await Modelo.findOne({
-        "datos_alumno.curp": curp
+  if (!planteles.includes(db)) {
+    return res.status(400).json({ error: "Plantel inválido" });
+  }
+
+  const conn = getConnection(db);
+  const Alumno = conn.model("Alumno", alumnoSchema);
+
+  const alumnos = await Alumno.find().lean();
+  await conn.close();
+
+  res.json(alumnos);
+});
+
+/* ===============================
+   BUSCAR CURP GLOBAL
+================================ */
+router.get("/buscar/:curp", async (req, res) => {
+  const curp = req.params.curp;
+
+  for (const db of planteles) {
+    const conn = getConnection(db);
+    const Alumno = conn.model("Alumno", alumnoSchema);
+
+    const alumno = await Alumno.findOne({ curp });
+    await conn.close();
+
+    if (alumno) {
+      return res.json({ encontrado: true, plantel: db, alumno });
+    }
+  }
+
+  res.json({ encontrado: false });
+});
+
+router.get("/exportar-general", async (req, res) => {
+  const XLSX = require("xlsx");
+  let datos = [];
+
+  for (const db of planteles) {
+    const conn = getConnection(db);
+    const Alumno = conn.model("Alumno", alumnoSchema);
+
+    const alumnos = await Alumno.find().lean();
+
+    alumnos.forEach(a => {
+      datos.push({
+        plantel: db,
+        nombre: a.datos_alumno?.nombres,
+        curp: a.datos_alumno?.curp
       });
+    });
 
-      if (alumno) {
-        encontrado.push({
-          plantel: key,
-          folio: alumno.folio,
-          nombre: alumno.datos_alumno.nombres
-        });
-      }
-    }
-
-    res.json(encontrado);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
+    await conn.close();
   }
+
+  const worksheet = XLSX.utils.json_to_sheet(datos);
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, "General");
+
+  const buffer = XLSX.write(workbook, {
+    type: "buffer",
+    bookType: "xlsx"
+  });
+
+  res.setHeader("Content-Disposition", "attachment; filename=general.xlsx");
+  res.send(buffer);
 });
+
 
 module.exports = router;
+
+
