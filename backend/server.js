@@ -69,6 +69,8 @@ app.use('/api', require('./routers/auth.js'));
 app.use('/api', require('./routers/grupo.js'));
 app.use('/api/dashboard', require('./routers/dashboard'));
 app.use('/api', require('./routers/padron.js'));
+app.use('/api/superadmin', require('./routers/superadmin'));
+
 
 
 /* =========================
