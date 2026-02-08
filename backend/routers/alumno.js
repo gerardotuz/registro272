@@ -9,6 +9,38 @@ const flattenToNested = require('../utils/flattenToNested');
 const path = require('path');
 const fs = require('fs');
 
+
+const { conexiones } = require('../server');
+const AlumnoSchema = require('../models/Alumno').schema;
+
+// ============================================
+// VALIDAR CURP GLOBAL ENTRE PLANTELES
+// ============================================
+
+async function curpExisteEnOtroPlantel(curpActual, plantelActual) {
+  for (const key in conexiones) {
+
+    // 🔒 Saltar el plantel actual
+    if (key === plantelActual) continue;
+
+    const AlumnoModel = conexiones[key].model("Alumno", AlumnoSchema);
+
+    const existe = await AlumnoModel.findOne({
+      "datos_alumno.curp": curpActual
+    });
+
+    if (existe) {
+      return { existe: true, plantel: key };
+    }
+  }
+
+  return { existe: false };
+}
+
+
+
+
+
 router.get('/ping', (req, res) => {
   res.status(200).json({ ok: true });
 });
@@ -82,6 +114,20 @@ async function generarFolio() {
 router.post('/guardar', async (req, res) => {
   try {
     const data = req.body;
+    // ================================
+// VALIDAR CURP GLOBAL
+// ================================
+
+const curp = req.body.datos_alumno?.curp?.toUpperCase();
+
+const resultado = await curpExisteEnOtroPlantel(curp, process.env.PLANTEL_ID);
+
+if (resultado.existe) {
+  return res.status(400).json({
+    error: `La CURP ya está registrada en el plantel ${resultado.plantel}`
+  });
+}
+
 
     // 🚫 PREVENIR DOBLE REGISTRO POR CURP
     const existe = await Alumno.findOne({
