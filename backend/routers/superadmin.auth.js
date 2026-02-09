@@ -9,9 +9,11 @@ router.post("/login", (req, res) => {
   const { username, password } = req.body;
 
   if (username === SUPER_USER && password === SUPER_PASS) {
-    const token = jwt.sign({ role: "superadmin" }, process.env.JWT_SECRET, {
-      expiresIn: "8h"
-    });
+    const token = jwt.sign(
+      { role: "superadmin" },
+      process.env.JWT_SECRET,
+      { expiresIn: "8h" }
+    );
 
     return res.json({ token });
   }
@@ -20,4 +22,5 @@ router.post("/login", (req, res) => {
 });
 
 module.exports = router;
+
 
