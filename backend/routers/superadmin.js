@@ -181,4 +181,35 @@ router.get("/exportar", verificarToken, async (req, res) => {
   res.send(buffer);
 });
 
+router.get("/estadisticas", verificarToken, async (req, res) => {
+  let totalGeneral = 0;
+  let lider = { plantel: null, total: 0 };
+  const detalle = {};
+
+  for (const db of planteles) {
+    const conn = getConnection(db);
+    const Alumno = conn.model("Alumno", alumnoSchema);
+
+    const total = await Alumno.countDocuments({
+      registro_completado: true
+    });
+
+    detalle[db] = total;
+    totalGeneral += total;
+
+    if (total > lider.total) {
+      lider = { plantel: db, total };
+    }
+
+    await conn.close();
+  }
+
+  res.json({
+    totalGeneral,
+    lider,
+    detalle
+  });
+});
+
+
 module.exports = router;
