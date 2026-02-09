@@ -13,14 +13,7 @@ const fs = require('fs');
 const { conexiones } = require('../server');
 const AlumnoSchema = require('../models/Alumno').schema;
 
-const Config = mongoose.model("Config");
 
-const config = await Config.findOne();
-if (config?.bloqueo_registro) {
-  return res.status(403).json({
-    error: "El registro está temporalmente deshabilitado por administración estatal"
-  });
-}
 
 
 // ============================================
@@ -123,10 +116,30 @@ async function generarFolio() {
 
 router.post('/guardar', async (req, res) => {
   try {
+
+    // ==========================================
+    // 🔒 BLOQUEO GLOBAL ESTATAL
+    // ==========================================
+    const config = await Config.findOne();
+    if (config?.bloqueo_registro) {
+      return res.status(403).json({
+        error: "El registro está temporalmente deshabilitado por administración estatal"
+      });
+    }
+
     const data = req.body;
 
     const curp = data.datos_alumno?.curp?.toUpperCase();
 
+    if (!curp) {
+      return res.status(400).json({
+        error: "CURP no válida"
+      });
+    }
+
+    // ==========================================
+    // 🔎 VALIDACIÓN GLOBAL ENTRE PLANTELES
+    // ==========================================
     const resultado = await curpExisteEnOtroPlantel(
       curp,
       process.env.PLANTEL_ID
@@ -138,7 +151,9 @@ router.post('/guardar', async (req, res) => {
       });
     }
 
-    // 🚫 Validación local
+    // ==========================================
+    // 🚫 VALIDACIÓN LOCAL
+    // ==========================================
     const existe = await Alumno.findOne({
       "datos_alumno.curp": curp
     });
@@ -149,18 +164,30 @@ router.post('/guardar', async (req, res) => {
       });
     }
 
+    // ==========================================
+    // 🔢 GENERAR FOLIO
+    // ==========================================
     const folio = await generarFolio();
     data.folio = folio;
 
     data.registro_completado = true;
     data.bloqueado = true;
 
+    // ==========================================
+    // 💾 GUARDAR EN BD
+    // ==========================================
     const actualizado = await Alumno.create(data);
 
+    // ==========================================
+    // 📄 GENERAR PDF
+    // ==========================================
     const datosAnidados = flattenToNested(actualizado.toObject());
     const nombreArchivo = `${folio}.pdf`;
     const pdfUrl = await generarPDF(datosAnidados, nombreArchivo);
 
+    // ==========================================
+    // ✅ RESPUESTA FINAL
+    // ==========================================
     res.status(200).json({
       message: "Registro exitoso",
       folio,
@@ -168,7 +195,7 @@ router.post('/guardar', async (req, res) => {
     });
 
   } catch (err) {
-    console.error(err);
+    console.error("❌ ERROR EN /guardar:", err);
     res.status(500).json({ message: err.message });
   }
 });
