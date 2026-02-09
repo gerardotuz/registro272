@@ -22,10 +22,8 @@ const AlumnoSchema = require('../models/Alumno').schema;
 // VALIDAR CURP GLOBAL ENTRE PLANTELES
 // ============================================
 
-async function curpExisteEnOtroPlantel(curpActual, plantelActual) {
+async function curpExisteEnOtroPlantel(curpActual) {
   for (const key in conexiones) {
-
-    if (key === plantelActual) continue;
 
     const AlumnoModel = conexiones[key].model("Alumno", AlumnoSchema);
 
@@ -40,6 +38,7 @@ async function curpExisteEnOtroPlantel(curpActual, plantelActual) {
 
   return { existe: false };
 }
+
 
 
 
@@ -142,10 +141,8 @@ router.post('/guardar', async (req, res) => {
     // ==========================================
     // 🔎 VALIDACIÓN GLOBAL ENTRE PLANTELES
     // ==========================================
-    const resultado = await curpExisteEnOtroPlantel(
-      curp,
-      process.env.PLANTEL_ID
-    );
+   const resultado = await curpExisteEnOtroPlantel(curp);
+
 
     if (resultado.existe) {
       return res.status(400).json({
