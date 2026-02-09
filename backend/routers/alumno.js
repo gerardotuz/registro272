@@ -18,7 +18,6 @@ const AlumnoSchema = require('../models/Alumno').schema;
 
 
 
-// ============================================
 // VALIDAR CURP GLOBAL ENTRE PLANTELES
 // ============================================
 async function curpExisteEnOtroPlantel(curpActual) {
