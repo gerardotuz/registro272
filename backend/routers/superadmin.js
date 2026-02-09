@@ -6,6 +6,13 @@ const XLSX = require("xlsx");
 
 const alumnoSchema = require("../models/Alumno").schema;
 
+const ConfigSchema = new mongoose.Schema({
+  bloqueo_registro: { type: Boolean, default: false }
+});
+
+const Config = mongoose.model("Config", ConfigSchema);
+
+
 /* =========================================
    CONFIGURACIÓN
 ========================================= */
@@ -209,6 +216,25 @@ router.get("/estadisticas", verificarToken, async (req, res) => {
     lider,
     detalle
   });
+});
+
+router.post("/bloqueo", verificarToken, async (req, res) => {
+  const { estado } = req.body; // true o false
+
+  let config = await Config.findOne();
+
+  if (!config) {
+    config = new Config();
+  }
+
+  config.bloqueo_registro = estado;
+  await config.save();
+
+  res.json({ bloqueo: estado });
+});
+router.get("/bloqueo", async (req, res) => {
+  const config = await Config.findOne();
+  res.json({ bloqueo: config?.bloqueo_registro || false });
 });
 
 
