@@ -2,23 +2,15 @@
 const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
-const Config = require('../models/config.model');
 const multer = require('multer');
 const xlsx = require('xlsx');
 const generarPDF = require('../utils/pdfGenerator');
 const flattenToNested = require('../utils/flattenToNested');
 const path = require('path');
 const fs = require('fs');
-const AlumnoSchema = require('../models/Alumno').schema;
-
-function getAlumnoModel() {
-  const plantel = process.env.PLANTEL_ID;
-  return conexiones[plantel].model("Alumno", AlumnoSchema);
-}
-
-
 
 const { conexiones } = require('../server');
+const Config = require('../models/config.model');
 const AlumnoSchema = require('../models/Alumno').schema;
 
 
