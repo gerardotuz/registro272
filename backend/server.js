@@ -44,6 +44,12 @@ const upload = multer({ dest: "uploads/" });
 // CONEXIONES MULTIPLES A LAS 8 BASES
 // ============================================
 
+// Conexión principal (para el servidor actual)
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => console.log("✅ Conectado a MongoDB principal"))
+  .catch(err => console.error("❌ Error en la conexión principal:", err));
+
+// Conexiones a los 8 planteles
 const conexiones = {
   registro272: mongoose.createConnection(process.env.MONGO_URI_272),
   registro214: mongoose.createConnection(process.env.MONGO_URI_214),
@@ -55,10 +61,19 @@ const conexiones = {
   registro111: mongoose.createConnection(process.env.MONGO_URI_111),
 };
 
+// Mostrar estado de conexiones secundarias
+Object.entries(conexiones).forEach(([key, conn]) => {
+  conn.on("connected", () => {
+    console.log(`✅ Conectado a ${key}`);
+  });
+
+  conn.on("error", (err) => {
+    console.error(`❌ Error en conexión ${key}:`, err.message);
+  });
+});
+
 module.exports.conexiones = conexiones;
 
-.then(() => console.log('✅ Conectado a MongoDB Atlas'))
-.catch(err => console.error('❌ Error en la conexión', err));
 
 /* =========================
    RUTAS API EXISTENTES
