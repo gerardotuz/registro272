@@ -1,0 +1,88 @@
+const token = localStorage.getItem("superadmin_token");
+
+if (!token) {
+  window.location.href = "/superadmin-login.html";
+}
+
+async function cargarEstadisticas() {
+  const res = await fetch("/api/superadmin/estadisticas", {
+    headers: {
+      Authorization: "Bearer " + token
+    }
+  });
+
+  const data = await res.json();
+
+  document.getElementById("totalGeneral").textContent = data.totalGeneral;
+  document.getElementById("liderPlantel").textContent =
+    data.lider.plantel + " (" + data.lider.total + ")";
+
+  const tbody = document.querySelector("#tablaPlanteles tbody");
+  tbody.innerHTML = "";
+
+  const labels = [];
+  const valores = [];
+
+  for (const plantel in data.detalle) {
+    labels.push(plantel);
+    valores.push(data.detalle[plantel]);
+
+    tbody.innerHTML += `
+      <tr>
+        <td>${plantel}</td>
+        <td>${data.detalle[plantel]}</td>
+      </tr>
+    `;
+  }
+
+  crearGrafica(labels, valores);
+}
+
+function crearGrafica(labels, valores) {
+  const ctx = document.getElementById("graficaPlanteles");
+
+  new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels,
+      datasets: [{
+        label: "Registros por Plantel",
+        data: valores,
+        backgroundColor: "#7a1e2c"
+      }]
+    }
+  });
+}
+
+async function cargarBloqueo() {
+  const res = await fetch("/api/superadmin/bloqueo");
+  const data = await res.json();
+
+  const switchEl = document.getElementById("bloqueoSwitch");
+  const texto = document.getElementById("estadoTexto");
+
+  switchEl.checked = data.bloqueo;
+
+  texto.textContent = data.bloqueo ? "CERRADO" : "ABIERTO";
+}
+
+document.getElementById("bloqueoSwitch").addEventListener("change", async (e) => {
+  await fetch("/api/superadmin/bloqueo", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + token
+    },
+    body: JSON.stringify({ estado: e.target.checked })
+  });
+
+  cargarBloqueo();
+});
+
+document.getElementById("logoutBtn").addEventListener("click", () => {
+  localStorage.removeItem("superadmin_token");
+  window.location.href = "/superadmin-login.html";
+});
+
+cargarEstadisticas();
+cargarBloqueo();
