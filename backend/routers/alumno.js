@@ -239,6 +239,17 @@ router.post('/cargar-excel', upload.single('archivo'), async (req, res) => {
 
 router.get('/reimprimir/:folio', async (req, res) => {
   try {
+
+    const plantelActual = process.env.PLANTEL_ID;
+
+    if (!plantelActual) {
+      return res.status(500).json({
+        message: "PLANTEL_ID no configurado"
+      });
+    }
+
+    const Alumno = conexiones[plantelActual].model("Alumno", AlumnoSchema);
+
     const alumno = await Alumno.findOne({ folio: req.params.folio });
 
     if (!alumno) {
@@ -259,6 +270,7 @@ router.get('/reimprimir/:folio', async (req, res) => {
     res.status(500).json({ message: 'Error interno al generar PDF' });
   }
 });
+
 
 
 
