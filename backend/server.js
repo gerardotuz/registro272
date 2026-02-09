@@ -354,6 +354,9 @@ app.use('/pdfs', express.static(path.join(__dirname, 'public/pdfs')));
 app.get('/dashboard', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'views', 'dashboard.html'));
 });
+app.get('/superadmin-register', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'views', 'superadmin-register.html'));
+});
 
 /* =========================
    FALLBACK SPA
