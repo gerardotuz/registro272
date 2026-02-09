@@ -10,7 +10,8 @@ const ConfigSchema = new mongoose.Schema({
   bloqueo_registro: { type: Boolean, default: false }
 });
 
-const Config = mongoose.model("Config", ConfigSchema);
+const Config = require("../models/config.model");
+
 
 
 /* =========================================
