@@ -44,35 +44,35 @@ const upload = multer({ dest: "uploads/" });
 // CONEXIONES MULTIPLES A LAS 8 BASES
 // ============================================
 
-const uri = process.env.MONGO_URI_CLUSTER; // una sola URI del cluster
+// Conexión principal (para el servidor actual)
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => console.log("✅ Conectado a MongoDB principal"))
+  .catch(err => console.error("❌ Error en la conexión principal:", err));
 
-const planteles = [
-  "registro214",
-  "registro253",
-  "registro272",
-  "registro301",
-  "registro309",
-  "registro72",
-  "registro28",
-  "registro111"
-];
+// Conexiones a los 8 planteles
+const conexiones = {
+  registro272: mongoose.createConnection(process.env.MONGO_URI_272),
+  registro214: mongoose.createConnection(process.env.MONGO_URI_214),
+  registro253: mongoose.createConnection(process.env.MONGO_URI_253),
+  registro301: mongoose.createConnection(process.env.MONGO_URI_301),
+  registro309: mongoose.createConnection(process.env.MONGO_URI_309),
+  registro72: mongoose.createConnection(process.env.MONGO_URI_72),
+  registro28: mongoose.createConnection(process.env.MONGO_URI_28),
+  registro111: mongoose.createConnection(process.env.MONGO_URI_111),
+};
 
-const conexiones = {};
-
-planteles.forEach(db => {
-  conexiones[db] = mongoose.createConnection(uri, { dbName: db });
-
-  conexiones[db].on("connected", () => {
-    console.log(`✅ Conectado a ${db}`);
+// Mostrar estado de conexiones secundarias
+Object.entries(conexiones).forEach(([key, conn]) => {
+  conn.on("connected", () => {
+    console.log(`✅ Conectado a ${key}`);
   });
 
-  conexiones[db].on("error", (err) => {
-    console.error(`❌ Error en ${db}:`, err.message);
+  conn.on("error", (err) => {
+    console.error(`❌ Error en conexión ${key}:`, err.message);
   });
 });
 
 module.exports.conexiones = conexiones;
-
 
 
 /* =========================
@@ -393,5 +393,4 @@ app.post("/api/registro-online", async (req,res)=>{
     res.status(500).json({ ok:false });
   }
 });
-
 
