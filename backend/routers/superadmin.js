@@ -1,7 +1,14 @@
 const express = require("express");
 const router = express.Router();
 const mongoose = require("mongoose");
+const jwt = require("jsonwebtoken");
+const XLSX = require("xlsx");
+
 const alumnoSchema = require("../models/Alumno").schema;
+
+/* =========================================
+   CONFIGURACIÓN
+========================================= */
 
 const uri = process.env.MONGO_URI;
 
@@ -16,23 +23,51 @@ const planteles = [
   "registro28"
 ];
 
+/* =========================================
+   MIDDLEWARE SUPERADMIN
+========================================= */
+
+function verificarToken(req, res, next) {
+  const authHeader = req.headers.authorization;
+
+  if (!authHeader) {
+    return res.status(401).json({ error: "Token requerido" });
+  }
+
+  const token = authHeader.split(" ")[1];
+
+  try {
+    jwt.verify(token, process.env.JWT_SECRET);
+    next();
+  } catch (err) {
+    return res.status(403).json({ error: "Token inválido" });
+  }
+}
+
+/* =========================================
+   CONEXIÓN DINÁMICA
+========================================= */
+
 function getConnection(dbName) {
   return mongoose.createConnection(uri, { dbName });
 }
 
-/* ===============================
-   TOTAL POR PLANTEL
-================================ */
-router.get("/totales", async (req, res) => {
+/* =========================================
+   📊 RESUMEN GENERAL (para tarjetas)
+========================================= */
+
+router.get("/resumen", verificarToken, async (req, res) => {
   const resultados = {};
 
   for (const db of planteles) {
     const conn = getConnection(db);
     const Alumno = conn.model("Alumno", alumnoSchema);
 
-    resultados[db] = await Alumno.countDocuments({
+    const total = await Alumno.countDocuments({
       registro_completado: true
     });
+
+    resultados[db] = total;
 
     await conn.close();
   }
@@ -40,10 +75,11 @@ router.get("/totales", async (req, res) => {
   res.json(resultados);
 });
 
-/* ===============================
-   LISTADO POR PLANTEL
-================================ */
-router.get("/plantel/:db", async (req, res) => {
+/* =========================================
+   📋 LISTADO POR PLANTEL
+========================================= */
+
+router.get("/plantel/:db", verificarToken, async (req, res) => {
   const db = req.params.db;
 
   if (!planteles.includes(db)) {
@@ -62,39 +98,44 @@ router.get("/plantel/:db", async (req, res) => {
   res.json(alumnos);
 });
 
-/* ===============================
-   BUSCAR CURP GLOBAL
-================================ */
-router.get("/buscar/:curp", async (req, res) => {
+/* =========================================
+   🔎 BUSCAR CURP GLOBAL
+========================================= */
+
+router.get("/buscar/:curp", verificarToken, async (req, res) => {
   const curp = req.params.curp.toUpperCase();
+  const resultados = [];
 
   for (const db of planteles) {
     const conn = getConnection(db);
     const Alumno = conn.model("Alumno", alumnoSchema);
 
     const alumno = await Alumno.findOne({
-      "datos_alumno.curp": curp
+      "datos_alumno.curp": curp,
+      registro_completado: true
     }).lean();
 
     await conn.close();
 
     if (alumno) {
-      return res.json({
-        encontrado: true,
+      resultados.push({
         plantel: db,
-        alumno
+        nombres: alumno.datos_alumno?.nombres || "",
+        primer_apellido: alumno.datos_alumno?.primer_apellido || "",
+        curp: alumno.datos_alumno?.curp || "",
+        folio: alumno.folio || ""
       });
     }
   }
 
-  res.json({ encontrado: false });
+  res.json(resultados);
 });
 
-/* ===============================
-   EXPORTAR GENERAL
-================================ */
-router.get("/exportar-general", async (req, res) => {
-  const XLSX = require("xlsx");
+/* =========================================
+   📤 EXPORTAR EXCEL GENERAL
+========================================= */
+
+router.get("/exportar", verificarToken, async (req, res) => {
   let datos = [];
 
   for (const db of planteles) {
@@ -109,6 +150,7 @@ router.get("/exportar-general", async (req, res) => {
       datos.push({
         plantel: db,
         nombre: a.datos_alumno?.nombres || "",
+        apellido: a.datos_alumno?.primer_apellido || "",
         curp: a.datos_alumno?.curp || "",
         folio: a.folio || ""
       });
@@ -128,7 +170,12 @@ router.get("/exportar-general", async (req, res) => {
 
   res.setHeader(
     "Content-Disposition",
-    "attachment; filename=general.xlsx"
+    "attachment; filename=general-planteles.xlsx"
+  );
+
+  res.setHeader(
+    "Content-Type",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
   );
 
   res.send(buffer);
