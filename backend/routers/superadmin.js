@@ -26,7 +26,7 @@ const planteles = [
   "registro272",
   "registro301",
   "registro309",
-  "registro111",
+  "registro311",
   "registro72",
   "registro28"
 ];
