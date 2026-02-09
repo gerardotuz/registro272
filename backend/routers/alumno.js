@@ -13,6 +13,16 @@ const fs = require('fs');
 const { conexiones } = require('../server');
 const AlumnoSchema = require('../models/Alumno').schema;
 
+const Config = mongoose.model("Config");
+
+const config = await Config.findOne();
+if (config?.bloqueo_registro) {
+  return res.status(403).json({
+    error: "El registro está temporalmente deshabilitado por administración estatal"
+  });
+}
+
+
 // ============================================
 // VALIDAR CURP GLOBAL ENTRE PLANTELES
 // ============================================
