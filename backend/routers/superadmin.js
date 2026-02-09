@@ -21,7 +21,7 @@ const Config = require("../models/config.model");
 const uri = process.env.MONGO_URI;
 
 const planteles = [
-  "registro14",
+  "registro214",
   "registro253",
   "registro272",
   "registro301",
