@@ -1,1 +1,33 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Dashboard General</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+<nav class="topbar">
+  <h2>Dashboard General CBTIS</h2>
+  <button onclick="logout()">Cerrar Sesión</button>
+</nav>
+
+<div class="container">
+
+  <div class="cards" id="totales"></div>
+
+  <div class="search-box">
+    <input type="text" id="curpBuscar" placeholder="Buscar CURP Global">
+    <button onclick="buscar()">Buscar</button>
+  </div>
+
+  <div id="resultadoBusqueda"></div>
+
+  <button onclick="exportar()">Exportar Excel General</button>
+
+</div>
+
+<script src="/js/superadmin.js"></script>
+</body>
+</html>
 
