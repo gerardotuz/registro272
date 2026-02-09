@@ -21,14 +21,14 @@ const Config = require("../models/config.model");
 const uri = process.env.MONGO_URI;
 
 const planteles = [
-  "Cbtis 214",
-  "Cbtis 253",
-  "Cbtis 272",
-  "Cbtis 301",
-  "Cbtis 309",
-  "Cbtis 111",
-  "Cbtis 72",
-  "Cbtis 28"
+  "registro14",
+  "registro253",
+  "registro272",
+  "registro301",
+  "registro309",
+  "registro311",
+  "registro72",
+  "registro28"
 ];
 
 /* =========================================
