@@ -3,13 +3,19 @@ const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
 const Config = require('../models/config.model');
-const Alumno = require('../models/Alumno');
 const multer = require('multer');
 const xlsx = require('xlsx');
 const generarPDF = require('../utils/pdfGenerator');
 const flattenToNested = require('../utils/flattenToNested');
 const path = require('path');
 const fs = require('fs');
+const AlumnoSchema = require('../models/Alumno').schema;
+
+function getAlumnoModel() {
+  const plantel = process.env.PLANTEL_ID;
+  return conexiones[plantel].model("Alumno", AlumnoSchema);
+}
+
 
 
 const { conexiones } = require('../server');
@@ -115,9 +121,22 @@ async function generarFolio() {
 router.post('/guardar', async (req, res) => {
   try {
 
-    // ==========================================
-    // 🔒 BLOQUEO GLOBAL ESTATAL
-    // ==========================================
+    const plantelActual = process.env.PLANTEL_ID;
+
+    if (!plantelActual) {
+      return res.status(500).json({
+        error: "PLANTEL_ID no configurado en variables de entorno"
+      });
+    }
+
+    // 🔹 Modelo dinámico por plantel
+    const Alumno = conexiones[plantelActual].model("Alumno", AlumnoSchema);
+
+    // 🔹 Modelo Config dinámico
+    const ConfigSchema = require('../models/config.model').schema;
+    const Config = conexiones[plantelActual].model("Config", ConfigSchema);
+
+    // 🔒 1️⃣ Validar bloqueo estatal
     const config = await Config.findOne();
     if (config?.bloqueo_registro) {
       return res.status(403).json({
@@ -126,20 +145,19 @@ router.post('/guardar', async (req, res) => {
     }
 
     const data = req.body;
-
     const curp = data.datos_alumno?.curp?.toUpperCase();
 
     if (!curp) {
       return res.status(400).json({
-        error: "CURP no válida"
+        error: "CURP inválida"
       });
     }
 
-    // ==========================================
-    // 🔎 VALIDACIÓN GLOBAL ENTRE PLANTELES
-    // ==========================================
-   const resultado = await curpExisteEnOtroPlantel(curp);
-
+    // 🌎 2️⃣ Validación global entre planteles
+    const resultado = await curpExisteEnOtroPlantel(
+      curp,
+      plantelActual
+    );
 
     if (resultado.existe) {
       return res.status(400).json({
@@ -147,44 +165,33 @@ router.post('/guardar', async (req, res) => {
       });
     }
 
-    // ==========================================
-    // 🚫 VALIDACIÓN LOCAL
-    // ==========================================
-    const existe = await Alumno.findOne({
+    // 🏫 3️⃣ Validación local en el mismo plantel
+    const existeLocal = await Alumno.findOne({
       "datos_alumno.curp": curp
     });
 
-    if (existe?.registro_completado) {
+    if (existeLocal?.registro_completado) {
       return res.status(400).json({
-        message: "Este alumno ya completó su registro"
+        message: "Este alumno ya completó su registro en este plantel"
       });
     }
 
-    // ==========================================
-    // 🔢 GENERAR FOLIO
-    // ==========================================
+    // 🔢 4️⃣ Generar folio
     const folio = await generarFolio();
     data.folio = folio;
 
     data.registro_completado = true;
     data.bloqueado = true;
 
-    // ==========================================
-    // 💾 GUARDAR EN BD
-    // ==========================================
-    const actualizado = await Alumno.create(data);
+    // 💾 5️⃣ Guardar alumno
+    const nuevoAlumno = await Alumno.create(data);
 
-    // ==========================================
-    // 📄 GENERAR PDF
-    // ==========================================
-    const datosAnidados = flattenToNested(actualizado.toObject());
+    // 📄 6️⃣ Generar PDF
+    const datosAnidados = flattenToNested(nuevoAlumno.toObject());
     const nombreArchivo = `${folio}.pdf`;
     const pdfUrl = await generarPDF(datosAnidados, nombreArchivo);
 
-    // ==========================================
-    // ✅ RESPUESTA FINAL
-    // ==========================================
-    res.status(200).json({
+    return res.status(200).json({
       message: "Registro exitoso",
       folio,
       pdf_url: pdfUrl
@@ -192,10 +199,11 @@ router.post('/guardar', async (req, res) => {
 
   } catch (err) {
     console.error("❌ ERROR EN /guardar:", err);
-    res.status(500).json({ message: err.message });
+    return res.status(500).json({
+      error: "Error interno del servidor"
+    });
   }
 });
-
 
 
 
