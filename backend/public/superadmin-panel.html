@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Panel SuperAdmin</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+<h1>Panel General de Planteles</h1>
+
+<button onclick="logout()">Cerrar sesión</button>
+
+<script>
+function logout(){
+  localStorage.removeItem("superadmin_token");
+  window.location.href = "/superadmin-login.html";
+}
+
+if(!localStorage.getItem("superadmin_token")){
+  window.location.href = "/superadmin-login.html";
+}
+</script>
+
+</body>
+</html>
