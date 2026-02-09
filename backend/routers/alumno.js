@@ -1,6 +1,8 @@
 // backend/routers/alumno.js
 const express = require('express');
 const router = express.Router();
+const mongoose = require('mongoose');
+const Config = require('../models/config.model');
 const Alumno = require('../models/Alumno');
 const multer = require('multer');
 const xlsx = require('xlsx');
