@@ -1,1 +1,109 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Registrar Super Admin</title>
+  <link rel="stylesheet" href="/style.css">
+  <style>
+    body {
+      background: #f4f6f9;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      font-family: Arial, sans-serif;
+    }
+
+    .card {
+      background: white;
+      padding: 40px;
+      border-radius: 10px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      width: 400px;
+      text-align: center;
+    }
+
+    h2 {
+      margin-bottom: 20px;
+      color: #7A1E2C;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 15px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 14px;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      background: #7A1E2C;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 15px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #5e1723;
+    }
+
+    .warning {
+      margin-top: 20px;
+      font-size: 12px;
+      color: #c62828;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <h2>Registrar Super Administrador</h2>
+
+    <form id="registerForm">
+      <input type="text" id="username" placeholder="Usuario" required>
+      <input type="password" id="password" placeholder="Contraseña" required>
+      <button type="submit">Crear Super Admin</button>
+    </form>
+
+    <p class="warning">
+      ⚠️ Esta página debe usarse solo una vez y después eliminarse.
+    </p>
+  </div>
+
+  <script>
+    document.getElementById('registerForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+
+      try {
+        const res = await fetch('/api/superadmin/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+          alert('✅ Super Administrador creado correctamente');
+        } else {
+          alert(data.error || data.message || 'Error al registrar');
+        }
+
+      } catch (err) {
+        console.error(err);
+        alert('❌ Error de conexión con el servidor');
+      }
+    });
+  </script>
+
+</body>
+</html>
 
