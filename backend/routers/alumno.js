@@ -2,6 +2,8 @@
 const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
+const Config = require('../models/config.model');
+const Alumno = require('../models/Alumno');
 const multer = require('multer');
 const xlsx = require('xlsx');
 const generarPDF = require('../utils/pdfGenerator');
@@ -9,21 +11,19 @@ const flattenToNested = require('../utils/flattenToNested');
 const path = require('path');
 const fs = require('fs');
 
+
 const { conexiones } = require('../server');
-const Config = require('../models/config.model');
 const AlumnoSchema = require('../models/Alumno').schema;
 
 
 
 
+// ============================================
 // VALIDAR CURP GLOBAL ENTRE PLANTELES
 // ============================================
+
 async function curpExisteEnOtroPlantel(curpActual) {
-  const plantelActual = process.env.PLANTEL_ID;
-
   for (const key in conexiones) {
-
-    if (key === plantelActual) continue;
 
     const AlumnoModel = conexiones[key].model("Alumno", AlumnoSchema);
 
@@ -38,6 +38,11 @@ async function curpExisteEnOtroPlantel(curpActual) {
 
   return { existe: false };
 }
+
+
+
+
+
 
 
 router.get('/ping', (req, res) => {
@@ -113,22 +118,9 @@ async function generarFolio() {
 router.post('/guardar', async (req, res) => {
   try {
 
-    const plantelActual = process.env.PLANTEL_ID;
-
-    if (!plantelActual) {
-      return res.status(500).json({
-        error: "PLANTEL_ID no configurado en variables de entorno"
-      });
-    }
-
-    // 🔹 Modelo dinámico por plantel
-    const Alumno = conexiones[plantelActual].model("Alumno", AlumnoSchema);
-
-    // 🔹 Modelo Config dinámico
-    const ConfigSchema = require('../models/config.model').schema;
-    const Config = conexiones[plantelActual].model("Config", ConfigSchema);
-
-    // 🔒 1️⃣ Validar bloqueo estatal
+    // ==========================================
+    // 🔒 BLOQUEO GLOBAL ESTATAL
+    // ==========================================
     const config = await Config.findOne();
     if (config?.bloqueo_registro) {
       return res.status(403).json({
@@ -137,19 +129,20 @@ router.post('/guardar', async (req, res) => {
     }
 
     const data = req.body;
+
     const curp = data.datos_alumno?.curp?.toUpperCase();
 
     if (!curp) {
       return res.status(400).json({
-        error: "CURP inválida"
+        error: "CURP no válida"
       });
     }
 
-    // 🌎 2️⃣ Validación global entre planteles
-    const resultado = await curpExisteEnOtroPlantel(
-      curp,
-      plantelActual
-    );
+    // ==========================================
+    // 🔎 VALIDACIÓN GLOBAL ENTRE PLANTELES
+    // ==========================================
+   const resultado = await curpExisteEnOtroPlantel(curp);
+
 
     if (resultado.existe) {
       return res.status(400).json({
@@ -157,33 +150,44 @@ router.post('/guardar', async (req, res) => {
       });
     }
 
-    // 🏫 3️⃣ Validación local en el mismo plantel
-    const existeLocal = await Alumno.findOne({
+    // ==========================================
+    // 🚫 VALIDACIÓN LOCAL
+    // ==========================================
+    const existe = await Alumno.findOne({
       "datos_alumno.curp": curp
     });
 
-    if (existeLocal?.registro_completado) {
+    if (existe?.registro_completado) {
       return res.status(400).json({
-        message: "Este alumno ya completó su registro en este plantel"
+        message: "Este alumno ya completó su registro"
       });
     }
 
-    // 🔢 4️⃣ Generar folio
+    // ==========================================
+    // 🔢 GENERAR FOLIO
+    // ==========================================
     const folio = await generarFolio();
     data.folio = folio;
 
     data.registro_completado = true;
     data.bloqueado = true;
 
-    // 💾 5️⃣ Guardar alumno
-    const nuevoAlumno = await Alumno.create(data);
+    // ==========================================
+    // 💾 GUARDAR EN BD
+    // ==========================================
+    const actualizado = await Alumno.create(data);
 
-    // 📄 6️⃣ Generar PDF
-    const datosAnidados = flattenToNested(nuevoAlumno.toObject());
+    // ==========================================
+    // 📄 GENERAR PDF
+    // ==========================================
+    const datosAnidados = flattenToNested(actualizado.toObject());
     const nombreArchivo = `${folio}.pdf`;
     const pdfUrl = await generarPDF(datosAnidados, nombreArchivo);
 
-    return res.status(200).json({
+    // ==========================================
+    // ✅ RESPUESTA FINAL
+    // ==========================================
+    res.status(200).json({
       message: "Registro exitoso",
       folio,
       pdf_url: pdfUrl
@@ -191,11 +195,10 @@ router.post('/guardar', async (req, res) => {
 
   } catch (err) {
     console.error("❌ ERROR EN /guardar:", err);
-    return res.status(500).json({
-      error: "Error interno del servidor"
-    });
+    res.status(500).json({ message: err.message });
   }
 });
+
 
 
 
@@ -239,17 +242,6 @@ router.post('/cargar-excel', upload.single('archivo'), async (req, res) => {
 
 router.get('/reimprimir/:folio', async (req, res) => {
   try {
-
-    const plantelActual = process.env.PLANTEL_ID;
-
-    if (!plantelActual) {
-      return res.status(500).json({
-        message: "PLANTEL_ID no configurado"
-      });
-    }
-
-    const Alumno = conexiones[plantelActual].model("Alumno", AlumnoSchema);
-
     const alumno = await Alumno.findOne({ folio: req.params.folio });
 
     if (!alumno) {
@@ -270,7 +262,6 @@ router.get('/reimprimir/:folio', async (req, res) => {
     res.status(500).json({ message: 'Error interno al generar PDF' });
   }
 });
-
 
 
 
