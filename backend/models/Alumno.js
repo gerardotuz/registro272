@@ -27,6 +27,10 @@ bloqueado: {
   required: true,
   unique: true
 },
+    fecha_registro: {
+  type: Date,
+  default: Date.now
+}
 
     fecha_nacimiento: String,
     edad: Number,
@@ -108,5 +112,8 @@ bloqueado: {
   timestamps: true,
   collection: 'alumnos'
 });
+
+
+
 
 module.exports = mongoose.model('Alumno', alumnoSchema);
