@@ -3,17 +3,17 @@ const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
 const Config = require('../models/config.model');
-const Alumno = require('../models/Alumno');
 const multer = require('multer');
 const xlsx = require('xlsx');
 const generarPDF = require('../utils/pdfGenerator');
 const flattenToNested = require('../utils/flattenToNested');
 const path = require('path');
 const fs = require('fs');
-
-
-const { conexiones } = require('../server');
 const AlumnoSchema = require('../models/Alumno').schema;
+const { conexiones } = require('../server');
+
+// 👇 usar SIEMPRE la conexión del plantel actual
+const Alumno = conexiones.registro272.model("Alumno", AlumnoSchema);
 
 
 // ============================================
@@ -22,9 +22,9 @@ const AlumnoSchema = require('../models/Alumno').schema;
 
 async function curpExisteEnOtroPlantel(curpActual) {
 
-  const baseActual = Alumno.db.name; // Detecta base activa real
-
   for (const key in conexiones) {
+
+    if (key === "registro272") continue;
 
     const AlumnoModel = conexiones[key].model("Alumno", AlumnoSchema);
 
@@ -33,7 +33,7 @@ async function curpExisteEnOtroPlantel(curpActual) {
       registro_completado: true
     }).lean();
 
-    if (alumno && key !== baseActual) {
+    if (alumno) {
       return {
         existe: true,
         plantel: key,
@@ -44,9 +44,6 @@ async function curpExisteEnOtroPlantel(curpActual) {
 
   return { existe: false };
 }
-
-
-
 
 
 
