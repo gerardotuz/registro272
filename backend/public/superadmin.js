@@ -114,6 +114,56 @@ async function eliminarRegistro(db, folio) {
   cargarRepetidas();
 }
 
+async function cargarMatriz() {
+  const res = await fetch("/api/superadmin/curps-matriz", {
+    headers: { Authorization: "Bearer " + token }
+  });
+
+  const result = await res.json();
+
+  const planteles = result.planteles;
+  const data = result.data;
+
+  const thead = document.querySelector("#tablaMatriz thead");
+  const tbody = document.querySelector("#tablaMatriz tbody");
+
+  thead.innerHTML = "";
+  tbody.innerHTML = "";
+
+  // Construir encabezados
+  let headerRow = "<tr><th>CURP</th>";
+
+  planteles.forEach(p => {
+    headerRow += `<th>${p}</th>`;
+  });
+
+  headerRow += "</tr>";
+  thead.innerHTML = headerRow;
+
+  // Construir filas
+  data.forEach(item => {
+    let row = `<tr><td>${item.curp}</td>`;
+
+    planteles.forEach(p => {
+      if (item[p]) {
+        row += `
+          <td>
+            Folio: ${item[p].folio}<br>
+            Fecha: ${new Date(item[p].fecha).toLocaleString()}<br>
+            <button onclick="eliminarRegistro('${p}','${item[p].folio}')">
+              Eliminar
+            </button>
+          </td>
+        `;
+      } else {
+        row += `<td>-</td>`;
+      }
+    });
+
+    row += "</tr>";
+    tbody.innerHTML += row;
+  });
+}
 
 
 async function cargarBloqueo() {
