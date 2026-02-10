@@ -319,5 +319,62 @@ router.delete("/eliminar/:db/:folio", verificarToken, async (req, res) => {
 });
 
 
+/* =========================================
+   📊 MATRIZ DE CURPS REPETIDAS POR PLANTEL
+========================================= */
+
+router.get("/curps-matriz", verificarToken, async (req, res) => {
+  const mapaCurps = {};
+
+  for (const db of planteles) {
+    const conn = getConnection(db);
+    const Alumno = conn.model("Alumno", alumnoSchema);
+
+    const alumnos = await Alumno.find(
+      { registro_completado: true },
+      {
+        "datos_alumno.curp": 1,
+        folio: 1,
+        fecha_registro: 1
+      }
+    ).lean();
+
+    for (const alumno of alumnos) {
+      const curp = alumno?.datos_alumno?.curp;
+      if (!curp) continue;
+
+      if (!mapaCurps[curp]) {
+        mapaCurps[curp] = {};
+      }
+
+      mapaCurps[curp][db] = {
+        folio: alumno.folio,
+        fecha: alumno.fecha_registro || alumno._id.getTimestamp()
+      };
+    }
+
+    await conn.close();
+  }
+
+  const resultado = [];
+
+  for (const curp in mapaCurps) {
+    const registros = Object.keys(mapaCurps[curp]);
+
+    if (registros.length > 1) {
+      resultado.push({
+        curp,
+        ...mapaCurps[curp]
+      });
+    }
+  }
+
+  res.json({
+    planteles,
+    data: resultado
+  });
+});
+
+
 
 module.exports = router;
