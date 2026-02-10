@@ -10,7 +10,12 @@ registro_completado: { type: Boolean, default: false },
 bloqueado: {
 
   type: Boolean,
+  fecha_registro: {
+  type: Date,
+  default: Date.now
+},
   default: false
+  
 },
 
   datos_alumno: {
@@ -27,10 +32,7 @@ bloqueado: {
   required: true,
   unique: true
 },
-    fecha_registro: {
-  type: Date,
-  default: Date.now
-}
+    
 
     fecha_nacimiento: String,
     edad: Number,
