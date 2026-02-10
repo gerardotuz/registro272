@@ -67,23 +67,41 @@ async function cargarRepetidas() {
   tbody.innerHTML = "";
 
   data.forEach(item => {
-    item.registros.forEach(reg => {
+    item.registros.forEach((reg, index) => {
+
+      const conservar = index === 0 ? "✔ Conservar" : "";
+
       tbody.innerHTML += `
         <tr>
           <td>${item.curp}</td>
           <td>${item.apariciones}</td>
           <td>${reg.plantel}</td>
           <td>${reg.folio}</td>
+          <td>${new Date(reg.fecha).toLocaleString()}</td>
           <td>
-            <button onclick="eliminarRegistro('${reg.plantel}','${reg.folio}')">
-              Eliminar
-            </button>
+            ${index !== 0 ? 
+              `<button onclick="eliminarRegistro('${reg.plantel}','${reg.folio}')">
+                Eliminar
+              </button>` 
+              : conservar}
           </td>
         </tr>
       `;
     });
   });
 }
+
+async function eliminarRegistro(db, folio) {
+  if (!confirm("¿Seguro que deseas eliminar este registro?")) return;
+
+  await fetch(`/api/superadmin/eliminar/${db}/${folio}`, {
+    method: "DELETE",
+    headers: { Authorization: "Bearer " + token }
+  });
+
+  cargarRepetidas();
+}
+
 
 async function eliminarRegistro(db, folio) {
   if (!confirm("¿Seguro que deseas eliminar este registro?")) return;
