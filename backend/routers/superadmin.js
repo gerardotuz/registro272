@@ -240,7 +240,7 @@ router.get("/bloqueo", async (req, res) => {
 
 
 /* =========================================
-   🔁 CURPS REPETIDAS EN TODO EL CLÚSTER
+   🔁 CURPS REPETIDAS CON FECHA
 ========================================= */
 
 router.get("/curps-repetidas", verificarToken, async (req, res) => {
@@ -252,7 +252,11 @@ router.get("/curps-repetidas", verificarToken, async (req, res) => {
 
     const alumnos = await Alumno.find(
       { registro_completado: true },
-      { "datos_alumno.curp": 1, folio: 1 }
+      {
+        "datos_alumno.curp": 1,
+        folio: 1,
+        fecha_registro: 1
+      }
     ).lean();
 
     for (const alumno of alumnos) {
@@ -265,7 +269,8 @@ router.get("/curps-repetidas", verificarToken, async (req, res) => {
 
       mapaCurps[curp].push({
         plantel: db,
-        folio: alumno.folio
+        folio: alumno.folio,
+        fecha: alumno.fecha_registro || alumno._id.getTimestamp()
       });
     }
 
@@ -276,6 +281,12 @@ router.get("/curps-repetidas", verificarToken, async (req, res) => {
 
   for (const curp in mapaCurps) {
     if (mapaCurps[curp].length > 1) {
+
+      // Ordenar por fecha (más antiguo primero)
+      mapaCurps[curp].sort(
+        (a, b) => new Date(a.fecha) - new Date(b.fecha)
+      );
+
       repetidas.push({
         curp,
         apariciones: mapaCurps[curp].length,
@@ -287,52 +298,26 @@ router.get("/curps-repetidas", verificarToken, async (req, res) => {
   res.json(repetidas);
 });
 /* =========================================
-   🔁 CURPS REPETIDAS EN TODO EL CLÚSTER
+   🗑 ELIMINAR REGISTRO ESPECÍFICO
 ========================================= */
 
-router.get("/curps-repetidas", verificarToken, async (req, res) => {
-  const mapaCurps = {};
+router.delete("/eliminar/:db/:folio", verificarToken, async (req, res) => {
+  const { db, folio } = req.params;
 
-  for (const db of planteles) {
-    const conn = getConnection(db);
-    const Alumno = conn.model("Alumno", alumnoSchema);
-
-    const alumnos = await Alumno.find(
-      { registro_completado: true },
-      { "datos_alumno.curp": 1, folio: 1 }
-    ).lean();
-
-    for (const alumno of alumnos) {
-      const curp = alumno?.datos_alumno?.curp;
-      if (!curp) continue;
-
-      if (!mapaCurps[curp]) {
-        mapaCurps[curp] = [];
-      }
-
-      mapaCurps[curp].push({
-        plantel: db,
-        folio: alumno.folio
-      });
-    }
-
-    await conn.close();
+  if (!planteles.includes(db)) {
+    return res.status(400).json({ error: "Plantel inválido" });
   }
 
-  const repetidas = [];
+  const conn = getConnection(db);
+  const Alumno = conn.model("Alumno", alumnoSchema);
 
-  for (const curp in mapaCurps) {
-    if (mapaCurps[curp].length > 1) {
-      repetidas.push({
-        curp,
-        apariciones: mapaCurps[curp].length,
-        registros: mapaCurps[curp]
-      });
-    }
-  }
+  await Alumno.deleteOne({ folio });
 
-  res.json(repetidas);
+  await conn.close();
+
+  res.json({ mensaje: "Registro eliminado correctamente" });
 });
+
 
 
 module.exports = router;
