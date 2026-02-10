@@ -239,4 +239,100 @@ router.get("/bloqueo", async (req, res) => {
 });
 
 
+/* =========================================
+   🔁 CURPS REPETIDAS EN TODO EL CLÚSTER
+========================================= */
+
+router.get("/curps-repetidas", verificarToken, async (req, res) => {
+  const mapaCurps = {};
+
+  for (const db of planteles) {
+    const conn = getConnection(db);
+    const Alumno = conn.model("Alumno", alumnoSchema);
+
+    const alumnos = await Alumno.find(
+      { registro_completado: true },
+      { "datos_alumno.curp": 1, folio: 1 }
+    ).lean();
+
+    for (const alumno of alumnos) {
+      const curp = alumno?.datos_alumno?.curp;
+      if (!curp) continue;
+
+      if (!mapaCurps[curp]) {
+        mapaCurps[curp] = [];
+      }
+
+      mapaCurps[curp].push({
+        plantel: db,
+        folio: alumno.folio
+      });
+    }
+
+    await conn.close();
+  }
+
+  const repetidas = [];
+
+  for (const curp in mapaCurps) {
+    if (mapaCurps[curp].length > 1) {
+      repetidas.push({
+        curp,
+        apariciones: mapaCurps[curp].length,
+        registros: mapaCurps[curp]
+      });
+    }
+  }
+
+  res.json(repetidas);
+});
+/* =========================================
+   🔁 CURPS REPETIDAS EN TODO EL CLÚSTER
+========================================= */
+
+router.get("/curps-repetidas", verificarToken, async (req, res) => {
+  const mapaCurps = {};
+
+  for (const db of planteles) {
+    const conn = getConnection(db);
+    const Alumno = conn.model("Alumno", alumnoSchema);
+
+    const alumnos = await Alumno.find(
+      { registro_completado: true },
+      { "datos_alumno.curp": 1, folio: 1 }
+    ).lean();
+
+    for (const alumno of alumnos) {
+      const curp = alumno?.datos_alumno?.curp;
+      if (!curp) continue;
+
+      if (!mapaCurps[curp]) {
+        mapaCurps[curp] = [];
+      }
+
+      mapaCurps[curp].push({
+        plantel: db,
+        folio: alumno.folio
+      });
+    }
+
+    await conn.close();
+  }
+
+  const repetidas = [];
+
+  for (const curp in mapaCurps) {
+    if (mapaCurps[curp].length > 1) {
+      repetidas.push({
+        curp,
+        apariciones: mapaCurps[curp].length,
+        registros: mapaCurps[curp]
+      });
+    }
+  }
+
+  res.json(repetidas);
+});
+
+
 module.exports = router;
