@@ -54,6 +54,50 @@ function crearGrafica(labels, valores) {
   });
 }
 
+
+
+
+async function cargarRepetidas() {
+  const res = await fetch("/api/superadmin/curps-repetidas", {
+    headers: { Authorization: "Bearer " + token }
+  });
+
+  const data = await res.json();
+  const tbody = document.querySelector("#tablaRepetidas tbody");
+  tbody.innerHTML = "";
+
+  data.forEach(item => {
+    item.registros.forEach(reg => {
+      tbody.innerHTML += `
+        <tr>
+          <td>${item.curp}</td>
+          <td>${item.apariciones}</td>
+          <td>${reg.plantel}</td>
+          <td>${reg.folio}</td>
+          <td>
+            <button onclick="eliminarRegistro('${reg.plantel}','${reg.folio}')">
+              Eliminar
+            </button>
+          </td>
+        </tr>
+      `;
+    });
+  });
+}
+
+async function eliminarRegistro(db, folio) {
+  if (!confirm("¿Seguro que deseas eliminar este registro?")) return;
+
+  await fetch(`/api/superadmin/eliminar/${db}/${folio}`, {
+    method: "DELETE",
+    headers: { Authorization: "Bearer " + token }
+  });
+
+  cargarRepetidas();
+}
+
+
+
 async function cargarBloqueo() {
   const res = await fetch("/api/superadmin/bloqueo");
   const data = await res.json();
