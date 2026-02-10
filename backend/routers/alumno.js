@@ -481,4 +481,54 @@ router.get('/exportar-excel', async (req, res) => {
   }
 });
 
+
+
+// ============================================
+// 🧪 DIAGNÓSTICO GLOBAL DE CURP (TEMPORAL)
+// ============================================
+
+router.get('/debug/curp-global/:curp', async (req, res) => {
+  try {
+
+    const curp = req.params.curp.toUpperCase();
+    const resultados = [];
+
+    for (const key in conexiones) {
+
+      try {
+        const AlumnoModel = conexiones[key].model("Alumno", AlumnoSchema);
+
+        const alumno = await AlumnoModel.findOne({
+          "datos_alumno.curp": curp
+        }).lean();
+
+        resultados.push({
+          plantel: key,
+          encontrado: alumno ? true : false,
+          folio: alumno?.folio || null,
+          registro_completado: alumno?.registro_completado ?? null
+        });
+
+      } catch (err) {
+        resultados.push({
+          plantel: key,
+          error: err.message
+        });
+      }
+    }
+
+    res.json({
+      curp_consultada: curp,
+      base_actual: Alumno.db.name,
+      resultados
+    });
+
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+
+
+
 module.exports = router;
