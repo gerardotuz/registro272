@@ -46,20 +46,6 @@ async function curpExisteEnOtroPlantel(curpActual) {
 }
 
 
-  // 🔴 Si existe en otro plantel diferente al actual → bloquear
-  const duplicado = encontrados.find(e => e.plantel !== plantelActual);
-
-  if (duplicado) {
-    return {
-      existe: true,
-      plantel: duplicado.plantel,
-      folio: duplicado.folio
-    };
-  }
-
-  return { existe: false };
-}
-
 
 
 
