@@ -23,23 +23,32 @@ const AlumnoSchema = require('../models/Alumno').schema;
 // ============================================
 
 async function curpExisteEnOtroPlantel(curpActual) {
+
+  const plantelActual = process.env.PLANTEL_ID; // ejemplo: registro272
+
   for (const key in conexiones) {
+
+    // 🔴 Ignorar el plantel actual
+    if (key === plantelActual) continue;
 
     const AlumnoModel = conexiones[key].model("Alumno", AlumnoSchema);
 
     const existe = await AlumnoModel.findOne({
-      "datos_alumno.curp": curpActual
-    });
+      "datos_alumno.curp": curpActual,
+      registro_completado: true
+    }).lean();
 
     if (existe) {
-      return { existe: true, plantel: key };
+      return {
+        existe: true,
+        plantel: key,
+        folio: existe.folio
+      };
     }
   }
 
   return { existe: false };
 }
-
-
 
 
 
@@ -141,14 +150,14 @@ router.post('/guardar', async (req, res) => {
     // ==========================================
     // 🔎 VALIDACIÓN GLOBAL ENTRE PLANTELES
     // ==========================================
-   const resultado = await curpExisteEnOtroPlantel(curp);
+  const resultado = await curpExisteEnOtroPlantel(curp);
 
+if (resultado.existe) {
+  return res.status(400).json({
+    error: `La CURP ya está registrada en el plantel ${resultado.plantel} con folio ${resultado.folio}`
+  });
+}
 
-    if (resultado.existe) {
-      return res.status(400).json({
-        error: `La CURP ya está registrada en el plantel ${resultado.plantel}`
-      });
-    }
 
     // ==========================================
     // 🚫 VALIDACIÓN LOCAL
