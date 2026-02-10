@@ -17,14 +17,12 @@ const AlumnoSchema = require('../models/Alumno').schema;
 
 
 // ============================================
-// VALIDAR CURP GLOBAL ENTRE PLANTELES
+// VALIDAR CURP GLOBAL ENTRE PLANTELES (BLINDADO)
 // ============================================
 
 async function curpExisteEnOtroPlantel(curpActual) {
 
-  const plantelActual = process.env.PLANTEL_ID; // registro272
-
-  const encontrados = [];
+  const baseActual = Alumno.db.name; // Detecta base activa real
 
   for (const key in conexiones) {
 
@@ -35,13 +33,18 @@ async function curpExisteEnOtroPlantel(curpActual) {
       registro_completado: true
     }).lean();
 
-    if (alumno) {
-      encontrados.push({
+    if (alumno && key !== baseActual) {
+      return {
+        existe: true,
         plantel: key,
         folio: alumno.folio
-      });
+      };
     }
   }
+
+  return { existe: false };
+}
+
 
   // 🔴 Si existe en otro plantel diferente al actual → bloquear
   const duplicado = encontrados.find(e => e.plantel !== plantelActual);
