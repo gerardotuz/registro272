@@ -16,39 +16,47 @@ const { conexiones } = require('../server');
 const AlumnoSchema = require('../models/Alumno').schema;
 
 
-
-
 // ============================================
 // VALIDAR CURP GLOBAL ENTRE PLANTELES
 // ============================================
 
 async function curpExisteEnOtroPlantel(curpActual) {
 
-  const plantelActual = process.env.PLANTEL_ID; // ejemplo: registro272
+  const plantelActual = process.env.PLANTEL_ID; // registro272
+
+  const encontrados = [];
 
   for (const key in conexiones) {
 
-    // 🔴 Ignorar el plantel actual
-    if (key === plantelActual) continue;
-
     const AlumnoModel = conexiones[key].model("Alumno", AlumnoSchema);
 
-    const existe = await AlumnoModel.findOne({
+    const alumno = await AlumnoModel.findOne({
       "datos_alumno.curp": curpActual,
       registro_completado: true
     }).lean();
 
-    if (existe) {
-      return {
-        existe: true,
+    if (alumno) {
+      encontrados.push({
         plantel: key,
-        folio: existe.folio
-      };
+        folio: alumno.folio
+      });
     }
+  }
+
+  // 🔴 Si existe en otro plantel diferente al actual → bloquear
+  const duplicado = encontrados.find(e => e.plantel !== plantelActual);
+
+  if (duplicado) {
+    return {
+      existe: true,
+      plantel: duplicado.plantel,
+      folio: duplicado.folio
+    };
   }
 
   return { existe: false };
 }
+
 
 
 
@@ -150,13 +158,14 @@ router.post('/guardar', async (req, res) => {
     // ==========================================
     // 🔎 VALIDACIÓN GLOBAL ENTRE PLANTELES
     // ==========================================
-  const resultado = await curpExisteEnOtroPlantel(curp);
+const resultado = await curpExisteEnOtroPlantel(curp);
 
 if (resultado.existe) {
   return res.status(400).json({
     error: `La CURP ya está registrada en el plantel ${resultado.plantel} con folio ${resultado.folio}`
   });
 }
+
 
 
     // ==========================================
