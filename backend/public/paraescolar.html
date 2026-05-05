@@ -98,10 +98,7 @@ async function buscarAlumno() {
     return;
   }
 
-  if (!/^[0-9]{8,20}$/.test(control)) {
-    alert("⚠️ El número de control debe ser numérico.");
-    return;
-  }
+ 
 
   try {
     const resp = await fetch(`/api/paraescolar/${control}`);
