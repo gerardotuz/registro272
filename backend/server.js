@@ -4,10 +4,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const path = require('path');
-const Paraescolar = conexiones.registro272.model(
-  "Paraescolar",
-  require("./models/paraescolar.model").schema
-);
+const Paraescolar = require("./models/paraescolar.model");
 const multer = require("multer");
 const XLSX = require("xlsx");
 
