@@ -524,7 +524,6 @@ router.get('/debug/curp-global/:curp', async (req, res) => {
   }
 });
 
-
 router.post('/guardar-registro', async (req, res) => {
   try {
     const data = req.body;
