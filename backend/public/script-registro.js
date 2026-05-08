@@ -30,7 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
         entrega_diagnostico: formData.get('entrega_diagnostico'), detalle_enfermedad: formData.get('detalle_enfermedad'),
         responsable_emergencia: { nombre: formData.get('responsable_emergencia_nombre'), telefono: formData.get('responsable_emergencia_telefono'), parentesco: formData.get('responsable_emergencia_parentesco') },
         carta_poder: formData.get('carta_poder'),
-        primera_opcion: formData.get('primera_opcion'), segunda_opcion: formData.get('segunda_opcion'), tercera_opcion: formData.get('tercera_opcion'), cuarta_opcion: formData.get('cuarta_opcion'),
+        primera_opcion: formData.get('primera_opcion'), segunda_opcion: formData.get('segunda_opcion'), tercera_opcion: formData.get('tercera_opcion'), cuarta_opcion: formData.get('cuarta_opcion'), quinta_opcion: formData.get('quinta_opcion'),
         estado_nacimiento_general: clave('estado_nacimiento_general'), municipio_nacimiento_general: clave('municipio_nacimiento_general'), ciudad_nacimiento_general: clave('ciudad_nacimiento_general')
       },
       datos_medicos: {
