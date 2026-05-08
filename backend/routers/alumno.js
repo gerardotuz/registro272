@@ -525,10 +525,6 @@ router.get('/debug/curp-global/:curp', async (req, res) => {
 });
 
 
-
-
-module.exports = router;
-
 router.post('/guardar-registro', async (req, res) => {
   try {
     const data = req.body;
@@ -549,6 +545,12 @@ router.post('/guardar-registro', async (req, res) => {
     const estadoCivilTxt = data.datos_alumno?.estado_civil?.toLowerCase();
     upperCaseData.datos_alumno.estado_civil = estadoCivilMap[estadoCivilTxt] || parseInt(data.datos_alumno?.estado_civil) || 0;
 
+    upperCaseData.datos_generales.primera_opcion = data.datos_generales.primera_opcion || '';
+    upperCaseData.datos_generales.segunda_opcion = data.datos_generales.segunda_opcion || '';
+    upperCaseData.datos_generales.tercera_opcion = data.datos_generales.tercera_opcion || '';
+    upperCaseData.datos_generales.cuarta_opcion = data.datos_generales.cuarta_opcion || '';
+    upperCaseData.datos_generales.quinta_opcion = data.datos_generales.quinta_opcion || '';
+
     upperCaseData.registro_completado = true;
 
     await Alumno.findOneAndUpdate({ folio: data.folio }, upperCaseData, { upsert: true });
@@ -566,3 +568,7 @@ router.post('/guardar-registro', async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 });
+
+module.exports = router;
+
+
