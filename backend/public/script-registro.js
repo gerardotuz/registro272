@@ -2,7 +2,11 @@ const BASE_URL = window.location.origin.includes('localhost')
   ? 'http://localhost:3001'
   : 'https://registro272.onrender.com';
 
+const OPCIONES_CARRERA = ['A Y B', 'PROGRAMACIÓN', 'GESTIÓN E INNOVACIÓN TURÍSTICA', 'VENTAS', 'ROBOTICA'];
+const IDS_OPCIONES = ['primera_opcion', 'segunda_opcion', 'tercera_opcion', 'cuarta_opcion', 'quinta_opcion'];
+
 document.addEventListener('DOMContentLoaded', () => {
+  inicializarOpcionesCarrera();
   cargarCatalogo();
   cargarCatalogoGeneral();
   consultarFolioYAutocompletar();
@@ -53,8 +57,67 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 
+function inicializarOpcionesCarrera() {
+  const selects = IDS_OPCIONES.map((id) => document.getElementById(id)).filter(Boolean);
+  if (!selects.length) return;
+
+  const placeholderById = {
+    primera_opcion: 'cuál fue tu 1era opción',
+    segunda_opcion: 'cuál fue tu 2da opción',
+    tercera_opcion: 'cuál fue tu 3era opción',
+    cuarta_opcion: 'cuál fue tu 4ta opción',
+    quinta_opcion: 'cuál fue tu 5ta opción'
+  };
+
+  const refrescar = () => {
+    const seleccionadas = selects.map((s) => s.value).filter(Boolean);
+    selects.forEach((select) => {
+      const actual = select.value;
+      select.innerHTML = '';
+
+      const placeholder = document.createElement('option');
+      placeholder.value = '';
+      placeholder.textContent = placeholderById[select.id] || 'Selecciona opción';
+      select.appendChild(placeholder);
+
+      OPCIONES_CARRERA.forEach((opcion) => {
+        if (!seleccionadas.includes(opcion) || opcion === actual) {
+          const opt = document.createElement('option');
+          opt.value = opcion;
+          opt.textContent = opcion;
+          if (opcion === actual) opt.selected = true;
+          select.appendChild(opt);
+        }
+      });
+    });
+  };
+
+  selects.forEach((s) => s.addEventListener('change', refrescar));
+  refrescar();
+}
+
 function deshabilitarFormulario() { Array.from(document.getElementById('registroForm').elements).forEach(el => el.disabled = true); }
-function cargarCatalogo() { fetch('/catalogo.json').then(r => r.json()).then(d => cargarSelectores('nacimiento', d)); }
-function cargarCatalogoGeneral() { fetch('/catalogo.json').then(r => r.json()).then(d => cargarSelectores('nacimiento_general', d)); }
+
+async function obtenerCatalogo() {
+  const rutas = ['/data/catalogo.json', '/catalogo.json'];
+  for (const ruta of rutas) {
+    try {
+      const res = await fetch(ruta);
+      if (res.ok) return await res.json();
+    } catch (err) {
+      console.warn(`No se pudo cargar catálogo desde ${ruta}`, err);
+    }
+  }
+  throw new Error('No se pudo cargar catalogo.json');
+}
+
+function cargarCatalogo() {
+  obtenerCatalogo().then((d) => cargarSelectores('nacimiento', d)).catch((err) => console.error('❌ Error cargando catálogo:', err));
+}
+
+function cargarCatalogoGeneral() {
+  obtenerCatalogo().then((d) => cargarSelectores('nacimiento_general', d)).catch((err) => console.error('❌ Error cargando catálogo general:', err));
+}
+
 function cargarSelectores(s, data) { const e = document.getElementById(`estado_${s}`), m = document.getElementById(`municipio_${s}`), c = document.getElementById(`ciudad_${s}`); if (!e || !m || !c) return; e.innerHTML='<option value="">-- Selecciona Estado --</option>'; m.innerHTML='<option value="">-- Selecciona Municipio --</option>'; c.innerHTML='<option value="">-- Selecciona Ciudad --</option>'; data.forEach(est=>{const o=document.createElement('option'); o.value=est.nombre; o.dataset.clave=est.clave; o.dataset.municipios=JSON.stringify(est.municipios||[]); o.textContent=est.nombre; e.appendChild(o);}); e.addEventListener('change',()=>{const ms=JSON.parse(e.selectedOptions[0]?.dataset.municipios||'[]'); m.innerHTML='<option value="">-- Selecciona Municipio --</option>'; c.innerHTML='<option value="">-- Selecciona Ciudad --</option>'; ms.forEach(mu=>{const o=document.createElement('option'); o.value=mu.nombre;o.dataset.clave=mu.clave;o.dataset.localidades=JSON.stringify(mu.localidades||[]);o.textContent=mu.nombre;m.appendChild(o);}); m.disabled=!ms.length;c.disabled=true;}); m.addEventListener('change',()=>{const ls=JSON.parse(m.selectedOptions[0]?.dataset.localidades||'[]'); c.innerHTML='<option value="">-- Selecciona Ciudad --</option>'; ls.forEach(l=>{const o=document.createElement('option'); o.value=l.nombre;o.dataset.clave=l.clave;o.textContent=l.nombre;c.appendChild(o);}); c.disabled=!ls.length;}); }
 function consultarFolioYAutocompletar(){const datos=JSON.parse(localStorage.getItem('datosPrecargados')); if(!datos) return; const set=(name,v)=>{const i=document.querySelector(`[name="${name}"]`); if(i&&v!=null&&v!=='') i.value=v;}; const mappings={...datos.datos_alumno,...datos.datos_generales,...datos.datos_medicos,...datos.secundaria_origen,...datos.tutor_responsable,'habla_lengua_indigena_respuesta':datos.datos_generales?.habla_lengua_indigena?.respuesta,'habla_lengua_indigena_cual':datos.datos_generales?.habla_lengua_indigena?.cual,'enfermedad_cronica_o_alergia_respuesta':datos.datos_medicos?.enfermedad_cronica_o_alergia?.respuesta,'enfermedad_cronica_o_alergia_detalle':datos.datos_medicos?.enfermedad_cronica_o_alergia?.detalle,'persona_emergencia_nombre':datos.persona_emergencia?.nombre,'persona_emergencia_parentesco':datos.persona_emergencia?.parentesco,'persona_emergencia_telefono':datos.persona_emergencia?.telefono}; Object.entries(mappings).forEach(([k,v])=>set(k,v));}
