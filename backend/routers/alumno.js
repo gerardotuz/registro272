@@ -6,6 +6,7 @@ const Config = require('../models/config.model');
 const multer = require('multer');
 const xlsx = require('xlsx');
 const generarPDF = require('../utils/pdfGenerator');
+const generarPDFRegistro = require('../utils/pdfGeneratorRegistro');
 const flattenToNested = require('../utils/flattenToNested');
 const path = require('path');
 const fs = require('fs');
@@ -527,3 +528,41 @@ router.get('/debug/curp-global/:curp', async (req, res) => {
 
 
 module.exports = router;
+
+router.post('/guardar-registro', async (req, res) => {
+  try {
+    const data = req.body;
+    if (!data.folio || !data.datos_alumno?.curp || !data.datos_generales?.correo_alumno) {
+      return res.status(400).json({ message: 'Faltan datos obligatorios' });
+    }
+
+    const clavesExentas = [
+      'estado_nacimiento', 'municipio_nacimiento', 'ciudad_nacimiento',
+      'estado_nacimiento_general', 'municipio_nacimiento_general', 'ciudad_nacimiento_general'
+    ];
+
+    const upperCaseData = JSON.parse(JSON.stringify(data), (key, value) =>
+      typeof value === 'string' && !clavesExentas.includes(key) ? value.toUpperCase() : value
+    );
+
+    const estadoCivilMap = { soltero: 1, casado: 2, 'unión libre': 3, 'union libre': 3, otro: 4 };
+    const estadoCivilTxt = data.datos_alumno?.estado_civil?.toLowerCase();
+    upperCaseData.datos_alumno.estado_civil = estadoCivilMap[estadoCivilTxt] || parseInt(data.datos_alumno?.estado_civil) || 0;
+
+    upperCaseData.registro_completado = true;
+
+    await Alumno.findOneAndUpdate({ folio: data.folio }, upperCaseData, { upsert: true });
+
+    const datosAnidados = flattenToNested(upperCaseData);
+    const nombreArchivo = `${datosAnidados.datos_alumno?.curp || 'formulario'}_registro.pdf`;
+    await generarPDFRegistro(datosAnidados, nombreArchivo);
+
+    res.status(200).json({
+      message: 'Registro exitoso y PDF generado',
+      pdf_url: `/pdfs/${nombreArchivo}`
+    });
+  } catch (err) {
+    console.error('Error en /guardar-registro:', err);
+    res.status(500).json({ message: err.message });
+  }
+});
