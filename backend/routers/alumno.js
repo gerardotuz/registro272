@@ -254,12 +254,22 @@ router.get('/reimprimir/:folio', async (req, res) => {
     }
 
     const datosAnidados = flattenToNested(alumno.toObject());
-    const nombreArchivo = `${alumno.folio}.pdf`;
 
-    const rutaPDF = await generarPDF(datosAnidados, nombreArchivo);
+    const esRegistroCompleto = Boolean(
+      alumno?.datos_generales?.quinta_opcion ||
+      alumno?.datos_alumno?.nacionalidad ||
+      alumno?.secundaria_origen?.estudias
+    );
+
+    const nombreArchivo = esRegistroCompleto
+      ? `${alumno.folio}_registro.pdf`
+      : `${alumno.folio}.pdf`;
+
+    const rutaPDF = esRegistroCompleto
+      ? await generarPDFRegistro(datosAnidados, nombreArchivo)
+      : await generarPDF(datosAnidados, nombreArchivo);
 
     const fullPath = path.join(__dirname, '../public', rutaPDF);
-
     res.sendFile(fullPath);
 
   } catch (err) {
