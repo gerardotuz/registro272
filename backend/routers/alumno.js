@@ -15,7 +15,8 @@ const { conexiones } = require('../server');
 
 // 👇 usar SIEMPRE la conexión del plantel actual
 const Alumno = conexiones.registro272.model("Alumno", AlumnoSchema);
-
+const RegistradoSchema = new mongoose.Schema({}, { strict: false, collection: 'registrados' });
+const Registrado = conexiones.registro272.model('Registrado', RegistradoSchema);
 
 // ============================================
 // VALIDAR CURP GLOBAL ENTRE PLANTELES (BLINDADO)
@@ -89,7 +90,41 @@ router.get('/folio/:folio', async (req, res) => {
   }
 });
 
+router.get('/preregistro/:folio', async (req, res) => {
+  try {
+    const folio = String(req.params.folio || '').trim().toUpperCase();
+    const alumno = await Alumno.findOne({ folio }).lean();
 
+    if (!alumno) return res.status(404).json({ message: 'Folio no encontrado en preregistro' });
+
+    res.json({
+      message: 'Datos de preregistro encontrados',
+      alumno
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+router.get('/reinscripcion/:numeroControl', async (req, res) => {
+  try {
+    const numeroControl = String(req.params.numeroControl || '').trim().toUpperCase();
+    const alumno = await Registrado.findOne({
+      $or: [
+        { numero_control: numeroControl },
+        { numeroControl },
+        { control: numeroControl },
+        { folio: numeroControl }
+      ]
+    }).lean();
+
+    if (!alumno) return res.status(404).json({ message: 'Número de control no encontrado en registrados' });
+
+    res.json({ message: 'Datos de reinscripción encontrados', alumno });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
 
 
 
@@ -578,6 +613,52 @@ router.post('/guardar-registro', async (req, res) => {
   }
 });
 
+router.post('/guardar-reinscripcion', async (req, res) => {
+  try {
+    const data = req.body;
+    const numeroControl = String(data?.numero_control || data?.numeroControl || '').trim().toUpperCase();
+    if (!numeroControl) {
+      return res.status(400).json({ message: 'Falta número de control' });
+    }
+
+    const materiasReprobadas = Number(data?.materias_reprobadas ?? data?.materiasReprobadas ?? 0);
+    const payload = {
+      ...data,
+      numero_control: numeroControl,
+      numeroControl,
+      tipo_tramite: 'REINSCRIPCION',
+      updatedAt: new Date()
+    };
+
+    await Registrado.collection.createIndex({ numero_control: 1 }, { name: 'idx_numero_control', unique: false });
+    await Registrado.findOneAndUpdate(
+      { numero_control: numeroControl },
+      { $set: payload, $setOnInsert: { createdAt: new Date() } },
+      { upsert: true, new: true }
+    );
+
+    if (materiasReprobadas > 3) {
+      return res.status(200).json({
+        message: 'Reinscripción guardada. Debes acudir a control escolar por tener más de 3 materias reprobadas.',
+        pdf_generado: false,
+        requiere_control_escolar: true
+      });
+    }
+
+    const nombreArchivo = `${numeroControl}_reinscripcion.pdf`;
+    const datosAnidados = flattenToNested(payload);
+    await generarPDFRegistro(datosAnidados, nombreArchivo);
+
+    res.status(200).json({
+      message: 'Reinscripción guardada y PDF generado',
+      pdf_generado: true,
+      requiere_control_escolar: false,
+      pdf_url: `/pdfs/${nombreArchivo}`
+    });
+  } catch (err) {
+    console.error('Error en /guardar-reinscripcion:', err);
+    res.status(500).json({ message: err.message });
+  }
+});
+
 module.exports = router;
-
-
