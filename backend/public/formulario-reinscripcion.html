@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="UTF-8"><title>Formulario Reinscripción</title><link rel="stylesheet" href="/style.css"></head>
+<body>
+<h2>Reinscripción</h2>
+<form id="buscarForm">
+  <input name="numero_control" placeholder="Número de control" required>
+  <button type="submit">Buscar</button>
+</form>
+<form id="reinscripcionForm" style="display:none; margin-top:16px;">
+  <input name="numero_control" placeholder="Número de control" readonly required>
+  <input name="nombre" placeholder="Nombre completo" required>
+  <input name="grupo" placeholder="Grupo">
+  <input name="turno" placeholder="Turno">
+  <input name="materias_reprobadas" type="number" min="0" placeholder="Materias reprobadas" required>
+  <button type="submit">Guardar reinscripción</button>
+</form>
+<script>
+const BASE_URL = window.location.origin.includes('localhost') ? 'http://localhost:3001' : window.location.origin;
+const buscarForm = document.getElementById('buscarForm');
+const reinscripcionForm = document.getElementById('reinscripcionForm');
+
+buscarForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const numeroControl = new FormData(e.target).get('numero_control');
+  const res = await fetch(`${BASE_URL}/api/reinscripcion/${encodeURIComponent(numeroControl)}`);
+  const data = await res.json();
+  if (!res.ok) return alert(data.message || 'No encontrado');
+
+  const alumno = data.alumno || {};
+  reinscripcionForm.style.display = 'block';
+  reinscripcionForm.numero_control.value = alumno.numero_control || alumno.numeroControl || numeroControl;
+  reinscripcionForm.nombre.value = alumno.nombre || alumno['datos_alumno.nombres'] || '';
+  reinscripcionForm.grupo.value = alumno.grupo || alumno['datos_alumno.grupo'] || '';
+  reinscripcionForm.turno.value = alumno.turno || alumno['datos_alumno.turno'] || '';
+  reinscripcionForm.materias_reprobadas.value = alumno.materias_reprobadas || alumno.materiasReprobadas || 0;
+});
+
+reinscripcionForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const body = Object.fromEntries(new FormData(e.target).entries());
+  body.materias_reprobadas = Number(body.materias_reprobadas || 0);
+  const res = await fetch(`${BASE_URL}/api/guardar-reinscripcion`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
+  });
+  const data = await res.json();
+  if (!res.ok) return alert(data.message || 'Error al guardar');
+
+  if (data.requiere_control_escolar) {
+    alert('Reinscripción guardada. Acude a control escolar para continuar.');
+    return;
+  }
+  alert('Reinscripción guardada con PDF generado');
+  if (data.pdf_url) window.open(data.pdf_url, '_blank');
+});
+</script>
+</body>
+</html>
