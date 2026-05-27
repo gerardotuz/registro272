@@ -1,24 +1,54 @@
 <!DOCTYPE html>
 <html lang="es">
-<head><meta charset="UTF-8"><title>Formulario Reinscripción</title><link rel="stylesheet" href="/style.css"></head>
+<head>
+  <meta charset="UTF-8" />
+  <title>Formulario de Reinscripción</title>
+  <link rel="stylesheet" href="/style.css" />
+  <link rel="icon" href="/favicon.ico" type="image/x-icon" />
+</head>
 <body>
-<h2>Reinscripción</h2>
-<form id="buscarForm">
-  <input name="numero_control" placeholder="Número de control" required>
-  <button type="submit">Buscar</button>
-</form>
-<form id="reinscripcionForm" style="display:none; margin-top:16px;">
-  <input name="numero_control" placeholder="Número de control" readonly required>
-  <input name="nombre" placeholder="Nombre completo" required>
-  <input name="grupo" placeholder="Grupo">
-  <input name="turno" placeholder="Turno">
-  <input name="materias_reprobadas" type="number" min="0" placeholder="Materias reprobadas" required>
-  <button type="submit">Guardar reinscripción</button>
-</form>
+  <h2>Formulario de Reinscripción</h2>
+
+  <form id="buscarForm">
+    <input name="numero_control" placeholder="Número de control" required />
+    <button type="submit">Buscar</button>
+  </form>
+
+  <form id="reinscripcionForm" style="display:none; margin-top:16px;">
+    <fieldset><legend>Datos del Alumno</legend>
+      <input name="numero_control" placeholder="Número de control" readonly required />
+      <input name="carrera" placeholder="Carrera" />
+      <input name="curp" placeholder="CURP" />
+      <input name="nombres" placeholder="Nombres" />
+      <input name="primer_apellido" placeholder="Primer Apellido" />
+      <input name="segundo_apellido" placeholder="Segundo Apellido" />
+      <input name="semestre" placeholder="Semestre" />
+      <input name="grupo" placeholder="Grupo" />
+      <input name="turno" placeholder="Turno" />
+      <input name="estatus" placeholder="Estatus" />
+      <input name="materias_reprobadas" type="number" min="0" placeholder="Materias reprobadas" required />
+    </fieldset>
+
+    <fieldset><legend>Datos Complementarios</legend>
+      <input name="telefono_alumno" placeholder="Teléfono" />
+      <input name="correo_alumno" placeholder="Correo" type="email" />
+      <input name="domicilio" placeholder="Domicilio" />
+      <input name="colonia" placeholder="Colonia" />
+      <input name="codigo_postal" placeholder="Código Postal" />
+    </fieldset>
+
+    <button type="submit">Guardar reinscripción</button>
+  </form>
+
 <script>
 const BASE_URL = window.location.origin.includes('localhost') ? 'http://localhost:3001' : window.location.origin;
 const buscarForm = document.getElementById('buscarForm');
 const reinscripcionForm = document.getElementById('reinscripcionForm');
+
+const setValue = (name, value) => {
+  const input = reinscripcionForm.querySelector(`[name="${name}"]`);
+  if (input && value != null) input.value = value;
+};
 
 buscarForm.addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -29,20 +59,54 @@ buscarForm.addEventListener('submit', async (e) => {
 
   const alumno = data.alumno || {};
   reinscripcionForm.style.display = 'block';
-  reinscripcionForm.numero_control.value = alumno.numero_control || alumno.numeroControl || numeroControl;
-  reinscripcionForm.nombre.value = alumno.nombre || alumno['datos_alumno.nombres'] || '';
-  reinscripcionForm.grupo.value = alumno.grupo || alumno['datos_alumno.grupo'] || '';
-  reinscripcionForm.turno.value = alumno.turno || alumno['datos_alumno.turno'] || '';
-  reinscripcionForm.materias_reprobadas.value = alumno.materias_reprobadas || alumno.materiasReprobadas || 0;
+
+  setValue('numero_control', alumno.numero_control || numeroControl);
+  setValue('carrera', alumno.carrera || alumno['datos_alumno.carrera']);
+  setValue('curp', alumno.curp || alumno['datos_alumno.curp']);
+  setValue('nombres', alumno.nombres || alumno['datos_alumno.nombres']);
+  setValue('primer_apellido', alumno.primer_apellido || alumno['datos_alumno.primer_apellido']);
+  setValue('segundo_apellido', alumno.segundo_apellido || alumno['datos_alumno.segundo_apellido']);
+  setValue('semestre', alumno.semestre || alumno['datos_alumno.semestre']);
+  setValue('grupo', alumno.grupo || alumno['datos_alumno.grupo']);
+  setValue('turno', alumno.turno || alumno['datos_alumno.turno']);
+  setValue('estatus', alumno.estatus);
+  setValue('materias_reprobadas', alumno.materias_reprobadas || 0);
+  setValue('telefono_alumno', alumno.telefono_alumno || alumno['datos_generales.telefono_alumno']);
+  setValue('correo_alumno', alumno.correo_alumno || alumno['datos_generales.correo_alumno']);
+  setValue('domicilio', alumno.domicilio || alumno['datos_generales.domicilio']);
+  setValue('colonia', alumno.colonia || alumno['datos_generales.colonia']);
+  setValue('codigo_postal', alumno.codigo_postal || alumno['datos_generales.codigo_postal']);
 });
 
 reinscripcionForm.addEventListener('submit', async (e) => {
   e.preventDefault();
-  const body = Object.fromEntries(new FormData(e.target).entries());
-  body.materias_reprobadas = Number(body.materias_reprobadas || 0);
+  const form = new FormData(e.target);
+
+  const body = {
+    numero_control: form.get('numero_control'),
+    carrera: form.get('carrera'),
+    curp: form.get('curp'),
+    nombres: form.get('nombres'),
+    primer_apellido: form.get('primer_apellido'),
+    segundo_apellido: form.get('segundo_apellido'),
+    semestre: form.get('semestre'),
+    grupo: form.get('grupo'),
+    turno: form.get('turno'),
+    estatus: form.get('estatus'),
+    materias_reprobadas: Number(form.get('materias_reprobadas') || 0),
+    telefono_alumno: form.get('telefono_alumno'),
+    correo_alumno: form.get('correo_alumno'),
+    domicilio: form.get('domicilio'),
+    colonia: form.get('colonia'),
+    codigo_postal: form.get('codigo_postal')
+  };
+
   const res = await fetch(`${BASE_URL}/api/guardar-reinscripcion`, {
-    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
   });
+
   const data = await res.json();
   if (!res.ok) return alert(data.message || 'Error al guardar');
 
@@ -50,6 +114,7 @@ reinscripcionForm.addEventListener('submit', async (e) => {
     alert('Reinscripción guardada. Acude a control escolar para continuar.');
     return;
   }
+
   alert('Reinscripción guardada con PDF generado');
   if (data.pdf_url) window.open(data.pdf_url, '_blank');
 });
