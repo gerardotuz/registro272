@@ -132,6 +132,7 @@ router.get('/reinscripcion/:numeroControl', async (req, res) => {
 
 
 
+
 // ===================================
 // GENERAR NUMERO DE CONTROL AUTOMATICO
 // ===================================
@@ -647,12 +648,12 @@ router.post('/guardar-reinscripcion', async (req, res) => {
       });
     }
 
-    const nombreArchivo = `${numeroControl}_reinscripcion.pdf`;
+    const nombreArchivo = `${numeroControl}.pdf`;
     const datosAnidados = flattenToNested(payload);
     await generarPDFRegistro(datosAnidados, nombreArchivo);
 
     res.status(200).json({
-      message: 'Reinscripción guardada y PDF generado',
+      message: 'Reinscripción guardada y PDF generado (REINSCRIPCIÓN)',
       pdf_generado: true,
       requiere_control_escolar: false,
       pdf_url: `/pdfs/${nombreArchivo}`
