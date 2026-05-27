@@ -17,7 +17,7 @@
   <div class="nav-links">
     <a href="index.html">Inicio</a>
     <a href="consultar-grupo.html">Consultar grupo</a>
-   
+    <a href="formulario-reinscripcion.html">Reinscripción</a>
     <a href="login.html">Iniciar sesión</a>
   </div>
 </nav>
@@ -36,12 +36,12 @@
     document.getElementById('folioForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const folio = document.getElementById('folio').value.trim();
-      const res = await fetch(`https://registro272.onrender.com/api/folio/${folio}`);
+      const res = await fetch(`/api/folio/${folio}`);
       if (res.ok) {
         const data = await res.json();
         localStorage.setItem('alumnoFolio', folio);
         localStorage.setItem('datosPrecargados', JSON.stringify(data));
-        window.location.href = 'formulario.html';
+        window.location.href = `formulario-registro.html?folio=${encodeURIComponent(folio)}`;
       } else {
         alert('Folio no encontrado');
       }
