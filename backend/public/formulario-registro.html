@@ -4,7 +4,7 @@
 <link href="/style.css" rel="stylesheet"/>
 <link href="/favicon.ico" rel="icon" type="image/x-icon"/>
 <meta charset="utf-8"/>
-<title>Formulario de Alumno</title>
+<title>Formulario de Reinscripción</title>
 </head>
 <body>
 <nav>
@@ -17,7 +17,8 @@
 <a href="login.html">Iniciar sesión</a>
 </div>
 </nav>
-<h2>Formulario de Registro</h2>
+<h2>Formulario de Reinscripción</h2>
+<form id="buscarControlForm"><input type="text" id="numeroControlBusqueda" placeholder="Ingresa tu número de control" required><button type="submit">Buscar</button></form>
 <form id="registroForm">
 <fieldset><legend>Datos del Alumno</legend>
 <input name="nombres" placeholder="Nombres" required type="text"/>
@@ -75,6 +76,19 @@ const OPCIONES_CARRERA = ['A Y B', 'PROGRAMACIÓN', 'GESTIÓN E INNOVACIÓN TUR�
 const IDS_OPCIONES = ['primera_opcion', 'segunda_opcion', 'tercera_opcion', 'cuarta_opcion', 'quinta_opcion'];
 
 document.addEventListener('DOMContentLoaded', () => {
+  const buscar = document.getElementById('buscarControlForm');
+  buscar.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const numeroControl = document.getElementById('numeroControlBusqueda').value.trim().toUpperCase();
+    if (!numeroControl) return;
+    const res = await fetch(`${BASE_URL}/api/reinscripcion/${encodeURIComponent(numeroControl)}`);
+    const payload = await res.json();
+    if (!res.ok) return alert(payload.message || 'Número de control no encontrado');
+    localStorage.setItem('numeroControlReinscripcion', numeroControl);
+    localStorage.setItem('datosPrecargados', JSON.stringify(payload.alumno || {}));
+    consultarFolioYAutocompletar();
+  });
+
   inicializarOpcionesCarrera();
   cargarCatalogo();
   cargarCatalogoGeneral();
@@ -83,12 +97,13 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('registroForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
-    const folio = localStorage.getItem('alumnoFolio');
-    if (!folio) return alert('Folio perdido');
+    const folio = localStorage.getItem('numeroControlReinscripcion');
+    if (!folio) return alert('Número de control no capturado');
 
     const clave = (id) => document.getElementById(id).selectedOptions[0]?.dataset.clave;
 
     const payload = {
+      numero_control: folio,
       folio,
       datos_alumno: {
         nombres: formData.get('nombres'), primer_apellido: formData.get('primer_apellido'), segundo_apellido: formData.get('segundo_apellido'),
@@ -116,10 +131,15 @@ document.addEventListener('DOMContentLoaded', () => {
       persona_emergencia: { nombre: formData.get('persona_emergencia_nombre'), parentesco: formData.get('persona_emergencia_parentesco'), telefono: formData.get('persona_emergencia_telefono') }
     };
 
-    const res = await fetch(`${BASE_URL}/api/guardar-registro`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+    const res = await fetch(`${BASE_URL}/api/guardar-reinscripcion`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
     const result = await res.json();
     if (res.ok) {
-      alert('✅ Registro guardado con éxito');
+      if (result.requiere_control_escolar) {
+        alert(result.message || 'Reinscripción guardada. Acude a control escolar.');
+        deshabilitarFormulario();
+        return;
+      }
+      alert('✅ Reinscripción guardada con éxito');
       if (result.pdf_url) window.open(result.pdf_url, '_blank');
       deshabilitarFormulario();
     } else alert(result.message || '❌ Error al guardar');
