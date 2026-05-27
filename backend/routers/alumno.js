@@ -17,7 +17,7 @@ const RegistradoBase = require('../models/Registrado');
 // 👇 usar SIEMPRE la conexión del plantel actual
 const Alumno = conexiones.registro272.model("Alumno", AlumnoSchema);
 const Registrado = conexiones.registro272.models.Registrado || conexiones.registro272.model('Registrado', RegistradoBase.schema);
-const Registrado = conexiones.registro272.model('Registrado', RegistradoSchema);
+
 
 // ============================================
 // VALIDAR CURP GLOBAL ENTRE PLANTELES (BLINDADO)
