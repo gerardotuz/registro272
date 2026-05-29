@@ -112,11 +112,14 @@ async function buscarRegistroOReinscripcion(identificador) {
 
   const pareceNumeroControl = /^\d+$/.test(identificador);
   const encontrado = pareceNumeroControl
-    ? (await buscarReinscripcion()) || (await buscarFolio())
+    ? await buscarReinscripcion()
     : (await buscarFolio()) || (await buscarReinscripcion());
 
   if (!encontrado) {
-    alert("No se encontró el folio en alumnos ni el número de control en registrados");
+    const mensaje = pareceNumeroControl
+      ? "No se encontró el número de control en registrados"
+      : "No se encontró el folio en alumnos ni el número de control en registrados";
+    alert(mensaje);
   }
 }
 
