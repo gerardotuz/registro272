@@ -67,6 +67,7 @@ bloqueado: {
       respuesta: String,
       cual: String
     },
+    hermanos_activos: String,
     primera_opcion: String,
     segunda_opcion: String,
     tercera_opcion: String,
@@ -91,9 +92,12 @@ bloqueado: {
 
   secundaria_origen: {
     nombre_secundaria: String,
+    cct_secundaria: String,
     regimen: String,
+    promedio_general: String,
     estudias: String,
-    modalidad: String
+    modalidad: String,
+    participaciones_secundaria: String
   },
 
   tutor_responsable: {
