@@ -127,6 +127,46 @@ router.get('/reinscripcion/:numeroControl', async (req, res) => {
   }
 });
 
+function normalizarRegistradoParaPDF(registrado, numeroControl) {
+  const raw = registrado || {};
+  if (raw.datos_alumno) {
+    return {
+      ...raw,
+      folio: raw.folio || numeroControl,
+      numero_control: raw.numero_control || numeroControl
+    };
+  }
+
+  return {
+    folio: numeroControl,
+    numero_control: numeroControl,
+    datos_alumno: {
+      nombres: raw.nombres || '',
+      primer_apellido: raw.primer_apellido || '',
+      segundo_apellido: raw.segundo_apellido || '',
+      curp: raw.curp || '',
+      carrera: raw.carrera || '',
+      periodo_semestral: raw.periodo_semestral || '',
+      semestre: raw.semestre || '',
+      grupo: raw.grupo || '',
+      turno: raw.turno || ''
+    },
+    datos_generales: raw.datos_generales || {
+      colonia: raw.colonia || '',
+      domicilio: raw.domicilio || '',
+      codigo_postal: raw.codigo_postal || '',
+      telefono_alumno: raw.telefono_alumno || '',
+      correo_alumno: raw.correo_alumno || '',
+      paraescolar: raw.paraescolar || ''
+    },
+    datos_medicos: raw.datos_medicos || {},
+    secundaria_origen: raw.secundaria_origen || {},
+    tutor_responsable: raw.tutor_responsable || {},
+    persona_emergencia: raw.persona_emergencia || {}
+  };
+}
+
+
 
 
 
@@ -285,30 +325,49 @@ router.post('/cargar-excel', upload.single('archivo'), async (req, res) => {
 
 router.get('/reimprimir/:folio', async (req, res) => {
   try {
-    const alumno = await Alumno.findOne({ folio: req.params.folio });
+      const identificador = String(req.params.folio || '').trim().toUpperCase();
+    const alumno = await Alumno.findOne({ folio: identificador });
 
-    if (!alumno) {
-      return res.status(404).json({ message: 'Folio no encontrado' });
-    }
+   if (alumno) {
+      const datosAnidados = flattenToNested(alumno.toObject());
 
-    const datosAnidados = flattenToNested(alumno.toObject());
-
-    const esRegistroCompleto = Boolean(
-      alumno?.datos_generales?.quinta_opcion ||
-      alumno?.datos_alumno?.nacionalidad ||
-      alumno?.secundaria_origen?.estudias
-    );
+   const esRegistroCompleto = Boolean(
+        alumno?.datos_generales?.quinta_opcion ||
+        alumno?.datos_alumno?.nacionalidad ||
+        alumno?.secundaria_origen?.estudias
+      );
 
     const nombreArchivo = esRegistroCompleto
-      ? `${alumno.folio}_registro.pdf`
-      : `${alumno.folio}.pdf`;
+        ? `${alumno.folio}_registro.pdf`
+        : `${alumno.folio}.pdf`;
 
-    const rutaPDF = esRegistroCompleto
-      ? await generarPDFRegistro(datosAnidados, nombreArchivo)
-      : await generarPDF(datosAnidados, nombreArchivo);
+      const rutaPDF = esRegistroCompleto
+        ? await generarPDFRegistro(datosAnidados, nombreArchivo)
+        : await generarPDF(datosAnidados, nombreArchivo);
 
     const fullPath = path.join(__dirname, '../public', rutaPDF);
-    res.sendFile(fullPath);
+      return res.sendFile(fullPath);
+    }
+
+   const registrado = await Registrado.findOne({
+      $or: [
+        { numero_control: identificador },
+        { numeroControl: identificador },
+        { control: identificador },
+        { folio: identificador }
+      ]
+    }).lean();
+
+     if (!registrado) {
+      return res.status(404).json({ message: 'Folio o número de control no encontrado' });
+    }
+
+    const datosAnidados = normalizarRegistradoParaPDF(registrado, identificador);
+    const nombreArchivo = `${identificador}.pdf`;
+    const rutaPDF = await generarPDFRegistro(datosAnidados, nombreArchivo);
+
+    const fullPath = path.join(__dirname, '../public', rutaPDF);
+   return res.sendFile(fullPath);
 
   } catch (err) {
     console.error("❌ Error al reimprimir:", err);
@@ -629,6 +688,55 @@ router.post('/guardar-reinscripcion', async (req, res) => {
       ...data,
       numero_control: numeroControl,
       numeroControl,
+      tipo_tramite: 'REINSCRIPCION',
+      updatedAt: new Date()
+    };
+
+    await Registrado.collection.createIndex({ numero_control: 1 }, { name: 'idx_numero_control', unique: false });
+    await Registrado.findOneAndUpdate(
+      { numero_control: numeroControl },
+      { $set: payload, $setOnInsert: { createdAt: new Date() } },
+      { upsert: true, new: true }
+    );
+
+    if (materiasReprobadas > 3) {
+      return res.status(200).json({
+        message: 'Reinscripción guardada. Debes acudir a control escolar por tener más de 3 materias reprobadas.',
+        pdf_generado: false,
+        requiere_control_escolar: true
+      });
+    }
+
+    const nombreArchivo = `${numeroControl}.pdf`;
+    const datosAnidados = flattenToNested(payload);
+    await generarPDFRegistro(datosAnidados, nombreArchivo);
+
+    res.status(200).json({
+      message: 'Reinscripción guardada y PDF generado (REINSCRIPCIÓN)',
+      pdf_generado: true,
+      requiere_control_escolar: false,
+      pdf_url: `/pdfs/${nombreArchivo}`
+    });
+  } catch (err) {
+    console.error('Error en /guardar-reinscripcion:', err);
+    res.status(500).json({ message: err.message });
+  }
+});
+
+router.post('/guardar-reinscripcion', async (req, res) => {
+  try {
+    const data = req.body;
+    const numeroControl = String(data?.numero_control || data?.numeroControl || '').trim().toUpperCase();
+    if (!numeroControl) {
+      return res.status(400).json({ message: 'Falta número de control' });
+    }
+
+    const materiasReprobadas = Number(data?.materias_reprobadas ?? data?.materiasReprobadas ?? 0);
+    const payload = {
+      ...data,
+      numero_control: numeroControl,
+      numeroControl,
+      folio: numeroControl,
       tipo_tramite: 'REINSCRIPCION',
       updatedAt: new Date()
     };
