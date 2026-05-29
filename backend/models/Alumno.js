@@ -23,7 +23,7 @@ bloqueado: {
     segundo_apellido: String,
     nombres: String,
     periodo_semestral: String,
-    semestre: Number,
+    semestre: String,
     grupo: String,
     turno: String,
     carrera: String,
