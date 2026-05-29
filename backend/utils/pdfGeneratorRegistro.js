@@ -139,6 +139,7 @@ async function generarPDF(datos, nombreArchivo = 'formulario.pdf') {
   y = drawBox('Tel. Emergencia', generales.contacto_emergencia_telefono, marginX + 260, y); y += GAP_Y;
   y = drawBox('¿Lengua indígena?', generales.habla_lengua_indigena?.respuesta, marginX, y);
   y = drawBox('¿Cuál lengua?', generales.habla_lengua_indigena?.cual, marginX + 260, y); y += GAP_Y;
+  y = drawBox('Hermanos activos', generales.hermanos_activos, marginX, y); y += GAP_Y;
 
   y = drawSectionTitle('Estado de Residencia', y);
   y = drawBox('Estado', residencia.estado, marginX, y);
@@ -156,9 +157,11 @@ async function generarPDF(datos, nombreArchivo = 'formulario.pdf') {
 
   y = drawSectionTitle('Secundaria de Origen', y);
   y = drawBox('Nombre secundaria', secundaria.nombre_secundaria, marginX, y);
-  y = drawBox('Régimen', secundaria.regimen, marginX + 260, y); y += GAP_Y;
-  y = drawBox('¿Estudias actualmente?', secundaria.estudias, marginX, y);
+  y = drawBox('CCT secundaria', secundaria.cct_secundaria, marginX + 260, y); y += GAP_Y;
+  y = drawBox('Régimen', secundaria.regimen, marginX, y);
   y = drawBox('Modalidad', secundaria.modalidad, marginX + 260, y); y += GAP_Y;
+  y = drawBox('Participaciones', secundaria.participaciones_secundaria, marginX, y);
+  y = drawBox('Promedio general', secundaria.promedio_general, marginX + 260, y); y += GAP_Y;
 
   y = drawSectionTitle('Tutor Responsable', y);
   y = drawBox('Nombre padre', tutor.nombre_padre, marginX, y);
