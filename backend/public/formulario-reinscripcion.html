@@ -59,6 +59,7 @@
 <input name="contacto_emergencia_telefono" placeholder="CONTACTO DE EMERGENCIA- TELÉFONO" type="text"/>
 <select name="habla_lengua_indigena_respuesta" required><option value="">¿Habla lengua indígena? (Sí/No)</option><option value="si">Sí</option><option value="no">No</option></select>
 <input name="habla_lengua_indigena_cual" placeholder="¿Cuál lengua?" type="text"/>
+<select name="hermanos_activos" required><option value="">¿Tiene hermanos activos en el plantel? (Sí/No)</option><option value="Sí">Sí</option><option value="No">No</option></select>
 <!--
   <label for="estado_nacimiento_general">Estado de Residencia</label><select id="estado_nacimiento_general" name="estado_nacimiento_general" required></select>
 <label for="municipio_nacimiento_general">Municipio de Residencia</label><select id="municipio_nacimiento_general" name="municipio_nacimiento_general" required disabled></select>
@@ -66,7 +67,9 @@
 <input type="hidden" name="estado_codigo_general"/><input type="hidden" name="municipio_codigo_general"/><input type="hidden" name="ciudad_codigo_general"/>
   -->
 </fieldset>
-<fieldset><legend>Datos Médicos</legend><input name="numero_seguro_social" placeholder="NÚMERO DE SEGURO SOCIAL DEL ALUMNO" type="text"/><select name="unidad_medica_familiar" required><option value="">Selecciona Unidad Medica</option><option value="13">13</option><option value="14">14</option><option value="15">15</option><option value="16">16</option><option value="19">19</option></select><input name="enfermedad_cronica_o_alergia_respuesta" placeholder="¿Tiene enfermedad o alergia? (Sí/No)" type="text"/><input name="enfermedad_cronica_o_alergia_detalle" placeholder="Detalle enfermedad o alergia" type="text"/><select name="discapacidad" required><option value="">Selecciona discapacidad</option><option value="Ninguna">Ninguna</option><option value="Visual">Visual</option><option value="Motriz">Motriz</option><option value="Auditiva">Auditiva</option><option value="Habla">Habla</option><option value="Otro">Otro</option></select><select name="entrega_diagnostico" required><option value="">¿Entrega diagnóstico?</option><option value="Sí">Sí</option><option value="No">No</option></select><textarea name="detalle_enfermedad" placeholder="Detalle de enfermedad" rows="5"></textarea></fieldset>
+<fieldset><legend>Datos Médicos</legend><div><input name="numero_seguro_social" placeholder="NÚMERO DE SEGURO SOCIAL DEL ALUMNO" type="text"/><a href="https://www.imss.gob.mx/tramites/imss02008" target="_blank" rel="noopener noreferrer">Consultar o tramitar NSS</a></div><select name="unidad_medica_familiar" required><option value="">Selecciona Unidad Medica</option><option value="13">13</option><option value="14">14</option><option value="15">15</option><option value="16">16</option><option value="19">19</option></select><input name="enfermedad_cronica_o_alergia_respuesta" placeholder="¿Tiene enfermedad o alergia? (Sí/No)" type="text"/><input name="enfermedad_cronica_o_alergia_detalle" placeholder="Detalle enfermedad o alergia" type="text"/><select name="discapacidad" required><option value="">Selecciona discapacidad</option><option value="Ninguna">Ninguna</option><option value="Visual">Visual</option><option value="Motriz">Motriz</option><option value="Auditiva">Auditiva</option><option value="Habla">Habla</option><option value="Otro">Otro</option></select><select name="entrega_diagnostico" required><option value="">¿Entrega diagnóstico?</option><option value="Sí">Sí</option><option value="No">No</option></select><textarea name="detalle_enfermedad" placeholder="Detalle de enfermedad" rows="5"></textarea></fieldset>
+
+<fieldset><legend>Situación Académica</legend><input name="adeudo" placeholder="Adeudo: número de materias reprobadas" min="0" step="1" type="number" value="0"/><select name="participaciones_secundaria"><option value="">Participaciones en secundaria</option><option value="Culturales">Culturales</option><option value="Académicas">Académicas</option><option value="Deportivas">Deportivas</option><option value="Ninguna">Ninguna</option></select></fieldset>
 <!--
   <fieldset><legend>Secundaria de Origen</legend><input name="nombre_secundaria" placeholder="Nombre de Secundaria" type="text"/><select name="regimen" required><option value="">Selecciona régimen</option><option value="publica">Pública</option><option value="privada">Privada</option></select><input name="promedio_general" placeholder="Promedio General" step="0.01" type="number"/><select name="modalidad" required><option value="">Selecciona modalidad</option><option value="general">General</option><option value="tecnica">Técnica</option><option value="abierta">Abierta</option><option value="telesecundaria">Telesecundaria</option><option value="ceneval">CENEVAL</option><option value="inea">INEA</option><option value="modular">Modular</option></select></fieldset>
 -->
@@ -87,6 +90,8 @@ function normalizarRegistrado(raw = {}) {
   if (raw.datos_alumno) return raw;
   return {
     folio: raw.numero_control || raw.numeroControl || '',
+    adeudo: raw.adeudo ?? raw.materias_reprobadas ?? raw.materiasReprobadas ?? '',
+    materias_reprobadas: raw.materias_reprobadas ?? raw.adeudo ?? raw.materiasReprobadas ?? '',
     datos_alumno: {
       nombres: raw.nombres || '',
       primer_apellido: raw.primer_apellido || '',
@@ -98,6 +103,7 @@ function normalizarRegistrado(raw = {}) {
       turno: raw.turno || ''
     },
     datos_generales: {
+      hermanos_activos: raw.hermanos_activos || raw.datos_generales?.hermanos_activos || '',
       correo_alumno: raw.correo_alumno || '',
       telefono_alumno: raw.telefono_alumno || '',
       domicilio: raw.domicilio || '',
@@ -105,7 +111,7 @@ function normalizarRegistrado(raw = {}) {
       codigo_postal: raw.codigo_postal || ''
     },
     datos_medicos: {},
-    secundaria_origen: {},
+    secundaria_origen: { participaciones_secundaria: raw.participaciones_secundaria || raw.secundaria_origen?.participaciones_secundaria || '' },
     tutor_responsable: {},
     persona_emergencia: {}
   };
@@ -181,9 +187,14 @@ document.addEventListener('DOMContentLoaded', () => {
       return select.selectedOptions?.[0]?.dataset?.clave || select.value || formData.get(id) || '';
     };
 
+    const adeudo = Number(formData.get('adeudo') || formData.get('materias_reprobadas') || 0);
+
     const payload = {
       numero_control: folio,
+      numeroControl: folio,
       folio,
+      adeudo,
+      materias_reprobadas: adeudo,
       datos_alumno: {
         nombres: formData.get('nombres'), primer_apellido: formData.get('primer_apellido'), segundo_apellido: formData.get('segundo_apellido'),
         curp: formData.get('curp'), carrera: formData.get('carrera'), periodo_semestral: formData.get('periodo_semestral'), semestre: formData.get('semestre'), grupo: formData.get('grupo'), turno: formData.get('turno'),
@@ -191,7 +202,7 @@ document.addEventListener('DOMContentLoaded', () => {
         estado_nacimiento: clave('estado_nacimiento'), municipio_nacimiento: clave('municipio_nacimiento'), ciudad_nacimiento: clave('ciudad_nacimiento'), estado_civil: formData.get('estado_civil')
       },
       datos_generales: {
-        colonia: formData.get('colonia'), domicilio: formData.get('domicilio'), codigo_postal: formData.get('codigo_postal'), telefono_alumno: formData.get('telefono_alumno'), correo_alumno: formData.get('correo_alumno'), paraescolar: formData.get('paraescolar'), tipo_sangre: formData.get('tipo_sangre'),
+        colonia: formData.get('colonia'), domicilio: formData.get('domicilio'), codigo_postal: formData.get('codigo_postal'), telefono_alumno: formData.get('telefono_alumno'), correo_alumno: formData.get('correo_alumno'), paraescolar: formData.get('paraescolar'), hermanos_activos: formData.get('hermanos_activos'), tipo_sangre: formData.get('tipo_sangre'),
         contacto_emergencia_nombre: formData.get('contacto_emergencia_nombre'), contacto_emergencia_telefono: formData.get('contacto_emergencia_telefono'),
         habla_lengua_indigena: { respuesta: formData.get('habla_lengua_indigena_respuesta'), cual: formData.get('habla_lengua_indigena_cual') },
         entrega_diagnostico: formData.get('entrega_diagnostico'), detalle_enfermedad: formData.get('detalle_enfermedad'),
@@ -205,7 +216,7 @@ document.addEventListener('DOMContentLoaded', () => {
         enfermedad_cronica_o_alergia: { respuesta: formData.get('enfermedad_cronica_o_alergia_respuesta'), detalle: formData.get('enfermedad_cronica_o_alergia_detalle') },
         discapacidad: formData.get('discapacidad')
       },
-      secundaria_origen: { nombre_secundaria: formData.get('nombre_secundaria'), regimen: formData.get('regimen'), promedio_general: formData.get('promedio_general'), modalidad: formData.get('modalidad') },
+      secundaria_origen: { nombre_secundaria: formData.get('nombre_secundaria'), regimen: formData.get('regimen'), promedio_general: formData.get('promedio_general'), modalidad: formData.get('modalidad'), participaciones_secundaria: formData.get('participaciones_secundaria') },
       tutor_responsable: { nombre_padre: formData.get('nombre_padre'), telefono_padre: formData.get('telefono_padre'), nombre_madre: formData.get('nombre_madre'), telefono_madre: formData.get('telefono_madre'), vive_con: formData.get('vive_con') },
       persona_emergencia: { nombre: formData.get('persona_emergencia_nombre'), parentesco: formData.get('persona_emergencia_parentesco'), telefono: formData.get('persona_emergencia_telefono') }
     };
@@ -288,7 +299,7 @@ function cargarCatalogoGeneral() {
 }
 
 function cargarSelectores(s, data) { const e = document.getElementById(`estado_${s}`), m = document.getElementById(`municipio_${s}`), c = document.getElementById(`ciudad_${s}`); if (!e || !m || !c) return; e.innerHTML='<option value="">-- Selecciona Estado --</option>'; m.innerHTML='<option value="">-- Selecciona Municipio --</option>'; c.innerHTML='<option value="">-- Selecciona Ciudad --</option>'; data.forEach(est=>{const o=document.createElement('option'); o.value=est.nombre; o.dataset.clave=est.clave; o.dataset.municipios=JSON.stringify(est.municipios||[]); o.textContent=est.nombre; e.appendChild(o);}); e.addEventListener('change',()=>{const ms=JSON.parse(e.selectedOptions[0]?.dataset.municipios||'[]'); m.innerHTML='<option value="">-- Selecciona Municipio --</option>'; c.innerHTML='<option value="">-- Selecciona Ciudad --</option>'; ms.forEach(mu=>{const o=document.createElement('option'); o.value=mu.nombre;o.dataset.clave=mu.clave;o.dataset.localidades=JSON.stringify(mu.localidades||[]);o.textContent=mu.nombre;m.appendChild(o);}); m.disabled=!ms.length;c.disabled=true;}); m.addEventListener('change',()=>{const ls=JSON.parse(m.selectedOptions[0]?.dataset.localidades||'[]'); c.innerHTML='<option value="">-- Selecciona Ciudad --</option>'; ls.forEach(l=>{const o=document.createElement('option'); o.value=l.nombre;o.dataset.clave=l.clave;o.textContent=l.nombre;c.appendChild(o);}); c.disabled=!ls.length;}); }
-function consultarFolioYAutocompletar(){const numeroControl=localStorage.getItem('numeroControlReinscripcion'); const datos=JSON.parse(localStorage.getItem('datosPrecargados')); if(!numeroControl||!datos){ document.getElementById('registroForm').style.display='none'; return;} document.getElementById('registroForm').style.display='block'; const set=(name,v)=>{const i=document.querySelector(`[name="${name}"]`); if(i&&v!=null&&v!=='') i.value=v;}; const mappings={...datos.datos_alumno,...datos.datos_generales,...datos.datos_medicos,...datos.secundaria_origen,...datos.tutor_responsable,'habla_lengua_indigena_respuesta':datos.datos_generales?.habla_lengua_indigena?.respuesta,'habla_lengua_indigena_cual':datos.datos_generales?.habla_lengua_indigena?.cual,'enfermedad_cronica_o_alergia_respuesta':datos.datos_medicos?.enfermedad_cronica_o_alergia?.respuesta,'enfermedad_cronica_o_alergia_detalle':datos.datos_medicos?.enfermedad_cronica_o_alergia?.detalle,'persona_emergencia_nombre':datos.persona_emergencia?.nombre,'persona_emergencia_parentesco':datos.persona_emergencia?.parentesco,'persona_emergencia_telefono':datos.persona_emergencia?.telefono}; Object.entries(mappings).forEach(([k,v])=>set(k,v));}
+function consultarFolioYAutocompletar(){const numeroControl=localStorage.getItem('numeroControlReinscripcion'); const datos=JSON.parse(localStorage.getItem('datosPrecargados')); if(!numeroControl||!datos){ document.getElementById('registroForm').style.display='none'; return;} document.getElementById('registroForm').style.display='block'; const set=(name,v)=>{const i=document.querySelector(`[name="${name}"]`); if(i&&v!=null&&v!=='') i.value=v;}; const mappings={adeudo: datos.adeudo ?? datos.materias_reprobadas ?? datos.materiasReprobadas,...datos.datos_alumno,...datos.datos_generales,...datos.datos_medicos,...datos.secundaria_origen,...datos.tutor_responsable,'habla_lengua_indigena_respuesta':datos.datos_generales?.habla_lengua_indigena?.respuesta,'habla_lengua_indigena_cual':datos.datos_generales?.habla_lengua_indigena?.cual,'enfermedad_cronica_o_alergia_respuesta':datos.datos_medicos?.enfermedad_cronica_o_alergia?.respuesta,'enfermedad_cronica_o_alergia_detalle':datos.datos_medicos?.enfermedad_cronica_o_alergia?.detalle,'persona_emergencia_nombre':datos.persona_emergencia?.nombre,'persona_emergencia_parentesco':datos.persona_emergencia?.parentesco,'persona_emergencia_telefono':datos.persona_emergencia?.telefono}; Object.entries(mappings).forEach(([k,v])=>set(k,v));}
 
 </script>
 </body>
