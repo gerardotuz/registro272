@@ -13,6 +13,7 @@ const fs = require('fs');
 const AlumnoSchema = require('../models/Alumno').schema;
 const { conexiones } = require('../server');
 const RegistradoBase = require('../models/Registrado');
+const Paraescolar = require('../models/paraescolar.model');
 
 // 👇 usar SIEMPRE la conexión del plantel actual
 const Alumno = conexiones.registro272.model("Alumno", AlumnoSchema);
@@ -80,10 +81,15 @@ async function puedeAsignarParaescolar(paraescolar, alumnoId = null) {
   return count < MAX_PARAESCOLAR;
 }
 
+function escaparRegex(valor) {
+  return String(valor).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 function crearFiltroNumeroControl(numeroControl) {
   const limpio = String(numeroControl || '').trim().toUpperCase();
   const comoNumero = Number(limpio);
-  const posiblesValores = [limpio];
+  const exactoConEspacios = new RegExp(`^\\s*${escaparRegex(limpio)}\\s*$`, 'i');
+  const posiblesValores = [limpio, exactoConEspacios];
 
   if (!Number.isNaN(comoNumero)) {
     posiblesValores.push(comoNumero);
@@ -93,14 +99,61 @@ function crearFiltroNumeroControl(numeroControl) {
     $or: [
       { numero_control: { $in: posiblesValores } },
       { numeroControl: { $in: posiblesValores } },
+      { numero_de_control: { $in: posiblesValores } },
+      { no_control: { $in: posiblesValores } },
+      { num_control: { $in: posiblesValores } },
       { control: { $in: posiblesValores } },
       { folio: { $in: posiblesValores } },
       { 'NUMERO CONTROL': { $in: posiblesValores } },
       { 'NÚMERO CONTROL': { $in: posiblesValores } },
       { 'Numero Control': { $in: posiblesValores } },
-      { 'numero control': { $in: posiblesValores } }
+      { 'Número Control': { $in: posiblesValores } },
+      { 'numero control': { $in: posiblesValores } },
+      { 'NUMERO DE CONTROL': { $in: posiblesValores } },
+      { 'NÚMERO DE CONTROL': { $in: posiblesValores } },
+      { 'Numero de Control': { $in: posiblesValores } },
+      { 'Número de Control': { $in: posiblesValores } },
+      { 'numero de control': { $in: posiblesValores } },
+      { 'No. Control': { $in: posiblesValores } },
+      { 'NO. CONTROL': { $in: posiblesValores } },
+      { 'No Control': { $in: posiblesValores } },
+      { 'NO CONTROL': { $in: posiblesValores } }
     ]
   };
+}
+
+async function buscarRegistradoPorNumeroControl(numeroControl) {
+  const filtro = crearFiltroNumeroControl(numeroControl);
+
+  const registradoPlantel = await Registrado.findOne(filtro).lean();
+  if (registradoPlantel) {
+    return { alumno: registradoPlantel, origen: 'registrados' };
+  }
+
+  // Fallback para instalaciones donde la colección `registrados` quedó en la conexión principal.
+  const registradoPrincipal = await RegistradoBase.findOne(filtro).lean();
+  if (registradoPrincipal) {
+    return { alumno: registradoPrincipal, origen: 'registrados' };
+  }
+
+  // Fallback adicional: revisar `registrados` en todas las conexiones configuradas.
+  for (const [plantel, conexion] of Object.entries(conexiones)) {
+    if (plantel === 'registro272') continue;
+
+    const RegistradoPlantel = conexion.models.Registrado || conexion.model('Registrado', RegistradoBase.schema);
+    const registradoOtroPlantel = await RegistradoPlantel.findOne(filtro).lean();
+    if (registradoOtroPlantel) {
+      return { alumno: registradoOtroPlantel, origen: `registrados:${plantel}` };
+    }
+  }
+
+  // Fallback para alumnos cargados desde el módulo de paraescolares con número de control.
+  const paraescolar = await Paraescolar.findOne(filtro).lean();
+  if (paraescolar) {
+    return { alumno: paraescolar, origen: 'paraescolar' };
+  }
+
+  return null;
 }
 
 // ---------- Endpoints ----------
@@ -133,11 +186,15 @@ router.get('/preregistro/:folio', async (req, res) => {
 router.get('/reinscripcion/:numeroControl', async (req, res) => {
   try {
     const numeroControl = String(req.params.numeroControl || '').trim().toUpperCase();
-    const alumno = await Registrado.findOne(crearFiltroNumeroControl(numeroControl)).lean();
+    const encontrado = await buscarRegistradoPorNumeroControl(numeroControl);
 
-    if (!alumno) return res.status(404).json({ message: 'Número de control no encontrado en registrados' });
+    if (!encontrado) return res.status(404).json({ message: 'Número de control no encontrado en registrados' });
 
-    res.json({ message: 'Datos de reinscripción encontrados', alumno });
+    res.json({
+      message: 'Datos de reinscripción encontrados',
+      alumno: encontrado.alumno,
+      origen: encontrado.origen
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -157,13 +214,13 @@ function normalizarRegistradoParaPDF(registrado, numeroControl) {
     folio: numeroControl,
     numero_control: numeroControl,
     datos_alumno: {
-      nombres: raw.nombres || '',
+      nombres: raw.nombres || raw.nombre || '',
       primer_apellido: raw.primer_apellido || '',
       segundo_apellido: raw.segundo_apellido || '',
       curp: raw.curp || '',
       carrera: raw.carrera || '',
       periodo_semestral: raw.periodo_semestral || '',
-      semestre: raw.semestre || '',
+      semestre: raw.semestre || raw.grado || '',
       grupo: raw.grupo || '',
       turno: raw.turno || ''
     },
@@ -364,13 +421,13 @@ router.get('/reimprimir/:folio', async (req, res) => {
       return res.sendFile(fullPathAlumno);
     }
 
-    const registrado = await Registrado.findOne(crearFiltroNumeroControl(identificador)).lean();
+    const encontrado = await buscarRegistradoPorNumeroControl(identificador);
 
-    if (!registrado) {
+    if (!encontrado) {
       return res.status(404).json({ message: 'Folio o número de control no encontrado' });
     }
 
-    const datosRegistradoPDF = normalizarRegistradoParaPDF(registrado, identificador);
+    const datosRegistradoPDF = normalizarRegistradoParaPDF(encontrado.alumno, identificador);
     const nombreArchivoRegistrado = `${identificador}.pdf`;
     const rutaPDFRegistrado = await generarPDFRegistro(datosRegistradoPDF, nombreArchivoRegistrado);
     const fullPathRegistrado = path.join(__dirname, '../public', rutaPDFRegistrado);
@@ -463,7 +520,7 @@ router.delete('/dashboard/alumnos/:id', async (req, res) => {
     await Alumno.findByIdAndDelete(req.params.id);
     res.json({ message: 'Alumno eliminado' });
   } catch (error) {
-    res.status(500).json({ message: 'Error al eliminar alumno' });
+    res.status(500).json({ message: 'Error al eliminar alumno', error });
   }
 });
 
