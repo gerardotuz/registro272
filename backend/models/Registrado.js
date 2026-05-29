@@ -17,7 +17,8 @@ const RegistradoSchema = new mongoose.Schema({
   tipo_tramite: { type: String, trim: true, uppercase: true, default: 'REINSCRIPCION' }
 }, {
   timestamps: true,
-  collection: 'registrados'
+  collection: 'registrados',
+  strict: false
 });
 
 RegistradoSchema.index({ numero_control: 1 }, { name: 'idx_numero_control' });
