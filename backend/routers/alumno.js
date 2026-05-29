@@ -812,9 +812,8 @@ router.post('/guardar-reinscripcion', async (req, res) => {
       updatedAt: new Date()
     };
 
-    await Registrado.collection.createIndex({ numero_control: 1 }, { name: 'idx_numero_control', unique: false });
     await Registrado.findOneAndUpdate(
-      { numero_control: numeroControl },
+      crearFiltroNumeroControl(numeroControl),
       { $set: payload, $setOnInsert: { createdAt: new Date() } },
       { upsert: true, new: true }
     );
