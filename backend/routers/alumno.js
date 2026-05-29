@@ -103,7 +103,17 @@ function crearFiltroNumeroControl(numeroControl) {
       { no_control: { $in: posiblesValores } },
       { num_control: { $in: posiblesValores } },
       { control: { $in: posiblesValores } },
+      { matricula: { $in: posiblesValores } },
+      { matrícula: { $in: posiblesValores } },
       { folio: { $in: posiblesValores } },
+      { 'datos_alumno.numero_control': { $in: posiblesValores } },
+      { 'datos_alumno.numeroControl': { $in: posiblesValores } },
+      { 'datos_alumno.numero_de_control': { $in: posiblesValores } },
+      { 'datos_alumno.no_control': { $in: posiblesValores } },
+      { 'datos_alumno.num_control': { $in: posiblesValores } },
+      { 'datos_alumno.control': { $in: posiblesValores } },
+      { 'datos_alumno.matricula': { $in: posiblesValores } },
+      { 'datos_alumno.matrícula': { $in: posiblesValores } },
       { 'NUMERO CONTROL': { $in: posiblesValores } },
       { 'NÚMERO CONTROL': { $in: posiblesValores } },
       { 'Numero Control': { $in: posiblesValores } },
@@ -113,25 +123,70 @@ function crearFiltroNumeroControl(numeroControl) {
       { 'NÚMERO DE CONTROL': { $in: posiblesValores } },
       { 'Numero de Control': { $in: posiblesValores } },
       { 'Número de Control': { $in: posiblesValores } },
+      { 'Numero de control': { $in: posiblesValores } },
+      { 'Número de control': { $in: posiblesValores } },
       { 'numero de control': { $in: posiblesValores } },
       { 'No. Control': { $in: posiblesValores } },
       { 'NO. CONTROL': { $in: posiblesValores } },
+      { 'No. de Control': { $in: posiblesValores } },
+      { 'No. de control': { $in: posiblesValores } },
+      { 'NO. DE CONTROL': { $in: posiblesValores } },
       { 'No Control': { $in: posiblesValores } },
-      { 'NO CONTROL': { $in: posiblesValores } }
+      { 'NO CONTROL': { $in: posiblesValores } },
+      { 'MATRICULA': { $in: posiblesValores } },
+      { 'MATRÍCULA': { $in: posiblesValores } },
+      { 'Matricula': { $in: posiblesValores } },
+      { 'Matrícula': { $in: posiblesValores } }
     ]
   };
 }
 
-async function buscarRegistradoPorNumeroControl(numeroControl) {
-  const filtro = crearFiltroNumeroControl(numeroControl);
+function crearFiltroFlexibleNumeroControl(numeroControl) {
+  const limpio = String(numeroControl || '').trim().toUpperCase();
+  const regexExacto = `^\\s*${escaparRegex(limpio)}\\s*$`;
 
-  const registradoPlantel = await Registrado.findOne(filtro).lean();
+  return {
+    $expr: {
+      $anyElementTrue: {
+        $map: {
+          input: { $objectToArray: '$$ROOT' },
+          as: 'campo',
+          in: {
+            $cond: [
+              { $in: [{ $type: '$$campo.v' }, ['string', 'int', 'long', 'double', 'decimal']] },
+              {
+                $regexMatch: {
+                  input: { $toString: '$$campo.v' },
+                  regex: regexExacto,
+                  options: 'i'
+                }
+              },
+              false
+            ]
+          }
+        }
+      }
+    }
+  };
+}
+
+async function buscarEnModeloPorNumeroControl(Modelo, numeroControl) {
+  const filtro = crearFiltroNumeroControl(numeroControl);
+  const encontradoPorCampos = await Modelo.findOne(filtro).lean();
+  if (encontradoPorCampos) return encontradoPorCampos;
+
+  // Último recurso: busca el número en cualquier campo superior string/numérico del documento.
+  return Modelo.findOne(crearFiltroFlexibleNumeroControl(numeroControl)).lean();
+}
+
+async function buscarRegistradoPorNumeroControl(numeroControl) {
+  const registradoPlantel = await buscarEnModeloPorNumeroControl(Registrado, numeroControl);
   if (registradoPlantel) {
     return { alumno: registradoPlantel, origen: 'registrados' };
   }
 
   // Fallback para instalaciones donde la colección `registrados` quedó en la conexión principal.
-  const registradoPrincipal = await RegistradoBase.findOne(filtro).lean();
+  const registradoPrincipal = await buscarEnModeloPorNumeroControl(RegistradoBase, numeroControl);
   if (registradoPrincipal) {
     return { alumno: registradoPrincipal, origen: 'registrados' };
   }
@@ -141,14 +196,14 @@ async function buscarRegistradoPorNumeroControl(numeroControl) {
     if (plantel === 'registro272') continue;
 
     const RegistradoPlantel = conexion.models.Registrado || conexion.model('Registrado', RegistradoBase.schema);
-    const registradoOtroPlantel = await RegistradoPlantel.findOne(filtro).lean();
+    const registradoOtroPlantel = await buscarEnModeloPorNumeroControl(RegistradoPlantel, numeroControl);
     if (registradoOtroPlantel) {
       return { alumno: registradoOtroPlantel, origen: `registrados:${plantel}` };
     }
   }
 
   // Fallback para alumnos cargados desde el módulo de paraescolares con número de control.
-  const paraescolar = await Paraescolar.findOne(filtro).lean();
+  const paraescolar = await buscarEnModeloPorNumeroControl(Paraescolar, numeroControl);
   if (paraescolar) {
     return { alumno: paraescolar, origen: 'paraescolar' };
   }
