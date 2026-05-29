@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
- <title>Búsqueda de Registro o Reinscripción</title>
+  <title>Búsqueda de Registro o Reinscripción</title>
   <link rel="stylesheet" href="/style.css">
   <link rel="icon" href="/favicon.ico" type="image/x-icon">
 
@@ -23,7 +23,7 @@
     <a href="formulario-reinscripcion.html">Reinscripción</a>
   </div>
 </nav>
-  
+
 <h2>Consulta tu folio o número de control</h2>
 <form id="busquedaRegistroForm">
   <input
@@ -37,15 +37,15 @@
 
 
 
-  <form id="reimprimirForm">
+<form id="reimprimirForm">
   <input type="text" id="folioReimpresion" placeholder="Ingresa tu folio o número de control para reimprimir" required />
   <button type="submit">Reimprimir PDF</button>
 </form>
 
- 
 <div id="alerta-servidor" style="display:none; background-color:#ffcdd2; color:#b71c1c; padding:10px; text-align:center; font-weight:bold;">
   ⚠️ El servidor está experimentando una alta demanda. Si no carga correctamente, intenta más tarde.
 </div>
+
 <script>
 document.getElementById("reimprimirForm").addEventListener("submit", function(e) {
   e.preventDefault();
@@ -53,12 +53,12 @@ document.getElementById("reimprimirForm").addEventListener("submit", function(e)
   const folio = document.getElementById("folioReimpresion").value.trim();
 
   if (!folio) {
-    alert("Ingresa un folio válido");
+    alert("Ingresa un folio o número de control válido");
     return;
   }
 
   // 🔥 Abrir directamente el endpoint que genera el PDF
-  window.open(`/api/reimprimir/${folio}`, "_blank");
+  window.open(`/api/reimprimir/${encodeURIComponent(folio)}`, "_blank");
 });
 </script>
 
@@ -84,7 +84,33 @@ identificadorBusqueda.addEventListener("input", () => {
   identificadorBusqueda.value = identificadorBusqueda.value.toUpperCase();
 });
 
-busquedaRegistroForm.addEventListener("submit", async (e) => {
+async function buscarRegistroOReinscripcion(identificador) {
+  localStorage.removeItem("alumnoFolio");
+  localStorage.removeItem("numeroControlReinscripcion");
+  localStorage.removeItem("datosPrecargados");
+
+  let res = await fetch(`/api/folio/${encodeURIComponent(identificador)}`);
+  if (res.ok) {
+    const data = await res.json();
+    localStorage.setItem("alumnoFolio", identificador);
+    localStorage.setItem("datosPrecargados", JSON.stringify(data));
+    window.location.href = `/formulario-registro.html?folio=${encodeURIComponent(identificador)}`;
+    return;
+  }
+
+  res = await fetch(`/api/reinscripcion/${encodeURIComponent(identificador)}`);
+  if (res.ok) {
+    const data = await res.json();
+    localStorage.setItem("numeroControlReinscripcion", identificador);
+    localStorage.setItem("datosPrecargados", JSON.stringify(data.alumno || {}));
+    window.location.href = `/formulario-reinscripcion.html?numero_control=${encodeURIComponent(identificador)}`;
+    return;
+  }
+
+  alert("No se encontró el folio en alumnos ni el número de control en registrados");
+}
+
+busquedaRegistroForm.addEventListener("submit", (e) => {
   e.preventDefault();
 
   const identificador = identificadorBusqueda.value.trim().toUpperCase();
@@ -93,34 +119,10 @@ busquedaRegistroForm.addEventListener("submit", async (e) => {
     return;
   }
 
-  try {
-    localStorage.removeItem("numeroControlReinscripcion");
-  localStorage.removeItem("datosPrecargados");
-
-    try {
-    let res = await fetch(`/api/folio/${encodeURIComponent(identificador)}`);
-    if (res.ok) {
-      const data = await res.json();
-      localStorage.setItem("alumnoFolio", identificador);
-      localStorage.setItem("datosPrecargados", JSON.stringify(data));
-      window.location.href = `/formulario-registro.html?folio=${encodeURIComponent(identificador)}`;
-      return;
-    }
-
-   res = await fetch(`/api/reinscripcion/${encodeURIComponent(identificador)}`);
-    if (res.ok) {
-      const data = await res.json();
-      localStorage.setItem("numeroControlReinscripcion", identificador);
-      localStorage.setItem("datosPrecargados", JSON.stringify(data.alumno || {}));
-      window.location.href = `/formulario-reinscripcion.html?numero_control=${encodeURIComponent(identificador)}`;
-      return;
-    }
-       alert("No se encontró el folio en alumnos ni el número de control en registrados");
-
-  } catch (err) {
+  buscarRegistroOReinscripcion(identificador).catch((err) => {
     console.error(err);
     alert("Error al consultar la información");
-  }
+  });
 });
 </script>
 
