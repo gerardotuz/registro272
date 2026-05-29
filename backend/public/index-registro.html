@@ -22,65 +22,74 @@
 </nav>
 
 
-<h2>Consulta tu folio o número de control</h2>
-<form id="busquedaForm">
-  <input type="text" id="identificadorBusqueda" placeholder="Ingresa tu folio o número de control" required>
-  <button type="submit">Buscar</button>
-</form>
-
-<form id="reimprimirForm">
+  <h2>Consulta tu folio o número de control</h2>
+  <form id="busquedaForm">
+    <input type="text" id="identificadorBusqueda" placeholder="Ingresa tu folio o número de control" required>
+    <button type="submit">Buscar</button>
+  </form>
+  <form id="reimprimirForm">
   <input type="text" id="folioReimpresion" placeholder="Ingresa tu folio o número de control para reimprimir" required />
   <button type="submit">Reimprimir PDF</button>
 </form>
-
-<script>
-  document.getElementById('reimprimirForm').addEventListener('submit', (e) => {
-    e.preventDefault();
-
-    const identificador = document.getElementById('folioReimpresion').value.trim().toUpperCase();
-    if (!identificador) return alert('Ingresa un folio o número de control válido');
-
-    window.open(`/api/reimprimir/${encodeURIComponent(identificador)}`, '_blank');
-  });
-
-  async function buscarRegistroOReinscripcion(identificador) {
-    localStorage.removeItem('alumnoFolio');
-    localStorage.removeItem('numeroControlReinscripcion');
-    localStorage.removeItem('datosPrecargados');
-
-    let res = await fetch(`/api/folio/${encodeURIComponent(identificador)}`);
-    if (res.ok) {
-      const data = await res.json();
-      localStorage.setItem('alumnoFolio', identificador);
-      localStorage.setItem('datosPrecargados', JSON.stringify(data));
-      window.location.href = `formulario-registro.html?folio=${encodeURIComponent(identificador)}`;
-      return;
-    }
-
-    res = await fetch(`/api/reinscripcion/${encodeURIComponent(identificador)}`);
-    if (res.ok) {
-      const data = await res.json();
-      localStorage.setItem('numeroControlReinscripcion', identificador);
-      localStorage.setItem('datosPrecargados', JSON.stringify(data.alumno || {}));
-      window.location.href = `formulario-reinscripcion.html?numero_control=${encodeURIComponent(identificador)}`;
-      return;
-    }
-
-    alert('No se encontró el folio en alumnos ni el número de control en registrados');
-  }
-
-  document.getElementById('busquedaForm').addEventListener('submit', (e) => {
-    e.preventDefault();
-
-    const identificador = document.getElementById('identificadorBusqueda').value.trim().toUpperCase();
-    if (!identificador) return alert('Ingresa un folio o número de control válido');
-
-    buscarRegistroOReinscripcion(identificador).catch((err) => {
-      console.error(err);
-      alert('Error al consultar la información');
+  <script>
+    document.getElementById('reimprimirForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const identificador = document.getElementById('folioReimpresion').value.trim().toUpperCase();
+      if (!identificador) return alert('Ingresa un folio o número de control válido');
+      window.open(`/api/reimprimir/${encodeURIComponent(identificador)}`, '_blank');
     });
-  });
-</script>
+
+    async function buscarRegistroOReinscripcion(identificador) {
+      localStorage.removeItem('alumnoFolio');
+      localStorage.removeItem('numeroControlReinscripcion');
+      localStorage.removeItem('datosPrecargados');
+
+      const buscarFolio = async () => {
+        const res = await fetch(`/api/folio/${encodeURIComponent(identificador)}`);
+        if (!res.ok) return false;
+
+        const data = await res.json();
+        localStorage.setItem('alumnoFolio', identificador);
+        localStorage.setItem('datosPrecargados', JSON.stringify(data));
+        window.location.href = `formulario-registro.html?folio=${encodeURIComponent(identificador)}`;
+        return true;
+      };
+
+      const buscarReinscripcion = async () => {
+        const res = await fetch(`/api/reinscripcion/${encodeURIComponent(identificador)}`);
+        if (!res.ok) return false;
+
+        const data = await res.json();
+        localStorage.setItem('numeroControlReinscripcion', identificador);
+        localStorage.setItem('datosPrecargados', JSON.stringify(data.alumno || {}));
+        window.location.href = `formulario-reinscripcion.html?numero_control=${encodeURIComponent(identificador)}`;
+        return true;
+      };
+
+      const pareceNumeroControl = /^\d+$/.test(identificador);
+      const encontrado = pareceNumeroControl
+        ? await buscarReinscripcion()
+        : (await buscarFolio()) || (await buscarReinscripcion());
+
+      if (!encontrado) {
+        const mensaje = pareceNumeroControl
+          ? 'No se encontró el número de control en registrados'
+          : 'No se encontró el folio en alumnos ni el número de control en registrados';
+        alert(mensaje);
+      }
+    }
+
+    document.getElementById('busquedaForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const identificador = document.getElementById('identificadorBusqueda').value.trim().toUpperCase();
+      if (!identificador) return alert('Ingresa un folio o número de control válido');
+
+      buscarRegistroOReinscripcion(identificador).catch((err) => {
+        console.error(err);
+        alert('Error al consultar la información');
+      });
+    });
+  </script>
 
 </body>
 </html>
