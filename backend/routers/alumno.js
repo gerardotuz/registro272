@@ -802,12 +802,14 @@ router.post('/guardar-reinscripcion', async (req, res) => {
       return res.status(400).json({ message: 'Falta número de control' });
     }
 
-    const materiasReprobadas = Number(data?.materias_reprobadas ?? data?.materiasReprobadas ?? 0);
+    const materiasReprobadas = Number(data?.materias_reprobadas ?? data?.materiasReprobadas ?? data?.adeudo ?? 0);
     const payload = {
       ...data,
       numero_control: numeroControl,
       numeroControl,
       folio: numeroControl,
+      adeudo: materiasReprobadas,
+      materias_reprobadas: materiasReprobadas,
       tipo_tramite: 'REINSCRIPCION',
       updatedAt: new Date()
     };
