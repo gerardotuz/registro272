@@ -28,7 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
         estado_nacimiento: clave('estado_nacimiento'), municipio_nacimiento: clave('municipio_nacimiento'), ciudad_nacimiento: clave('ciudad_nacimiento'), estado_civil: formData.get('estado_civil')
       },
       datos_generales: {
-        colonia: formData.get('colonia'), domicilio: formData.get('domicilio'), codigo_postal: formData.get('codigo_postal'), telefono_alumno: formData.get('telefono_alumno'), correo_alumno: formData.get('correo_alumno'), paraescolar: formData.get('paraescolar'), tipo_sangre: formData.get('tipo_sangre'),
+        colonia: formData.get('colonia'), domicilio: formData.get('domicilio'), codigo_postal: formData.get('codigo_postal'), telefono_alumno: formData.get('telefono_alumno'), correo_alumno: formData.get('correo_alumno'), paraescolar: formData.get('paraescolar'), hermanos_activos: formData.get('hermanos_activos'), tipo_sangre: formData.get('tipo_sangre'),
         contacto_emergencia_nombre: formData.get('contacto_emergencia_nombre'), contacto_emergencia_telefono: formData.get('contacto_emergencia_telefono'),
         habla_lengua_indigena: { respuesta: formData.get('habla_lengua_indigena_respuesta'), cual: formData.get('habla_lengua_indigena_cual') },
         entrega_diagnostico: formData.get('entrega_diagnostico'), detalle_enfermedad: formData.get('detalle_enfermedad'),
@@ -42,7 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
         enfermedad_cronica_o_alergia: { respuesta: formData.get('enfermedad_cronica_o_alergia_respuesta'), detalle: formData.get('enfermedad_cronica_o_alergia_detalle') },
         discapacidad: formData.get('discapacidad')
       },
-      secundaria_origen: { nombre_secundaria: formData.get('nombre_secundaria'), regimen: formData.get('regimen'), promedio_general: formData.get('promedio_general'), modalidad: formData.get('modalidad') },
+      secundaria_origen: { nombre_secundaria: formData.get('nombre_secundaria'), cct_secundaria: formData.get('cct_secundaria'), regimen: formData.get('regimen'), promedio_general: formData.get('promedio_general'), modalidad: formData.get('modalidad'), participaciones_secundaria: formData.get('participaciones_secundaria') },
       tutor_responsable: { nombre_padre: formData.get('nombre_padre'), telefono_padre: formData.get('telefono_padre'), nombre_madre: formData.get('nombre_madre'), telefono_madre: formData.get('telefono_madre'), vive_con: formData.get('vive_con') },
       persona_emergencia: { nombre: formData.get('persona_emergencia_nombre'), parentesco: formData.get('persona_emergencia_parentesco'), telefono: formData.get('persona_emergencia_telefono') }
     };
