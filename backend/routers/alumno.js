@@ -79,6 +79,7 @@ async function puedeAsignarParaescolar(paraescolar, alumnoId = null) {
   const count = await Alumno.countDocuments(filtro);
   return count < MAX_PARAESCOLAR;
 }
+
 function crearFiltroNumeroControl(numeroControl) {
   const limpio = String(numeroControl || '').trim().toUpperCase();
   const comoNumero = Number(limpio);
@@ -101,6 +102,7 @@ function crearFiltroNumeroControl(numeroControl) {
     ]
   };
 }
+
 // ---------- Endpoints ----------
 router.get('/folio/:folio', async (req, res) => {
   try {
@@ -342,56 +344,37 @@ router.get('/reimprimir/:folio', async (req, res) => {
     const alumno = await Alumno.findOne({ folio: identificador });
 
     if (alumno) {
-      const datosAnidados = flattenToNested(alumno.toObject());
-const esRegistroCompleto = Boolean(
+      const datosAlumnoPDF = flattenToNested(alumno.toObject());
+
+      const esRegistroCompleto = Boolean(
         alumno?.datos_generales?.quinta_opcion ||
         alumno?.datos_alumno?.nacionalidad ||
         alumno?.secundaria_origen?.estudias
       );
 
-      const registrado = await Registrado.findOne(crearFiltroNumeroControl(identificador)).lean();
-
-      if (!registrado) {
-      return res.status(404).json({ message: 'Folio o número de control no encontrado' });
-    }
-      const datosAnidados = normalizarRegistradoParaPDF(registrado, identificador);
-    const nombreArchivo = `${identificador}.pdf`;
-    const rutaPDF = await generarPDFRegistro(datosAnidados, nombreArchivo);
-
-      const fullPath = path.join(__dirname, '../public', rutaPDF);
-      return res.sendFile(fullPath);
-    }
-
-      const nombreArchivo = esRegistroCompleto
+      const nombreArchivoAlumno = esRegistroCompleto
         ? `${alumno.folio}_registro.pdf`
         : `${alumno.folio}.pdf`;
 
-      const rutaPDF = esRegistroCompleto
-        ? await generarPDFRegistro(datosAnidados, nombreArchivo)
-        : await generarPDF(datosAnidados, nombreArchivo);
+      const rutaPDFAlumno = esRegistroCompleto
+        ? await generarPDFRegistro(datosAlumnoPDF, nombreArchivoAlumno)
+        : await generarPDF(datosAlumnoPDF, nombreArchivoAlumno);
 
-      const fullPath = path.join(__dirname, '../public', rutaPDF);
-      return res.sendFile(fullPath);
+      const fullPathAlumno = path.join(__dirname, '../public', rutaPDFAlumno);
+      return res.sendFile(fullPathAlumno);
     }
 
-    const registrado = await Registrado.findOne({
-      $or: [
-        { numero_control: identificador },
-        { numeroControl: identificador },
-        { control: identificador },
-        { folio: identificador }
-      ]
-    }).lean();
+    const registrado = await Registrado.findOne(crearFiltroNumeroControl(identificador)).lean();
 
     if (!registrado) {
       return res.status(404).json({ message: 'Folio o número de control no encontrado' });
     }
 
-    const datosAnidados = normalizarRegistradoParaPDF(registrado, identificador);
-    const nombreArchivo = `${identificador}.pdf`;
-    const rutaPDF = await generarPDFRegistro(datosAnidados, nombreArchivo);
-    const fullPath = path.join(__dirname, '../public', rutaPDF);
-    return res.sendFile(fullPath);
+    const datosRegistradoPDF = normalizarRegistradoParaPDF(registrado, identificador);
+    const nombreArchivoRegistrado = `${identificador}.pdf`;
+    const rutaPDFRegistrado = await generarPDFRegistro(datosRegistradoPDF, nombreArchivoRegistrado);
+    const fullPathRegistrado = path.join(__dirname, '../public', rutaPDFRegistrado);
+    return res.sendFile(fullPathRegistrado);
 
   } catch (err) {
     console.error("❌ Error al reimprimir:", err);
@@ -480,7 +463,7 @@ router.delete('/dashboard/alumnos/:id', async (req, res) => {
     await Alumno.findByIdAndDelete(req.params.id);
     res.json({ message: 'Alumno eliminado' });
   } catch (error) {
-    res.status(500).json({ message: 'Error al eliminar alumno', error });
+    res.status(500).json({ message: 'Error al eliminar alumno' });
   }
 });
 
