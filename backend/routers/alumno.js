@@ -79,7 +79,28 @@ async function puedeAsignarParaescolar(paraescolar, alumnoId = null) {
   const count = await Alumno.countDocuments(filtro);
   return count < MAX_PARAESCOLAR;
 }
+function crearFiltroNumeroControl(numeroControl) {
+  const limpio = String(numeroControl || '').trim().toUpperCase();
+  const comoNumero = Number(limpio);
+  const posiblesValores = [limpio];
 
+  if (!Number.isNaN(comoNumero)) {
+    posiblesValores.push(comoNumero);
+  }
+
+  return {
+    $or: [
+      { numero_control: { $in: posiblesValores } },
+      { numeroControl: { $in: posiblesValores } },
+      { control: { $in: posiblesValores } },
+      { folio: { $in: posiblesValores } },
+      { 'NUMERO CONTROL': { $in: posiblesValores } },
+      { 'NÚMERO CONTROL': { $in: posiblesValores } },
+      { 'Numero Control': { $in: posiblesValores } },
+      { 'numero control': { $in: posiblesValores } }
+    ]
+  };
+}
 // ---------- Endpoints ----------
 router.get('/folio/:folio', async (req, res) => {
   try {
@@ -110,14 +131,7 @@ router.get('/preregistro/:folio', async (req, res) => {
 router.get('/reinscripcion/:numeroControl', async (req, res) => {
   try {
     const numeroControl = String(req.params.numeroControl || '').trim().toUpperCase();
-    const alumno = await Registrado.findOne({
-      $or: [
-        { numero_control: numeroControl },
-        { numeroControl },
-        { control: numeroControl },
-        { folio: numeroControl }
-      ]
-    }).lean();
+    const alumno = await Registrado.findOne(crearFiltroNumeroControl(numeroControl)).lean();
 
     if (!alumno) return res.status(404).json({ message: 'Número de control no encontrado en registrados' });
 
@@ -329,12 +343,24 @@ router.get('/reimprimir/:folio', async (req, res) => {
 
     if (alumno) {
       const datosAnidados = flattenToNested(alumno.toObject());
-
-      const esRegistroCompleto = Boolean(
+const esRegistroCompleto = Boolean(
         alumno?.datos_generales?.quinta_opcion ||
         alumno?.datos_alumno?.nacionalidad ||
         alumno?.secundaria_origen?.estudias
       );
+
+      const registrado = await Registrado.findOne(crearFiltroNumeroControl(identificador)).lean();
+
+      if (!registrado) {
+      return res.status(404).json({ message: 'Folio o número de control no encontrado' });
+    }
+      const datosAnidados = normalizarRegistradoParaPDF(registrado, identificador);
+    const nombreArchivo = `${identificador}.pdf`;
+    const rutaPDF = await generarPDFRegistro(datosAnidados, nombreArchivo);
+
+      const fullPath = path.join(__dirname, '../public', rutaPDF);
+      return res.sendFile(fullPath);
+    }
 
       const nombreArchivo = esRegistroCompleto
         ? `${alumno.folio}_registro.pdf`
