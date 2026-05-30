@@ -418,8 +418,8 @@ if (resultado.existe) {
     // 📄 GENERAR PDF
     // ==========================================
     const datosAnidados = flattenToNested(actualizado.toObject());
-    const nombreArchivo = `${folio}.pdf`;
-    const pdfUrl = await generarPDF(datosAnidados, nombreArchivo);
+    const nombreArchivo = `${folio}_registro.pdf`;
+    const pdfUrl = await generarPDFRegistro(datosAnidados, nombreArchivo);
 
     // ==========================================
     // ✅ RESPUESTA FINAL
