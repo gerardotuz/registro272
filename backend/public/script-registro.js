@@ -14,13 +14,11 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('registroForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
-    const folio = localStorage.getItem('alumnoFolio');
-    if (!folio) return alert('Folio perdido');
+    const folio = obtenerFolioRegistro();
 
     const clave = (id) => document.getElementById(id).selectedOptions[0]?.dataset.clave;
 
     const payload = {
-      folio,
       datos_alumno: {
         nombres: formData.get('nombres'), primer_apellido: formData.get('primer_apellido'), segundo_apellido: formData.get('segundo_apellido'),
         curp: formData.get('curp'), carrera: formData.get('carrera'), periodo_semestral: formData.get('periodo_semestral'), semestre: formData.get('semestre'), grupo: formData.get('grupo'), turno: formData.get('turno'),
@@ -47,7 +45,10 @@ document.addEventListener('DOMContentLoaded', () => {
       persona_emergencia: { nombre: formData.get('persona_emergencia_nombre'), parentesco: formData.get('persona_emergencia_parentesco'), telefono: formData.get('persona_emergencia_telefono') }
     };
 
-    const res = await fetch(`${BASE_URL}/api/guardar-registro`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+    if (folio) payload.folio = folio;
+
+    const endpoint = folio ? '/api/guardar-registro' : '/api/guardar';
+    const res = await fetch(`${BASE_URL}${endpoint}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
     const result = await res.json();
     if (res.ok) {
       alert('✅ Registro guardado con éxito');
@@ -56,6 +57,18 @@ document.addEventListener('DOMContentLoaded', () => {
     } else alert(result.message || '❌ Error al guardar');
   });
 });
+
+function obtenerFolioRegistro() {
+  const folioStorage = localStorage.getItem('alumnoFolio');
+  const folioUrl = new URLSearchParams(window.location.search).get('folio');
+  const folio = String(folioStorage || folioUrl || '').trim().toUpperCase();
+
+  if (folio) {
+    localStorage.setItem('alumnoFolio', folio);
+  }
+
+  return folio;
+}
 
 function inicializarOpcionesCarrera() {
   const selects = IDS_OPCIONES.map((id) => document.getElementById(id)).filter(Boolean);
@@ -120,6 +133,7 @@ function cargarCatalogoGeneral() {
 }
 
 function cargarSelectores(s, data) { const e = document.getElementById(`estado_${s}`), m = document.getElementById(`municipio_${s}`), c = document.getElementById(`ciudad_${s}`); if (!e || !m || !c) return; e.innerHTML='<option value="">-- Selecciona Estado --</option>'; m.innerHTML='<option value="">-- Selecciona Municipio --</option>'; c.innerHTML='<option value="">-- Selecciona Ciudad --</option>'; data.forEach(est=>{const o=document.createElement('option'); o.value=est.nombre; o.dataset.clave=est.clave; o.dataset.municipios=JSON.stringify(est.municipios||[]); o.textContent=est.nombre; e.appendChild(o);}); e.addEventListener('change',()=>{const ms=JSON.parse(e.selectedOptions[0]?.dataset.municipios||'[]'); m.innerHTML='<option value="">-- Selecciona Municipio --</option>'; c.innerHTML='<option value="">-- Selecciona Ciudad --</option>'; ms.forEach(mu=>{const o=document.createElement('option'); o.value=mu.nombre;o.dataset.clave=mu.clave;o.dataset.localidades=JSON.stringify(mu.localidades||[]);o.textContent=mu.nombre;m.appendChild(o);}); m.disabled=!ms.length;c.disabled=true;}); m.addEventListener('change',()=>{const ls=JSON.parse(m.selectedOptions[0]?.dataset.localidades||'[]'); c.innerHTML='<option value="">-- Selecciona Ciudad --</option>'; ls.forEach(l=>{const o=document.createElement('option'); o.value=l.nombre;o.dataset.clave=l.clave;o.textContent=l.nombre;c.appendChild(o);}); c.disabled=!ls.length;}); }
+
 async function consultarFolioYAutocompletar(){
   const set=(name,v)=>{const i=document.querySelector(`[name="${name}"]`); if(i&&v!=null&&v!=='') i.value=v;};
   const fromLS = JSON.parse(localStorage.getItem('datosPrecargados') || 'null');
