@@ -85,6 +85,33 @@ function escaparRegex(valor) {
   return String(valor).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
+function normalizarEstadoCivilAlumno(data) {
+  if (!data?.datos_alumno) return data;
+
+  const estadoCivilMap = {
+    soltero: 1,
+    casado: 2,
+    'unión libre': 3,
+    'union libre': 3,
+    otro: 4
+  };
+  const valor = data.datos_alumno.estado_civil;
+
+  if (valor === undefined || valor === null || valor === '') {
+    data.datos_alumno.estado_civil = 0;
+    return data;
+  }
+
+  if (typeof valor === 'number') {
+    data.datos_alumno.estado_civil = valor;
+    return data;
+  }
+
+  const texto = String(valor).trim().toLowerCase();
+  data.datos_alumno.estado_civil = estadoCivilMap[texto] || parseInt(texto, 10) || 0;
+  return data;
+}
+
 function crearFiltroNumeroControl(numeroControl) {
   const limpio = String(numeroControl || '').trim().toUpperCase();
   const comoNumero = Number(limpio);
@@ -337,7 +364,7 @@ router.post('/guardar', async (req, res) => {
       });
     }
 
-    const data = req.body;
+    const data = normalizarEstadoCivilAlumno(req.body);
 
     const curp = data.datos_alumno?.curp?.toUpperCase();
 
@@ -766,9 +793,7 @@ router.post('/guardar-registro', async (req, res) => {
       typeof value === 'string' && !clavesExentas.includes(key) ? value.toUpperCase() : value
     );
 
-    const estadoCivilMap = { soltero: 1, casado: 2, 'unión libre': 3, 'union libre': 3, otro: 4 };
-    const estadoCivilTxt = data.datos_alumno?.estado_civil?.toLowerCase();
-    upperCaseData.datos_alumno.estado_civil = estadoCivilMap[estadoCivilTxt] || parseInt(data.datos_alumno?.estado_civil) || 0;
+    normalizarEstadoCivilAlumno(upperCaseData);
 
     upperCaseData.datos_generales.primera_opcion = data.datos_generales.primera_opcion || '';
     upperCaseData.datos_generales.segunda_opcion = data.datos_generales.segunda_opcion || '';
