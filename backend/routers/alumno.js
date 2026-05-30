@@ -112,6 +112,19 @@ function normalizarEstadoCivilAlumno(data) {
   return data;
 }
 
+function alumnoYaTieneRegistroFinal(alumno) {
+  return Boolean(alumno?.registro_completado || alumno?.bloqueado);
+}
+
+function reinscripcionYaFueCapturada(registrado) {
+  const tipoTramite = String(registrado?.tipo_tramite || '').trim().toUpperCase();
+  return Boolean(
+    registrado?.reinscripcion_completada ||
+    registrado?.bloqueado_reinscripcion ||
+    tipoTramite === 'REINSCRIPCION'
+  );
+}
+
 function crearFiltroNumeroControl(numeroControl) {
   const limpio = String(numeroControl || '').trim().toUpperCase();
   const comoNumero = Number(limpio);
@@ -780,9 +793,19 @@ router.get('/debug/curp-global/:curp', async (req, res) => {
 router.post('/guardar-registro', async (req, res) => {
   try {
     const data = req.body;
-    if (!data.folio || !data.datos_alumno?.curp || !data.datos_generales?.correo_alumno) {
+    const folio = String(data?.folio || '').trim().toUpperCase();
+    if (!folio || !data.datos_alumno?.curp || !data.datos_generales?.correo_alumno) {
       return res.status(400).json({ message: 'Faltan datos obligatorios' });
     }
+
+    const registroExistente = await Alumno.findOne({ folio }).lean();
+    if (alumnoYaTieneRegistroFinal(registroExistente)) {
+      return res.status(409).json({
+        message: 'Este folio ya tiene un registro finalizado y no puede editarse. Si necesitas cambios, acude a control escolar.'
+      });
+    }
+
+    data.folio = folio;
 
     const clavesExentas = [
       'estado_nacimiento', 'municipio_nacimiento', 'ciudad_nacimiento',
@@ -803,7 +826,7 @@ router.post('/guardar-registro', async (req, res) => {
 
     upperCaseData.registro_completado = true;
 
-    await Alumno.findOneAndUpdate({ folio: data.folio }, upperCaseData, { upsert: true });
+    await Alumno.findOneAndUpdate({ folio }, upperCaseData, { upsert: true });
 
     const datosAnidados = flattenToNested(upperCaseData);
     const nombreArchivo = `${datosAnidados.datos_alumno?.curp || 'formulario'}_registro.pdf`;
@@ -827,7 +850,15 @@ router.post('/guardar-reinscripcion', async (req, res) => {
       return res.status(400).json({ message: 'Falta número de control' });
     }
 
+    const reinscripcionExistente = await buscarRegistradoPorNumeroControl(numeroControl);
+    if (reinscripcionYaFueCapturada(reinscripcionExistente?.alumno)) {
+      return res.status(409).json({
+        message: 'Este número de control ya tiene una reinscripción capturada y no puede editarse. Si necesitas cambios, acude a control escolar.'
+      });
+    }
+
     const materiasReprobadas = Number(data?.materias_reprobadas ?? data?.materiasReprobadas ?? data?.adeudo ?? 0);
+    const requiereControlEscolar = materiasReprobadas > 3;
     const payload = {
       ...data,
       numero_control: numeroControl,
@@ -836,6 +867,10 @@ router.post('/guardar-reinscripcion', async (req, res) => {
       adeudo: materiasReprobadas,
       materias_reprobadas: materiasReprobadas,
       tipo_tramite: 'REINSCRIPCION',
+      reinscripcion_completada: true,
+      bloqueado_reinscripcion: true,
+      requiere_control_escolar: requiereControlEscolar,
+      pdf_generado: !requiereControlEscolar,
       updatedAt: new Date()
     };
 
@@ -845,7 +880,7 @@ router.post('/guardar-reinscripcion', async (req, res) => {
       { upsert: true, new: true }
     );
 
-    if (materiasReprobadas > 3) {
+    if (requiereControlEscolar) {
       return res.status(200).json({
         message: 'Reinscripción guardada. Debes acudir a control escolar por tener más de 3 materias reprobadas.',
         pdf_generado: false,
