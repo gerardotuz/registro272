@@ -179,14 +179,8 @@ async function generarPDF(datos, nombreArchivo = 'formulario.pdf') {
   y = drawBox('Parentesco', emergencia.parentesco, marginX + 260, y); y += GAP_Y;
   y = drawBox('Teléfono', emergencia.telefono, marginX, y); y += GAP_Y;
 
-  if (fs.existsSync(footerPath)) {
-    if (y + 100 > PAGE_HEIGHT) {
-      doc.addPage();
-      y = START_Y;
-    }
-    doc.image(footerPath, 50, y, { width: 500 });
-  }
-y = drawSectionTitle('Solicitud de Inscripción', y);
+ 
+y = drawSectionTitle('', y);
    if (fs.existsSync(footerPath)) {
     if (y + 100 > PAGE_HEIGHT) {
       doc.addPage();
