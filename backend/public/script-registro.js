@@ -109,7 +109,26 @@ function inicializarOpcionesCarrera() {
   refrescar();
 }
 
-function deshabilitarFormulario() { Array.from(document.getElementById('registroForm').elements).forEach(el => el.disabled = true); }
+function registroEstaBloqueado(datos) {
+  return Boolean(datos?.registro_completado || datos?.bloqueado);
+}
+
+function mostrarAvisoBloqueado(mensaje) {
+  let aviso = document.getElementById('avisoRegistroBloqueado');
+  if (!aviso) {
+    aviso = document.createElement('div');
+    aviso.id = 'avisoRegistroBloqueado';
+    aviso.style.cssText = 'display:block;background:#fff3cd;color:#856404;border:1px solid #ffeeba;border-radius:8px;padding:12px;margin:15px auto;max-width:900px;font-weight:bold;text-align:center;';
+    const formulario = document.getElementById('registroForm');
+    formulario?.parentNode?.insertBefore(aviso, formulario);
+  }
+  aviso.textContent = mensaje;
+}
+
+function deshabilitarFormulario(mensaje = '') {
+  Array.from(document.getElementById('registroForm').elements).forEach(el => el.disabled = true);
+  if (mensaje) mostrarAvisoBloqueado(mensaje);
+}
 
 async function obtenerCatalogo() {
   const rutas = ['/data/catalogo.json', '/catalogo.json'];
@@ -157,4 +176,8 @@ async function consultarFolioYAutocompletar(){
   if(!datos) return;
   const mappings={...datos.datos_alumno,...datos.datos_generales,...datos.datos_medicos,...datos.secundaria_origen,...datos.tutor_responsable,'habla_lengua_indigena_respuesta':datos.datos_generales?.habla_lengua_indigena?.respuesta,'habla_lengua_indigena_cual':datos.datos_generales?.habla_lengua_indigena?.cual,'enfermedad_cronica_o_alergia_respuesta':datos.datos_medicos?.enfermedad_cronica_o_alergia?.respuesta,'enfermedad_cronica_o_alergia_detalle':datos.datos_medicos?.enfermedad_cronica_o_alergia?.detalle,'persona_emergencia_nombre':datos.persona_emergencia?.nombre,'persona_emergencia_parentesco':datos.persona_emergencia?.parentesco,'persona_emergencia_telefono':datos.persona_emergencia?.telefono};
   Object.entries(mappings).forEach(([k,v])=>set(k,v));
+if (registroEstaBloqueado(datos)) {
+  deshabilitarFormulario('Este folio ya tiene un registro finalizado y no puede editarse. Si necesitas cambios, acude a control escolar.');
+}
+  
 }
