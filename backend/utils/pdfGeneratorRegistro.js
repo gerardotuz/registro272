@@ -160,7 +160,7 @@ const drawNote = (text, yPos) => {
   y = drawBox('Tercera Opción', generales.tercera_opcion, marginX, y);
   y = drawBox('Cuarta Opción', generales.cuarta_opcion, marginX + 260, y); y += GAP_Y;
   y = drawBox('Quinta Opción', generales.quinta_opcion, marginX, y); y += GAP_Y;
-
+y += 10;
   y = drawSectionTitle('Datos Generales', y);
   y = drawBox('Colonia', generales.colonia, marginX, y);
   y = drawBox('Domicilio', generales.domicilio, marginX + 260, y); y += GAP_Y;
@@ -174,7 +174,7 @@ const drawNote = (text, yPos) => {
   y = drawBox('¿Lengua indígena?', generales.habla_lengua_indigena?.respuesta, marginX, y);
   y = drawBox('¿Cuál lengua?', generales.habla_lengua_indigena?.cual, marginX + 260, y); y += GAP_Y;
   y = drawBox('Hermanos activos', generales.hermanos_activos, marginX, y); y += GAP_Y;
-
+y += 10;
   y = drawSectionTitle('Estado de Residencia', y);
   y = drawBox('Estado', residencia.estado, marginX, y);
   y = drawBox('Municipio', residencia.municipio, marginX + 260, y); y += GAP_Y;
@@ -207,7 +207,7 @@ const drawNote = (text, yPos) => {
   y = drawBox('Resp. Emergencia adicional', generales.responsable_emergencia?.nombre, marginX, y);
   y = drawBox('Tel. adicional', generales.responsable_emergencia?.telefono, marginX + 260, y); y += GAP_Y;
   y = drawBox('Parentesco adicional', generales.responsable_emergencia?.parentesco, marginX, y); y += GAP_Y;
-  y = drawNote('NOTA: LOS DATOS PROPORCIONADOS EN EL PRESENTE DOCUMENTO SE TOMARÁN PARA LA GESTIÓN DE BECAS, POR LO QUE NO SE DEBERÁN DE MODIFICAR.', y);
+  y = drawNote('NOTA: LOS DATOS PROPORCIONADOS EN EL PRESENTE DOCUMENTO SE TOMARÁN PARA LA GESTIÓN DE BECAS, POR LO QUE NO SE DEBERÁN DE MODIFICAR.');
   y = drawNote('NOTA: PROPORCIONAR COPIA DEL INE DE LOS PADRES Y 3ERA PERSONA AUTORIZADA.', y);
 
   y = drawSectionTitle('Persona de Emergencia', y);
@@ -231,7 +231,7 @@ y += 10;
 drawFooterImage();
  
 
-y += 70;
+y += 100;
 y = drawSectionTitle('Solicitud de Inscripción', y);
 y = drawBox('Nombre completo del alumno', nombreCompletoAlumno, marginX, y, 500); y += GAP_Y;
 y = drawBox('Fecha de registro', fechaRegistro, marginX, y);
