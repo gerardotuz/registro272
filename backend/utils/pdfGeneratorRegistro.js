@@ -186,7 +186,15 @@ async function generarPDF(datos, nombreArchivo = 'formulario.pdf') {
     }
     doc.image(footerPath, 50, y, { width: 500 });
   }
-
+y = drawSectionTitle('Solicitud de Inscripción', y);
+   if (fs.existsSync(footerPath)) {
+    if (y + 100 > PAGE_HEIGHT) {
+      doc.addPage();
+      y = START_Y;
+    }
+    doc.image(footerPath, 50, y, { width: 500 });
+  }
+  
   doc.flushPages();
   const range = doc.bufferedPageRange();
   for (let i = range.start; i < range.start + range.count; i++) {
