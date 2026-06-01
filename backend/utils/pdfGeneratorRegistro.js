@@ -207,7 +207,7 @@ y += 10;
   y = drawBox('Resp. Emergencia adicional', generales.responsable_emergencia?.nombre, marginX, y);
   y = drawBox('Tel. adicional', generales.responsable_emergencia?.telefono, marginX + 260, y); y += GAP_Y;
   y = drawBox('Parentesco adicional', generales.responsable_emergencia?.parentesco, marginX, y); y += GAP_Y;
-  y = drawNote('NOTA: LOS DATOS PROPORCIONADOS EN EL PRESENTE DOCUMENTO SE TOMARÁN PARA LA GESTIÓN DE BECAS, POR LO QUE NO SE DEBERÁN DE MODIFICAR.');
+  y = drawNote('NOTA: LOS DATOS PROPORCIONADOS EN EL PRESENTE DOCUMENTO SE TOMARÁN PARA LA GESTIÓN DE BECAS, POR LO QUE NO SE DEBERÁN DE MODIFICAR.',y);
   y = drawNote('NOTA: PROPORCIONAR COPIA DEL INE DE LOS PADRES Y 3ERA PERSONA AUTORIZADA.', y);
 
   y = drawSectionTitle('Persona de Emergencia', y);
