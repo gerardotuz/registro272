@@ -214,7 +214,8 @@ const drawNote = (text, yPos) => {
   y = drawBox('Nombre', emergencia.nombre, marginX, y);
   y = drawBox('Parentesco', emergencia.parentesco, marginX + 260, y); y += GAP_Y;
   y = drawBox('Teléfono', emergencia.telefono, marginX, y); y += GAP_Y;
-
+y += 10;
+  y += 10;
  
 
  const drawFooterImage = () => {
@@ -230,7 +231,7 @@ const drawNote = (text, yPos) => {
 drawFooterImage();
  
 
-y += 10;
+y += 50;
 y = drawSectionTitle('Solicitud de Inscripción', y);
 y = drawBox('Nombre completo del alumno', nombreCompletoAlumno, marginX, y, 500); y += GAP_Y;
 y = drawBox('Fecha de registro', fechaRegistro, marginX, y);
