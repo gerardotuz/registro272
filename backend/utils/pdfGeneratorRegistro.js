@@ -50,22 +50,22 @@ async function generarPDF(datos, nombreArchivo = 'formulario.pdf') {
   }[String(alumno.estado_civil)] || alumno.estado_civil;
 
   const nombreCompletoAlumno = [alumno.nombres, alumno.primer_apellido, alumno.segundo_apellido]
-  .filter(Boolean)
-  .join(' ');
+    .filter(Boolean)
+    .join(' ');
 
-const formatearFechaRegistro = (fecha) => {
-  const fechaBase = fecha ? new Date(fecha) : new Date();
-  if (Number.isNaN(fechaBase.getTime())) return '';
-  return fechaBase.toLocaleDateString('es-MX', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit'
-  });
-};
+  const formatearFechaRegistro = (fecha) => {
+    const fechaBase = fecha ? new Date(fecha) : new Date();
+    if (Number.isNaN(fechaBase.getTime())) return '';
+    return fechaBase.toLocaleDateString('es-MX', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    });
+  };
 
-const fechaRegistro = formatearFechaRegistro(
-  datos.fecha_registro || datos.createdAt || datos.updatedAt || new Date()
-);
+  const fechaRegistro = formatearFechaRegistro(
+    datos.fecha_registro || datos.createdAt || datos.updatedAt || new Date()
+  );
 
   let y = START_Y;
 
@@ -107,23 +107,25 @@ const fechaRegistro = formatearFechaRegistro(
     doc.fillColor('black');
     return yy + 30;
   };
-const drawNote = (text, yPos) => {
-  let yy = yPos;
-  const noteHeight = doc.heightOfString(text, { width: 490 }) + 14;
-  if (yy + noteHeight + BOTTOM_MARGIN > PAGE_HEIGHT) {
-    doc.addPage();
-    yy = START_Y;
-  }
 
-  doc
-    .font('Helvetica-Bold')
-    .fontSize(7)
-    .fillColor('#000000')
-    .text(text, marginX + 5, yy + 5, { width: 490 });
+  const drawNote = (text, yPos = y) => {
+    let yy = Number.isFinite(yPos) ? yPos : y;
+    const noteHeight = doc.heightOfString(text, { width: 490 }) + 14;
+    if (yy + noteHeight + BOTTOM_MARGIN > PAGE_HEIGHT) {
+      doc.addPage();
+      yy = START_Y;
+    }
 
-  doc.font('Helvetica').fillColor('black');
-  return yy + noteHeight + 5;
-};
+    doc
+      .font('Helvetica-Bold')
+      .fontSize(7)
+      .fillColor('#7A1E2C')
+      .text(text, marginX + 5, yy + 5, { width: 490 });
+
+    doc.font('Helvetica').fillColor('black');
+    return yy + noteHeight + 5;
+  };
+
   if (fs.existsSync(logoPath)) {
     doc.image(logoPath, 50, y, { width: 500 });
     y += 65;
@@ -160,7 +162,7 @@ const drawNote = (text, yPos) => {
   y = drawBox('Tercera Opción', generales.tercera_opcion, marginX, y);
   y = drawBox('Cuarta Opción', generales.cuarta_opcion, marginX + 260, y); y += GAP_Y;
   y = drawBox('Quinta Opción', generales.quinta_opcion, marginX, y); y += GAP_Y;
-  y += 10;
+
   y = drawSectionTitle('Datos Generales', y);
   y = drawBox('Colonia', generales.colonia, marginX, y);
   y = drawBox('Domicilio', generales.domicilio, marginX + 260, y); y += GAP_Y;
@@ -174,7 +176,8 @@ const drawNote = (text, yPos) => {
   y = drawBox('¿Lengua indígena?', generales.habla_lengua_indigena?.respuesta, marginX, y);
   y = drawBox('¿Cuál lengua?', generales.habla_lengua_indigena?.cual, marginX + 260, y); y += GAP_Y;
   y = drawBox('Hermanos activos', generales.hermanos_activos, marginX, y); y += GAP_Y;
-y += 10;
+  y = drawNote('NOTA: LOS DATOS PROPORCIONADOS EN EL PRESENTE DOCUMENTO SE TOMARÁN PARA LA GESTIÓN DE BECAS, POR LO QUE NO SE DEBERÁN DE MODIFICAR.', y);
+
   y = drawSectionTitle('Estado de Residencia', y);
   y = drawBox('Estado', residencia.estado, marginX, y);
   y = drawBox('Municipio', residencia.municipio, marginX + 260, y); y += GAP_Y;
@@ -207,37 +210,32 @@ y += 10;
   y = drawBox('Resp. Emergencia adicional', generales.responsable_emergencia?.nombre, marginX, y);
   y = drawBox('Tel. adicional', generales.responsable_emergencia?.telefono, marginX + 260, y); y += GAP_Y;
   y = drawBox('Parentesco adicional', generales.responsable_emergencia?.parentesco, marginX, y); y += GAP_Y;
-  y = drawNote('NOTA: LOS DATOS PROPORCIONADOS EN EL PRESENTE DOCUMENTO SE TOMARÁN PARA LA GESTIÓN DE BECAS, POR LO QUE NO SE DEBERÁN DE MODIFICAR.',y);
-  y = drawNote('NOTA: PROPORCIONAR COPIA DEL INE DE LOS PADRES Y 3ERA PERSONA AUTORIZADA.', y);
 
   y = drawSectionTitle('Persona de Emergencia', y);
   y = drawBox('Nombre', emergencia.nombre, marginX, y);
   y = drawBox('Parentesco', emergencia.parentesco, marginX + 260, y); y += GAP_Y;
   y = drawBox('Teléfono', emergencia.telefono, marginX, y); y += GAP_Y;
-y += 10;
+  y = drawNote('NOTA: PROPORCIONAR COPIA DEL INE DE LOS PADRES Y 3ERA PERSONA AUTORIZADA.', y);
+
+  const drawFooterImage = () => {
+    if (!fs.existsSync(footerPath)) return;
+    if (y + 100 > PAGE_HEIGHT) {
+      doc.addPage();
+      y = START_Y;
+    }
+    doc.image(footerPath, 50, y, { width: 500 });
+    y += 100;
+  };
+
+  drawFooterImage();
+
   y += 10;
- 
+  y = drawSectionTitle('Solicitud de Inscripción', y);
+  y = drawBox('Nombre completo del alumno', nombreCompletoAlumno, marginX, y, 500); y += GAP_Y;
+  y = drawBox('Fecha de registro', fechaRegistro, marginX, y);
+  y = drawBox('Folio / Número de control', datos.folio || datos.numero_control || datos.numeroControl || '', marginX + 260, y); y += GAP_Y;
+  drawFooterImage();
 
- const drawFooterImage = () => {
-  if (!fs.existsSync(footerPath)) return;
-  if (y + 100 > PAGE_HEIGHT) {
-    doc.addPage();
-    y = START_Y;
-  }
-  doc.image(footerPath, 50, y, { width: 500 });
-  y += 100;
-};
-
-drawFooterImage();
- 
-
-y += 90;
-y = drawSectionTitle('Solicitud de Inscripción', y);
-y = drawBox('Nombre completo del alumno', nombreCompletoAlumno, marginX, y, 500); y += GAP_Y;
-y = drawBox('Fecha de registro', fechaRegistro, marginX, y);
-y = drawBox('Folio / Número de control', datos.folio || datos.numero_control || datos.numeroControl || '', marginX + 260, y); y += GAP_Y;
-drawFooterImage();
-  
   doc.flushPages();
   const range = doc.bufferedPageRange();
   for (let i = range.start; i < range.start + range.count; i++) {
