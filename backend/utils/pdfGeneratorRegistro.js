@@ -118,7 +118,7 @@ const drawNote = (text, yPos) => {
   doc
     .font('Helvetica-Bold')
     .fontSize(7)
-    .fillColor('#7A1E2C')
+    .fillColor('#000000')
     .text(text, marginX + 5, yy + 5, { width: 490 });
 
   doc.font('Helvetica').fillColor('black');
@@ -231,7 +231,7 @@ y += 10;
 drawFooterImage();
  
 
-y += 50;
+y += 70;
 y = drawSectionTitle('Solicitud de Inscripción', y);
 y = drawBox('Nombre completo del alumno', nombreCompletoAlumno, marginX, y, 500); y += GAP_Y;
 y = drawBox('Fecha de registro', fechaRegistro, marginX, y);
