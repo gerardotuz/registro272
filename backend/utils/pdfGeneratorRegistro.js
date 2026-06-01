@@ -49,6 +49,24 @@ async function generarPDF(datos, nombreArchivo = 'formulario.pdf') {
     '1': 'Soltero', '2': 'Casado', '3': 'Unión Libre', '4': 'Divorciado', '5': 'Viudo'
   }[String(alumno.estado_civil)] || alumno.estado_civil;
 
+  const nombreCompletoAlumno = [alumno.nombres, alumno.primer_apellido, alumno.segundo_apellido]
+  .filter(Boolean)
+  .join(' ');
+
+const formatearFechaRegistro = (fecha) => {
+  const fechaBase = fecha ? new Date(fecha) : new Date();
+  if (Number.isNaN(fechaBase.getTime())) return '';
+  return fechaBase.toLocaleDateString('es-MX', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  });
+};
+
+const fechaRegistro = formatearFechaRegistro(
+  datos.fecha_registro || datos.createdAt || datos.updatedAt || new Date()
+);
+
   let y = START_Y;
 
   const drawBox = (label, value, x, yPos, width = 240, height = BOX_HEIGHT) => {
@@ -181,13 +199,24 @@ async function generarPDF(datos, nombreArchivo = 'formulario.pdf') {
 
  
 y = drawSectionTitle('', y);
-   if (fs.existsSync(footerPath)) {
-    if (y + 100 > PAGE_HEIGHT) {
-      doc.addPage();
-      y = START_Y;
-    }
-    doc.image(footerPath, 50, y, { width: 500 });
+ const drawFooterImage = () => {
+  if (!fs.existsSync(footerPath)) return;
+  if (y + 100 > PAGE_HEIGHT) {
+    doc.addPage();
+    y = START_Y;
   }
+  doc.image(footerPath, 50, y, { width: 500 });
+  y += 100;
+};
+y = drawSectionTitle('Solicitud de Inscripción', y);
+drawFooterImage();
+
+y += 10;
+y = drawSectionTitle('Solicitud de Inscripción', y);
+y = drawBox('Nombre completo del alumno', nombreCompletoAlumno, marginX, y, 500); y += GAP_Y;
+y = drawBox('Fecha de registro', fechaRegistro, marginX, y);
+y = drawBox('Folio / Número de control', datos.folio || datos.numero_control || datos.numeroControl || '', marginX + 260, y); y += GAP_Y;
+drawFooterImage();
   
   doc.flushPages();
   const range = doc.bufferedPageRange();
