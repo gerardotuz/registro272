@@ -56,8 +56,39 @@ router.get('/ping', (req, res) => {
   res.status(200).json({ ok: true });
 });
 
+
+router.get('/paraescolares/cupos', async (req, res) => {
+  try {
+    const conteos = await contarParaescolares();
+    res.json({
+      limite: MAX_PARAESCOLAR,
+      paraescolares: construirResumenParaescolares(conteos)
+    });
+  } catch (error) {
+    console.error('❌ Error al consultar cupos de paraescolar:', error);
+    res.status(500).json({ message: 'Error al consultar cupos de paraescolar' });
+  }
+});
+
 const upload = multer({ storage: multer.memoryStorage() });
-const MAX_PARAESCOLAR = 40;
+const MAX_PARAESCOLAR = 50;
+const PARAESCOLARES_DISPONIBLES = [
+  'AJEDREZ',
+  'ATLETISMO',
+  'BANDA DE GUERRA',
+  'BASQUETBOL',
+  'DANZA',
+  'ESCOLTA DE BANDERA',
+  'FOTOGRAFÍA',
+  'FUTBOL',
+  'PINTURA',
+  'TEATRO-CANTO',
+  'TOCHO BANDERA',
+  'VOLEIBOL',
+  'ORATORIADECLAMACION',
+  'CORO',
+  'MÚSICA'
+];
 
 // ---------- Helpers ----------
 const CLAVES_EXENTAS = new Set([
@@ -73,12 +104,57 @@ function toUpperData(obj) {
 }
 
 
+function normalizarParaescolar(paraescolar) {
+  return String(paraescolar || '').trim().toUpperCase();
+}
+
+async function contarParaescolares(alumnoId = null) {
+  const match = {
+    registro_completado: true,
+    "datos_generales.paraescolar": { $exists: true, $nin: [null, ''] }
+  };
+
+  if (alumnoId && mongoose.Types.ObjectId.isValid(alumnoId)) {
+    match._id = { $ne: new mongoose.Types.ObjectId(alumnoId) };
+  }
+
+  const conteos = await Alumno.aggregate([
+    { $match: match },
+    {
+      $project: {
+        paraescolar: {
+          $toUpper: {
+            $trim: { input: { $ifNull: ['$datos_generales.paraescolar', ''] } }
+          }
+        }
+      }
+    },
+    { $match: { paraescolar: { $ne: '' } } },
+    { $group: { _id: '$paraescolar', ocupados: { $sum: 1 } } }
+  ]);
+
+  return new Map(conteos.map((item) => [item._id, item.ocupados]));
+}
+
+function construirResumenParaescolares(conteos) {
+  return PARAESCOLARES_DISPONIBLES.map((nombre) => {
+    const ocupados = conteos.get(nombre) || 0;
+    const disponibles = Math.max(MAX_PARAESCOLAR - ocupados, 0);
+    return {
+      nombre,
+      ocupados,
+      disponibles,
+      limite: MAX_PARAESCOLAR,
+      lleno: ocupados >= MAX_PARAESCOLAR
+    };
+  });
+}
+
 async function puedeAsignarParaescolar(paraescolar, alumnoId = null) {
-  if (!paraescolar) return true;
-  const filtro = { "datos_generales.paraescolar": paraescolar.toUpperCase() };
-  if (alumnoId) filtro._id = { $ne: alumnoId };
-  const count = await Alumno.countDocuments(filtro);
-  return count < MAX_PARAESCOLAR;
+  const limpio = normalizarParaescolar(paraescolar);
+  if (!limpio) return true;
+  const conteos = await contarParaescolares(alumnoId);
+  return (conteos.get(limpio) || 0) < MAX_PARAESCOLAR;
 }
 
 function escaparRegex(valor) {
@@ -172,7 +248,7 @@ function crearFiltroNumeroControl(numeroControl) {
       { 'No. de control': { $in: posiblesValores } },
       { 'NO. DE CONTROL': { $in: posiblesValores } },
       { 'No Control': { $in: posiblesValores } },
-      { 'NO CONTROL': { $in: posiblesValores } },
+            { 'NO CONTROL': { $in: posiblesValores } },
       { 'MATRICULA': { $in: posiblesValores } },
       { 'MATRÍCULA': { $in: posiblesValores } },
       { 'Matricula': { $in: posiblesValores } },
@@ -413,6 +489,16 @@ if (resultado.existe) {
       });
     }
 
+    const paraescolarSolicitado = data?.datos_generales?.paraescolar;
+    if (paraescolarSolicitado) {
+      const okParaescolar = await puedeAsignarParaescolar(paraescolarSolicitado);
+      if (!okParaescolar) {
+        return res.status(400).json({
+          message: `El paraescolar ${paraescolarSolicitado} ya alcanzó el límite de ${MAX_PARAESCOLAR} alumno(s).`
+        });
+      }
+    }
+    
     // ==========================================
     // 🔢 GENERAR FOLIO
     // ==========================================
@@ -615,7 +701,7 @@ router.delete('/dashboard/alumnos/:id', async (req, res) => {
     await Alumno.findByIdAndDelete(req.params.id);
     res.json({ message: 'Alumno eliminado' });
   } catch (error) {
-    res.status(500).json({ message: 'Error al eliminar alumno', error });
+    res.status(500).json({ message: 'Error al eliminar alumno' });
   }
 });
 
@@ -662,7 +748,7 @@ router.get('/exportar-excel', async (req, res) => {
       grupo: al.datos_alumno?.grupo || '',
       turno: al.datos_alumno?.turno || '',
       carrera: al.datos_alumno?.carrera || '',
-      curp: al.datos_alumno?.curp || '',
+            curp: al.datos_alumno?.curp || '',
       fecha_nacimiento: al.datos_alumno?.fecha_nacimiento || '',
       edad: al.datos_alumno?.edad || '',
       sexo: al.datos_alumno?.sexo || '',
@@ -823,6 +909,16 @@ router.post('/guardar-registro', async (req, res) => {
     upperCaseData.datos_generales.tercera_opcion = data.datos_generales.tercera_opcion || '';
     upperCaseData.datos_generales.cuarta_opcion = data.datos_generales.cuarta_opcion || '';
     upperCaseData.datos_generales.quinta_opcion = data.datos_generales.quinta_opcion || '';
+
+    const nuevoParaescolar = upperCaseData?.datos_generales?.paraescolar;
+    if (nuevoParaescolar) {
+      const okParaescolar = await puedeAsignarParaescolar(nuevoParaescolar, registroExistente?._id);
+      if (!okParaescolar) {
+        return res.status(400).json({
+          message: `El paraescolar ${nuevoParaescolar} ya alcanzó el límite de ${MAX_PARAESCOLAR} alumno(s).`
+        });
+      }
+    }
 
     upperCaseData.registro_completado = true;
 
