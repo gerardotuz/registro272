@@ -290,8 +290,10 @@ function inicializarOpcionesCarrera() {
 }
 
 function reinscripcionEstaBloqueada(datos) {
-  const tipoTramite = String(datos?.tipo_tramite || '').trim().toUpperCase();
-  return Boolean(datos?.reinscripcion_completada || datos?.bloqueado_reinscripcion || tipoTramite === 'REINSCRIPCION');
+  return Boolean(
+    datos?.reinscripcion_completada === true ||
+    datos?.bloqueado_reinscripcion === true
+  );
 }
 
 function mostrarAvisoBloqueado(mensaje) {
