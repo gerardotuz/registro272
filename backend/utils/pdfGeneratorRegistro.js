@@ -228,7 +228,7 @@ const drawNote = (text, yPos) => {
 };
 
 drawFooterImage();
-  y = drawSectionTitle('', y);
+ 
 
 y += 10;
 y = drawSectionTitle('Solicitud de Inscripción', y);
