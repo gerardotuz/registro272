@@ -160,7 +160,7 @@ const drawNote = (text, yPos) => {
   y = drawBox('Tercera Opción', generales.tercera_opcion, marginX, y);
   y = drawBox('Cuarta Opción', generales.cuarta_opcion, marginX + 260, y); y += GAP_Y;
   y = drawBox('Quinta Opción', generales.quinta_opcion, marginX, y); y += GAP_Y;
-y += 10;
+  
   y = drawSectionTitle('Datos Generales', y);
   y = drawBox('Colonia', generales.colonia, marginX, y);
   y = drawBox('Domicilio', generales.domicilio, marginX + 260, y); y += GAP_Y;
@@ -174,7 +174,7 @@ y += 10;
   y = drawBox('¿Lengua indígena?', generales.habla_lengua_indigena?.respuesta, marginX, y);
   y = drawBox('¿Cuál lengua?', generales.habla_lengua_indigena?.cual, marginX + 260, y); y += GAP_Y;
   y = drawBox('Hermanos activos', generales.hermanos_activos, marginX, y); y += GAP_Y;
-y += 10;
+
   y = drawSectionTitle('Estado de Residencia', y);
   y = drawBox('Estado', residencia.estado, marginX, y);
   y = drawBox('Municipio', residencia.municipio, marginX + 260, y); y += GAP_Y;
