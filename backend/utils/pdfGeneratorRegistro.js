@@ -198,7 +198,7 @@ const fechaRegistro = formatearFechaRegistro(
   y = drawBox('Teléfono', emergencia.telefono, marginX, y); y += GAP_Y;
 
  
-y = drawSectionTitle('', y);
+
  const drawFooterImage = () => {
   if (!fs.existsSync(footerPath)) return;
   if (y + 100 > PAGE_HEIGHT) {
@@ -208,8 +208,9 @@ y = drawSectionTitle('', y);
   doc.image(footerPath, 50, y, { width: 500 });
   y += 100;
 };
-y = drawSectionTitle('Solicitud de Inscripción', y);
+
 drawFooterImage();
+  y = drawSectionTitle('', y);
 
 y += 10;
 y = drawSectionTitle('Solicitud de Inscripción', y);
