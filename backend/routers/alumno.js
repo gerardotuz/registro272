@@ -193,11 +193,9 @@ function alumnoYaTieneRegistroFinal(alumno) {
 }
 
 function reinscripcionYaFueCapturada(registrado) {
-  const tipoTramite = String(registrado?.tipo_tramite || '').trim().toUpperCase();
   return Boolean(
-    registrado?.reinscripcion_completada ||
-    registrado?.bloqueado_reinscripcion ||
-    tipoTramite === 'REINSCRIPCION'
+    registrado?.reinscripcion_completada === true ||
+    registrado?.bloqueado_reinscripcion === true
   );
 }
 
