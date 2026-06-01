@@ -14,7 +14,7 @@ const RegistradoSchema = new mongoose.Schema({
 
   // Campos del flujo de reinscripción
   materias_reprobadas: { type: Number, default: 0 },
-  tipo_tramite: { type: String, trim: true, uppercase: true, default: 'REINSCRIPCION' }
+  tipo_tramite: { type: String, trim: true, uppercase: true, default: 'REGISTRADO' }
 }, {
   timestamps: true,
   collection: 'registrados',
