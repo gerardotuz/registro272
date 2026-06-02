@@ -52,7 +52,8 @@
       <table class="table table-striped">
         <thead>
           <tr>
-            <th>Folio</th>
+            <th>Folio / No. Control</th>
+            <th>Colección</th>
             <th>Nombre</th>
             <th>CURP</th>
             <th>Semestre</th>
@@ -93,23 +94,43 @@
     <div class="modal-dialog modal-xl modal-dialog-scrollable">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">Editar Alumno</h5>
+          <h5 id="editModalTitle" class="modal-title">Editar Alumno</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body">
           <form id="editForm" class="form">
             <input type="hidden" id="editId">
+            <input type="hidden" id="editCollection" value="alumnos">
+            <div class="alert alert-info py-2" role="alert">
+              <span id="tipoFormularioBadge">Colección: alumnos</span>
+            </div>
             <!--  DATOS ALUMNO -->
             <h5>Datos del Alumno</h5>
             <div class="row">
 
             <div class="col-md-4 mb-2">
- <label for="folio" style="font-weight: bold;">
+ <label id="folioLabel" for="folio" style="font-weight: bold;">
 Folio
 </label>
 
   <input type="text" id="folio" class="form-control border-danger">
 </div>
+              <div class="col-md-4 mb-2 d-none" data-registrado-only>
+                <label>Número de Control</label>
+                <input type="text" id="numero_control" class="form-control border-info">
+              </div>
+              <div class="col-md-4 mb-2 d-none" data-registrado-only>
+                <label>Estatus</label>
+                <input type="text" id="estatus" class="form-control">
+              </div>
+              <div class="col-md-2 mb-2 d-none" data-registrado-only>
+                <label>Materias Reprobadas</label>
+                <input type="number" id="materias_reprobadas" class="form-control" min="0">
+              </div>
+              <div class="col-md-2 mb-2 d-none" data-registrado-only>
+                <label>Tipo Trámite</label>
+                <input type="text" id="tipo_tramite" class="form-control">
+              </div>
               
               <div class="col-md-4 mb-2">
                 <label>Primer Apellido</label>
@@ -275,6 +296,14 @@ Folio
                 <label>Cuarta Opción</label>
                 <input type="text" id="cuarta_opcion" class="form-control">
               </div>
+              <div class="col-md-3 mb-2">
+                <label>Quinta Opción</label>
+                <input type="text" id="quinta_opcion" class="form-control">
+              </div>
+              <div class="col-md-3 mb-2">
+                <label>Hermanos Activos</label>
+                <input type="text" id="hermanos_activos" class="form-control">
+              </div>
               <div class="col-md-4 mb-2">
                 <label>Estado Nacimiento General</label>
                 <input type="text" id="estado_nacimiento_general" class="form-control">
@@ -322,6 +351,10 @@ Folio
                 <input type="text" id="nombre_secundaria" class="form-control">
               </div>
               <div class="col-md-4 mb-2">
+                <label>CCT Secundaria</label>
+                <input type="text" id="cct_secundaria" class="form-control">
+              </div>
+              <div class="col-md-4 mb-2">
                 <label>Regimen</label>
                 <input type="text" id="regimen" class="form-control">
               </div>
@@ -332,6 +365,10 @@ Folio
               <div class="col-md-2 mb-2">
                 <label>Modalidad</label>
                 <input type="text" id="modalidad" class="form-control">
+              </div>
+              <div class="col-md-4 mb-2">
+                <label>Participaciones Secundaria</label>
+                <input type="text" id="participaciones_secundaria" class="form-control">
               </div>
             </div>
 
