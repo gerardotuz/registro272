@@ -715,20 +715,82 @@ router.get('/reimprimir/:folio', async (req, res) => {
 
 
 // ---------- Dashboard: búsqueda ----------
-router.get('/dashboard/alumnos', async (req, res) => {
-  const { folio, apellidos } = req.query;
-  const query = {};
-  if (folio) {
-  query.folio = { $regex: folio, $options: 'i' };
+function construirRegexBusqueda(valor) {
+  const limpio = String(valor || '').trim();
+  return limpio ? { $regex: escaparRegex(limpio), $options: 'i' } : null;
 }
 
-  if (apellidos) query['datos_alumno.primer_apellido'] = { $regex: apellidos, $options: 'i' };
+function agregarOrigenDashboard(doc, coleccion) {
+  const plano = typeof doc.toObject === 'function' ? doc.toObject() : doc;
+  return { ...plano, _dashboardCollection: coleccion };
+}
+
+
+router.get('/dashboard/alumnos', async (req, res) => {
+  const { folio, apellidos } = req.query;
+  const folioRegex = construirRegexBusqueda(folio);
+  const apellidosRegex = construirRegexBusqueda(apellidos);
+
+  const queryAlumnos = {};
+  const queryRegistrados = {};
+
+  if (folioRegex) {
+    queryAlumnos.folio = folioRegex;
+    queryRegistrados.$or = [
+      { numero_control: folioRegex },
+      { numeroControl: folioRegex },
+      { folio: folioRegex },
+      { curp: folioRegex },
+      { 'datos_alumno.numero_control': folioRegex },
+      { 'datos_alumno.curp': folioRegex }
+    ];
+  }
+
+  if (apellidosRegex) {
+    queryAlumnos.$or = [
+      { 'datos_alumno.primer_apellido': apellidosRegex },
+      { 'datos_alumno.segundo_apellido': apellidosRegex },
+      { 'datos_alumno.nombres': apellidosRegex }
+    ];
+
+    const filtroNombresRegistrados = [
+      { primer_apellido: apellidosRegex },
+      { segundo_apellido: apellidosRegex },
+      { nombres: apellidosRegex },
+      { 'datos_alumno.primer_apellido': apellidosRegex },
+      { 'datos_alumno.segundo_apellido': apellidosRegex },
+      { 'datos_alumno.nombres': apellidosRegex }
+    ];
+
+    queryRegistrados.$and = queryRegistrados.$or
+      ? [{ $or: queryRegistrados.$or }, { $or: filtroNombresRegistrados }]
+      : [{ $or: filtroNombresRegistrados }];
+    delete queryRegistrados.$or;
+  }
 
   try {
-    const alumnos = await Alumno.find(query);
-    res.json(alumnos);
+    const [alumnos, registrados] = await Promise.all([
+      Alumno.find(queryAlumnos).limit(100),
+      Registrado.find(queryRegistrados).limit(100)
+    ]);
+
+    res.json([
+      ...alumnos.map((alumno) => agregarOrigenDashboard(alumno, 'alumnos')),
+      ...registrados.map((registrado) => agregarOrigenDashboard(registrado, 'registrados'))
+    ]);
   } catch (error) {
-    res.status(500).json({ message: 'Error al buscar alumnos', error });
+    res.status(500).json({ message: 'Error al buscar registros del dashboard', error });
+  }
+});
+
+  router.get('/dashboard/registrados/:id', async (req, res) => {
+
+  try {
+    const registrado = await Registrado.findById(req.params.id);
+    if (!registrado) return res.status(404).json({ message: 'No encontrado' });
+    res.json(registrado);
+  } catch (error) {
+    res.status(500).json({ message: 'Error al obtener registrado', error });
   }
 });
 
@@ -742,6 +804,37 @@ router.get('/dashboard/alumnos/:id', async (req, res) => {
   }
 });
 
+router.put('/dashboard/registrados/:id', async (req, res) => {
+  try {
+    const bodyUpper = toUpperData(req.body);
+    const registrado = await Registrado.findByIdAndUpdate(req.params.id, bodyUpper, { new: true, strict: false });
+    if (!registrado) return res.status(404).json({ message: 'No encontrado' });
+    res.json(registrado);
+  } catch (error) {
+    res.status(500).json({ message: 'Error al actualizar registrado', error });
+  }
+});
+
+router.post('/dashboard/registrados', async (req, res) => {
+  try {
+    const bodyUpper = toUpperData(req.body);
+    const nuevoRegistrado = new Registrado(bodyUpper);
+    await nuevoRegistrado.save();
+    res.status(201).json(nuevoRegistrado);
+  } catch (error) {
+    res.status(500).json({ message: 'Error al crear registrado', error });
+  }
+});
+
+router.delete('/dashboard/registrados/:id', async (req, res) => {
+  try {
+    const registrado = await Registrado.findByIdAndDelete(req.params.id);
+    if (!registrado) return res.status(404).json({ message: 'No encontrado' });
+    res.json({ message: 'Registrado eliminado' });
+  } catch (error) {
+    res.status(500).json({ message: 'Error al eliminar registrado' });
+  }
+});
 
 router.put('/dashboard/alumnos/:id', async (req, res) => {
   try {
