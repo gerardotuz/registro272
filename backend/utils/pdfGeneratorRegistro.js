@@ -229,7 +229,7 @@ async function generarPDF(datos, nombreArchivo = 'formulario.pdf') {
 
   drawFooterImage();
 
-  y += 10;
+  y += 90;
   y = drawSectionTitle('Solicitud de Inscripción', y);
   y = drawBox('Nombre completo del alumno', nombreCompletoAlumno, marginX, y, 500); y += GAP_Y;
   y = drawBox('Fecha de registro', fechaRegistro, marginX, y);
