@@ -912,102 +912,120 @@ router.get('/curp/:curp', async (req, res) => {
   }
 });
 
+function normalizarValorExcel(valor) {
+  if (valor === null || valor === undefined) return '';
 
+  if (valor instanceof Date) {
+    return valor.toISOString();
+  }
+
+  if (valor && typeof valor === 'object') {
+    if (typeof valor.toHexString === 'function') {
+      return valor.toHexString();
+    }
+
+    return JSON.stringify(valor);
+  }
+
+  return valor;
+}
+
+function aplanarDocumentoParaExcel(documento, prefijo = '', salida = {}) {
+  Object.entries(documento || {}).forEach(([clave, valor]) => {
+    if (clave === '__v') return;
+
+    const nombreColumna = prefijo ? `${prefijo}_${clave}` : clave;
+
+    if (
+      valor &&
+      typeof valor === 'object' &&
+      !(valor instanceof Date) &&
+      typeof valor.toHexString !== 'function' &&
+      !Array.isArray(valor)
+    ) {
+      aplanarDocumentoParaExcel(valor, nombreColumna, salida);
+      return;
+    }
+
+    salida[nombreColumna] = normalizarValorExcel(valor);
+  });
+
+  return salida;
+}
+
+function prepararFilasExportacion(documentos, coleccion) {
+  return documentos.map((documento, index) => ({
+    orden: index + 1,
+    coleccion,
+    ...aplanarDocumentoParaExcel(documento)
+  }));
+}
+
+function ajustarAnchoColumnas(worksheet, filas) {
+  const columnas = new Set();
+  filas.forEach((fila) => {
+    Object.keys(fila).forEach((columna) => columnas.add(columna));
+  });
+
+  worksheet['!cols'] = Array.from(columnas).map((columna) => {
+    const anchoMaximo = filas.reduce((maximo, fila) => {
+      const longitud = String(fila[columna] ?? '').length;
+      return Math.max(maximo, longitud);
+    }, columna.length);
+
+    return { wch: Math.min(Math.max(anchoMaximo + 2, 12), 45) };
+  });
+}
+
+function agregarHojaExcel(workbook, nombreHoja, filas) {
+  const worksheet = xlsx.utils.json_to_sheet(filas);
+  ajustarAnchoColumnas(worksheet, filas);
+  xlsx.utils.book_append_sheet(workbook, worksheet, nombreHoja);
+}
 
 
 router.get('/exportar-excel', async (req, res) => {
   try {
-    const alumnos = await Alumno.find({ registro_completado: true }).lean();
-    if (!alumnos.length) {
-      return res.status(404).json({ message: 'No hay alumnos registrados aún.' });
+ const [alumnos, registrados] = await Promise.all([
+      Alumno.find({ registro_completado: true }).sort({ createdAt: -1 }).lean(),
+      Registrado.find({}).sort({ createdAt: -1 }).lean()
+    ]);
+
+    if (!alumnos.length && !registrados.length) {
+      return res.status(404).json({ message: 'No hay alumnos ni registrados para exportar.' });
     }
 
-    const datos = alumnos.map(al => ({
-      folio: al.folio || '',
-      // DATOS ALUMNO
-      primer_apellido: al.datos_alumno?.primer_apellido || '',
-      segundo_apellido: al.datos_alumno?.segundo_apellido || '',
-      nombres: al.datos_alumno?.nombres || '',
-      periodo_semestral: al.datos_alumno?.periodo_semestral || '',
-      semestre: al.datos_alumno?.semestre || '',
-      grupo: al.datos_alumno?.grupo || '',
-      turno: al.datos_alumno?.turno || '',
-      carrera: al.datos_alumno?.carrera || '',
-            curp: al.datos_alumno?.curp || '',
-      fecha_nacimiento: al.datos_alumno?.fecha_nacimiento || '',
-      edad: al.datos_alumno?.edad || '',
-      sexo: al.datos_alumno?.sexo || '',
-      estado_nacimiento: al.datos_alumno?.estado_nacimiento || '',
-      municipio_nacimiento: al.datos_alumno?.municipio_nacimiento || '',
-      ciudad_nacimiento: al.datos_alumno?.ciudad_nacimiento || '',
-      estado_civil: al.datos_alumno?.estado_civil || '',
-      nacionalidad: al.datos_alumno?.nacionalidad || '',
-      pais_extranjero: al.datos_alumno?.pais_extranjero || '',
-
-      // DATOS GENERALES
-      colonia: al.datos_generales?.colonia || '',
-      domicilio: al.datos_generales?.domicilio || '',
-      codigo_postal: al.datos_generales?.codigo_postal || '',
-      telefono_alumno: al.datos_generales?.telefono_alumno || '',
-      correo_alumno: al.datos_generales?.correo_alumno || '',
-      paraescolar: al.datos_generales?.paraescolar || '',
-      entrega_diagnostico: al.datos_generales?.entrega_diagnostico || '',
-      detalle_enfermedad: al.datos_generales?.detalle_enfermedad || '',
-      responsable_emergencia_nombre: al.datos_generales?.responsable_emergencia?.nombre || '',
-      responsable_emergencia_telefono: al.datos_generales?.responsable_emergencia?.telefono || '',
-      responsable_emergencia_parentesco: al.datos_generales?.responsable_emergencia?.parentesco || '',
-      carta_poder: al.datos_generales?.carta_poder || '',
-      tipo_sangre: al.datos_generales?.tipo_sangre || '',
-      contacto_emergencia_nombre: al.datos_generales?.contacto_emergencia_nombre || '',
-      contacto_emergencia_telefono: al.datos_generales?.contacto_emergencia_telefono || '',
-      habla_lengua_indigena_respuesta: al.datos_generales?.habla_lengua_indigena?.respuesta || '',
-      habla_lengua_indigena_cual: al.datos_generales?.habla_lengua_indigena?.cual || '',
-      primera_opcion: al.datos_generales?.primera_opcion || '',
-      segunda_opcion: al.datos_generales?.segunda_opcion || '',
-      tercera_opcion: al.datos_generales?.tercera_opcion || '',
-      cuarta_opcion: al.datos_generales?.cuarta_opcion || '',
-      estado_nacimiento_general: al.datos_generales?.estado_nacimiento_general || '',
-      municipio_nacimiento_general: al.datos_generales?.municipio_nacimiento_general || '',
-      ciudad_nacimiento_general: al.datos_generales?.ciudad_nacimiento_general || '',
-
-      // DATOS MÉDICOS
-      numero_seguro_social: al.datos_medicos?.numero_seguro_social || '',
-      unidad_medica_familiar: al.datos_medicos?.unidad_medica_familiar || '',
-      enfermedad_cronica_respuesta: al.datos_medicos?.enfermedad_cronica_o_alergia?.respuesta || '',
-      enfermedad_cronica_detalle: al.datos_medicos?.enfermedad_cronica_o_alergia?.detalle || '',
-      discapacidad: al.datos_medicos?.discapacidad || '',
-
-      // SECUNDARIA ORIGEN
-      nombre_secundaria: al.secundaria_origen?.nombre_secundaria || '',
-      regimen: al.secundaria_origen?.regimen || '',
-      estudias: al.secundaria_origen?.estudias || '',
-      modalidad: al.secundaria_origen?.modalidad || '',
-
-      // TUTOR RESPONSABLE
-      nombre_padre: al.tutor_responsable?.nombre_padre || '',
-      telefono_padre: al.tutor_responsable?.telefono_padre || '',
-      nombre_madre: al.tutor_responsable?.nombre_madre || '',
-      telefono_madre: al.tutor_responsable?.telefono_madre || '',
-      vive_con: al.tutor_responsable?.vive_con || '',
-
-      // PERSONA EMERGENCIA
-      persona_emergencia_nombre: al.persona_emergencia?.nombre || '',
-      persona_emergencia_parentesco: al.persona_emergencia?.parentesco || '',
-      persona_emergencia_telefono: al.persona_emergencia?.telefono || ''
-    }));
+ const filasAlumnos = prepararFilasExportacion(alumnos, 'alumnos');
+    const filasRegistrados = prepararFilasExportacion(registrados, 'registrados');
+    const filasGeneral = [...filasAlumnos, ...filasRegistrados];
 
     const workbook = xlsx.utils.book_new();
-    const worksheet = xlsx.utils.json_to_sheet(datos);
-    xlsx.utils.book_append_sheet(workbook, worksheet, 'Alumnos');
+  if (filasGeneral.length) {
+      agregarHojaExcel(workbook, 'Todos', filasGeneral);
+    }
 
-    const exportPath = path.join(__dirname, '../exports', 'alumnos_registrados.xlsx');
-    xlsx.writeFile(workbook, exportPath);
+  if (filasAlumnos.length) {
+      agregarHojaExcel(workbook, 'Alumnos', filasAlumnos);
+    }
 
-    res.download(exportPath, 'alumnos_registrados.xlsx', (err) => {
-      if (err) console.error('❌ Error al descargar:', err);
-      try { fs.unlinkSync(exportPath); } catch (e) {}
+    if (filasRegistrados.length) {
+      agregarHojaExcel(workbook, 'Registrados', filasRegistrados);
+    }
+
+    const buffer = xlsx.write(workbook, {
+      type: 'buffer',
+      bookType: 'xlsx'
     });
+ res.setHeader(
+      'Content-Disposition',
+      'attachment; filename=alumnos_registrados_completo.xlsx'
+    );
+    res.setHeader(
+      'Content-Type',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    );
 
+    res.send(buffer);
   } catch (err) {
     console.error('❌ Error al exportar Excel:', err);
     res.status(500).json({ message: 'Error al exportar datos.' });
