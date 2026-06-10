@@ -68,6 +68,7 @@ bloqueado: {
       cual: String
     },
     hermanos_activos: String,
+    numero_control_hermano: String,
     primera_opcion: String,
     segunda_opcion: String,
     tercera_opcion: String,
