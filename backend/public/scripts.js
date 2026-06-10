@@ -153,7 +153,15 @@ document.addEventListener("DOMContentLoaded", () => {
 }
 
 
-      alert(`✅ Registro exitoso - Guarda tu Folio\nFolio asignado: ${result.folio}`);
+           alert(`✅ Preregistro guardado - Guarda tu Folio
+Folio asignado: ${result.folio}
+
+Con este folio podrás completar tu registro.`);
+
+      if (result.folio) {
+        localStorage.setItem("alumnoFolio", result.folio);
+        localStorage.removeItem("datosPrecargados");
+      }
 
       if (result.pdf_url) {
         window.open(result.pdf_url, "_blank");
