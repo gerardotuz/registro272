@@ -485,6 +485,15 @@ function normalizarRegistradoParaPDF(registrado, numeroControl) {
       periodo_semestral: raw.periodo_semestral || '',
       semestre: raw.semestre || raw.grado || '',
       grupo: raw.grupo || '',
+      nacionalidad: raw.nacionalidad || '',
+      pais_extranjero: raw.pais_extranjero || '',
+      estado_civil: raw.estado_civil || '',
+      fecha_nacimiento: raw.fecha_nacimiento || '',
+      edad: raw.edad || '',
+      sexo: raw.sexo || '',
+      estado_nacimiento: raw.estado_nacimiento || '',
+      municipio_nacimiento: raw.municipio_nacimiento || '',
+      ciudad_nacimiento: raw.ciudad_nacimiento || '',
       turno: raw.turno || ''
     },
     datos_generales: raw.datos_generales || {
@@ -493,7 +502,13 @@ function normalizarRegistradoParaPDF(registrado, numeroControl) {
       codigo_postal: raw.codigo_postal || '',
       telefono_alumno: raw.telefono_alumno || '',
       correo_alumno: raw.correo_alumno || '',
-      paraescolar: raw.paraescolar || ''
+      tipo_sangre: raw.tipo_sangre || '',
+      contacto_emergencia_nombre: raw.contacto_emergencia_nombre || '',
+      contacto_emergencia_telefono: raw.contacto_emergencia_telefono || '',
+      habla_lengua_indigena: {
+        respuesta: raw.habla_lengua_indigena_respuesta || '',
+        cual: raw.habla_lengua_indigena_cual || ''
+      }
     },
     datos_medicos: raw.datos_medicos || {},
     secundaria_origen: raw.secundaria_origen || {},
