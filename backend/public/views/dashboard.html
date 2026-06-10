@@ -150,7 +150,41 @@
     font-weight: 800;
     box-shadow: 0 14px 24px rgba(122, 18, 50, 0.28);
   }
+.folio-status-card {
+    padding: 18px 20px;
+    border: 1px solid rgba(200, 162, 74, 0.34);
+    border-radius: 18px;
+    background:
+      linear-gradient(135deg, rgba(122, 18, 50, 0.09), rgba(200, 162, 74, 0.18)),
+      rgba(255, 255, 255, 0.86);
+    box-shadow: 0 16px 30px rgba(79, 11, 32, 0.12);
+    text-align: center;
+  }
 
+  .folio-status-label {
+    margin: 0 0 6px;
+    color: var(--institucional-vino);
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: 0.10em;
+    text-transform: uppercase;
+  }
+
+  .folio-status-number {
+    margin: 0;
+    color: var(--institucional-vino-oscuro);
+    font-size: clamp(28px, 4vw, 42px);
+    font-weight: 950;
+    line-height: 1;
+    letter-spacing: -0.04em;
+  }
+
+  .folio-status-help {
+    margin: 8px 0 0;
+    color: #676f75;
+    font-size: 12px;
+    font-weight: 700;
+  }
   .dashboard-grid {
     display: grid;
     grid-template-columns: 1.6fr 1fr;
@@ -390,6 +424,11 @@
     </div>
     <div class="dashboard-hero-actions">
       <button id="btnAgregarNuevo" class="btn dashboard-primary-btn">+ Agregar nuevo alumno</button>
+       <div class="folio-status-card" aria-live="polite">
+        <p class="folio-status-label">Último folio asignado</p>
+        <p id="ultimoFolioAsignado" class="folio-status-number">Cargando...</p>
+        <p class="folio-status-help">Colección alumnos</p>
+      </div>
     </div>
   </section>
 
