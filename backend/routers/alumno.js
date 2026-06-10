@@ -766,9 +766,10 @@ if (resultado.existe) {
     res.status(200).json({
        message: "Preregistro guardado. Conserva tu folio para completar el registro.",
       folio,
-      pdf_url: pdfUrl
-      registro_completado: false,
+       registro_completado: false,
       bloqueado: false,
+      pdf_url: pdfUrl
+     
     });
 
   } catch (err) {
