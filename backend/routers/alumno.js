@@ -868,6 +868,38 @@ function agregarOrigenDashboard(doc, coleccion) {
   const plano = typeof doc.toObject === 'function' ? doc.toObject() : doc;
   return { ...plano, _dashboardCollection: coleccion };
 }
+async function obtenerUltimoFolioAsignado() {
+  const prefijo = 'CBTIS272-';
+  const [ultimo] = await Alumno.aggregate([
+    { $match: { folio: { $regex: `^${prefijo}` } } },
+    {
+      $addFields: {
+        folioConsecutivo: {
+          $convert: {
+            input: { $arrayElemAt: [{ $split: ['$folio', prefijo] }, 1] },
+            to: 'int',
+            onError: 0,
+            onNull: 0
+          }
+        }
+      }
+    },
+    { $sort: { folioConsecutivo: -1, folio: -1 } },
+    { $project: { folio: 1 } },
+    { $limit: 1 }
+  ]);
+
+  return ultimo?.folio || null;
+}
+
+router.get('/dashboard/ultimo-folio', async (req, res) => {
+  try {
+    const folio = await obtenerUltimoFolioAsignado();
+    res.json({ folio });
+  } catch (error) {
+    res.status(500).json({ message: 'Error al consultar el último folio asignado', error });
+  }
+});
 
 
 router.get('/dashboard/alumnos', async (req, res) => {
