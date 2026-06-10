@@ -13,12 +13,13 @@ const fs = require('fs');
 const AlumnoSchema = require('../models/Alumno').schema;
 const { conexiones } = require('../server');
 const RegistradoBase = require('../models/Registrado');
+const HermanoControlUsadoBase = require('../models/HermanoControlUsado');
 const Paraescolar = require('../models/paraescolar.model');
 
 // 👇 usar SIEMPRE la conexión del plantel actual
 const Alumno = conexiones.registro272.model("Alumno", AlumnoSchema);
 const Registrado = conexiones.registro272.models.Registrado || conexiones.registro272.model('Registrado', RegistradoBase.schema);
-
+const HermanoControlUsado = conexiones.registro272.models.HermanoControlUsado || conexiones.registro272.model('HermanoControlUsado', HermanoControlUsadoBase.schema);
 
 // ============================================
 // VALIDAR CURP GLOBAL ENTRE PLANTELES (BLINDADO)
@@ -386,7 +387,107 @@ async function buscarEnModeloPorNumeroControl(Modelo, numeroControl) {
   // Último recurso: busca el número en cualquier campo superior string/numérico del documento.
   return Modelo.findOne(crearFiltroFlexibleNumeroControl(numeroControl)).lean();
 }
+function normalizarNumeroControl(numeroControl) {
+  return String(numeroControl || '').trim().toUpperCase();
+}
 
+function tieneHermanosActivos(valor) {
+  const limpio = String(valor || '').trim().toUpperCase();
+  return ['SI', 'SÍ', 'YES', 'TRUE', '1'].includes(limpio);
+}
+
+function obtenerDatosReservaHermano(data) {
+  const datosAlumno = data?.datos_alumno || {};
+  return {
+    folio_registro: data?.folio,
+    curp_registro: datosAlumno.curp,
+    nombres_registro: [datosAlumno.nombres, datosAlumno.primer_apellido, datosAlumno.segundo_apellido]
+      .filter(Boolean)
+      .join(' ')
+  };
+}
+
+async function numeroControlHermanoFueUsado(numeroControl, folioActual = '') {
+  const limpio = normalizarNumeroControl(numeroControl);
+  if (!limpio) return null;
+
+  const usado = await HermanoControlUsado.findOne({ numero_control: limpio }).lean();
+  if (usado && (!folioActual || usado.folio_registro !== folioActual)) {
+    return usado;
+  }
+
+  const filtroAlumno = {
+    'datos_generales.numero_control_hermano': limpio,
+    registro_completado: true
+  };
+
+  if (folioActual) {
+    filtroAlumno.folio = { $ne: folioActual };
+  }
+
+  return Alumno.findOne(filtroAlumno, {
+    folio: 1,
+    'datos_alumno.curp': 1,
+    'datos_alumno.nombres': 1,
+    'datos_alumno.primer_apellido': 1,
+    'datos_alumno.segundo_apellido': 1
+  }).lean();
+}
+
+async function validarNumeroControlHermano(numeroControl, folioActual = '') {
+  const limpio = normalizarNumeroControl(numeroControl);
+  if (!limpio) {
+    return { ok: false, status: 400, message: 'Captura el número de control del hermano.' };
+  }
+
+  const registrado = await buscarRegistradoPorNumeroControl(limpio);
+  if (!registrado || !String(registrado.origen || '').startsWith('registrados')) {
+    return { ok: false, status: 404, message: 'El número de control del hermano no existe en la colección registrados.' };
+  }
+
+  const usado = await numeroControlHermanoFueUsado(limpio, folioActual);
+  if (usado) {
+    return { ok: false, status: 409, message: 'Este número de control de hermano ya fue utilizado en otro registro.' };
+  }
+
+  return { ok: true, numero_control: limpio, registrado: registrado.alumno, origen: registrado.origen };
+}
+
+async function reservarNumeroControlHermano(data) {
+  if (!tieneHermanosActivos(data?.datos_generales?.hermanos_activos)) {
+    if (data?.datos_generales) data.datos_generales.numero_control_hermano = '';
+    return null;
+  }
+
+  const limpio = normalizarNumeroControl(data?.datos_generales?.numero_control_hermano);
+  const validacion = await validarNumeroControlHermano(limpio, data?.folio);
+  if (!validacion.ok) {
+    const error = new Error(validacion.message);
+    error.status = validacion.status;
+    throw error;
+  }
+
+  data.datos_generales.numero_control_hermano = limpio;
+
+  try {
+    return await HermanoControlUsado.create({
+      numero_control: limpio,
+      ...obtenerDatosReservaHermano(data)
+    });
+  } catch (error) {
+    if (error?.code === 11000) {
+      const duplicado = new Error('Este número de control de hermano ya fue utilizado en otro registro.');
+      duplicado.status = 409;
+      throw duplicado;
+    }
+    throw error;
+  }
+}
+
+async function liberarReservaHermano(reserva) {
+  if (!reserva?._id) return;
+  await HermanoControlUsado.deleteOne({ _id: reserva._id });
+}
 async function buscarRegistradoPorNumeroControl(numeroControl) {
   const registradoPlantel = await buscarEnModeloPorNumeroControl(Registrado, numeroControl);
   if (registradoPlantel) {
@@ -429,7 +530,30 @@ router.get('/folio/:folio', async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 });
+router.get('/hermanos/validar/:numeroControl', async (req, res) => {
+  try {
+    const numeroControl = normalizarNumeroControl(req.params.numeroControl);
+    const validacion = await validarNumeroControlHermano(numeroControl);
 
+    if (!validacion.ok) {
+      return res.status(validacion.status).json({
+        ok: false,
+        disponible: false,
+        message: validacion.message
+      });
+    }
+
+    res.json({
+      ok: true,
+      disponible: true,
+      numero_control: validacion.numero_control,
+      message: 'Número de control válido y disponible para registrar como hermano.'
+    });
+  } catch (error) {
+    console.error('❌ Error al validar número de control de hermano:', error);
+    res.status(500).json({ ok: false, disponible: false, message: error.message });
+  }
+});
 router.get('/preregistro/:folio', async (req, res) => {
   try {
     const folio = String(req.params.folio || '').trim().toUpperCase();
@@ -548,6 +672,8 @@ async function generarFolio() {
 
 
 router.post('/guardar', async (req, res) => {
+   let reservaHermano = null;
+  let alumnoGuardado = false;
   try {
 
     // ==========================================
@@ -614,12 +740,12 @@ if (resultado.existe) {
 
     data.registro_completado = true;
     data.bloqueado = true;
-
+reservaHermano = await reservarNumeroControlHermano(data);
     // ==========================================
     // 💾 GUARDAR EN BD
     // ==========================================
     const actualizado = await Alumno.create(data);
-
+alumnoGuardado = true;
     // ==========================================
     // 📄 GENERAR PDF
     // ==========================================
@@ -637,8 +763,11 @@ if (resultado.existe) {
     });
 
   } catch (err) {
+     if (reservaHermano && !alumnoGuardado) {
+      await liberarReservaHermano(reservaHermano);
+    }
     console.error("❌ ERROR EN /guardar:", err);
-    res.status(500).json({ message: err.message });
+    res.status(err.status || 500).json({ message: err.message });
   }
 });
 
@@ -1095,6 +1224,8 @@ router.get('/debug/curp-global/:curp', async (req, res) => {
 });
 
 router.post('/guardar-registro', async (req, res) => {
+  let reservaHermano = null;
+  let registroGuardado = false;
   try {
     const data = req.body;
     const folio = String(data?.folio || '').trim().toUpperCase();
@@ -1139,9 +1270,9 @@ router.post('/guardar-registro', async (req, res) => {
     }
 
     upperCaseData.registro_completado = true;
-
+reservaHermano = await reservarNumeroControlHermano(upperCaseData);
     await Alumno.findOneAndUpdate({ folio }, upperCaseData, { upsert: true });
-
+registroGuardado = true;
     const datosAnidados = flattenToNested(upperCaseData);
     const nombreArchivo = `${datosAnidados.datos_alumno?.curp || 'formulario'}_registro.pdf`;
     await generarPDFRegistro(datosAnidados, nombreArchivo);
@@ -1151,8 +1282,11 @@ router.post('/guardar-registro', async (req, res) => {
       pdf_url: `/pdfs/${nombreArchivo}`
     });
   } catch (err) {
+      if (reservaHermano && !registroGuardado) {
+      await liberarReservaHermano(reservaHermano);
+    }
     console.error('Error en /guardar-registro:', err);
-    res.status(500).json({ message: err.message });
+    res.status(err.status || 500).json({ message: err.message });
   }
 });
 
