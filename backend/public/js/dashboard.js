@@ -214,7 +214,26 @@ document.addEventListener('DOMContentLoaded', () => {
   const searchApellidos = document.getElementById('searchApellidos');
   const btnBuscar = document.getElementById('btnBuscar');
   const resultadosTable = document.getElementById('resultadosTable');
+  const ultimoFolioAsignado = document.getElementById('ultimoFolioAsignado');
 
+  async function cargarUltimoFolioAsignado() {
+    if (!ultimoFolioAsignado) return;
+
+    ultimoFolioAsignado.textContent = 'Cargando...';
+
+    try {
+      const res = await fetch(`${BASE_URL}/api/dashboard/ultimo-folio`);
+      if (!res.ok) throw new Error('No se pudo consultar el último folio');
+
+      const data = await res.json();
+      ultimoFolioAsignado.textContent = data.folio || 'Sin folios';
+    } catch (error) {
+      console.error('Error al cargar el último folio asignado:', error);
+      ultimoFolioAsignado.textContent = 'No disponible';
+    }
+  }
+
+  cargarUltimoFolioAsignado();
   function configurarFormularioPorColeccion(coleccion) {
     const esRegistrado = coleccion === COLECCION_REGISTRADOS;
     document.getElementById('editModalTitle').textContent = esRegistrado
