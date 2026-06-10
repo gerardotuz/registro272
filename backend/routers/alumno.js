@@ -716,15 +716,25 @@ if (resultado.existe) {
       "datos_alumno.curp": curp
     });
 
-    if (existe?.registro_completado) {
+    if (existe?.registro_completado || existe?.bloqueado) {
       return res.status(400).json({
         message: "Este alumno ya completó su registro"
       });
     }
+  // ==========================================
+    // 🔢 GENERAR O CONSERVAR FOLIO DE PREREGISTRO
+    // ==========================================
+    const folio = existe?.folio || await generarFolio();
+    data.folio = folio;
 
+    // El formulario inicial solo crea/actualiza el preregistro.
+    // Debe quedar abierto para que el alumno complete formulario-registro.html.
+    data.registro_completado = false;
+    data.bloqueado = false;
+    
     const paraescolarSolicitado = data?.datos_generales?.paraescolar;
     if (paraescolarSolicitado) {
-      const okParaescolar = await puedeAsignarParaescolar(paraescolarSolicitado);
+     const okParaescolar = await puedeAsignarParaescolar(paraescolarSolicitado, existe?._id);
       if (!okParaescolar) {
         return res.status(400).json({
           message: `El paraescolar ${paraescolarSolicitado} ya alcanzó el límite de ${MAX_PARAESCOLAR} alumno(s).`
@@ -735,31 +745,30 @@ if (resultado.existe) {
     // ==========================================
     // 🔢 GENERAR FOLIO
     // ==========================================
-    const folio = await generarFolio();
-    data.folio = folio;
-
-    data.registro_completado = true;
-    data.bloqueado = true;
-reservaHermano = await reservarNumeroControlHermano(data);
+ 
     // ==========================================
     // 💾 GUARDAR EN BD
     // ==========================================
-    const actualizado = await Alumno.create(data);
-alumnoGuardado = true;
+    const actualizado = existe
+      ? await Alumno.findOneAndUpdate({ _id: existe._id }, data, { new: true })
+      : await Alumno.create(data);
+    alumnoGuardado = true;
     // ==========================================
-    // 📄 GENERAR PDF
+    // 📄 GENERAR PDF DE PREREGISTRO
     // ==========================================
     const datosAnidados = flattenToNested(actualizado.toObject());
-    const nombreArchivo = `${folio}_registro.pdf`;
-    const pdfUrl = await generarPDFRegistro(datosAnidados, nombreArchivo);
+    const nombreArchivo = `${folio}.pdf`;
+    const pdfUrl = await generarPDF(datosAnidados, nombreArchivo);
 
     // ==========================================
     // ✅ RESPUESTA FINAL
     // ==========================================
     res.status(200).json({
-      message: "Registro exitoso",
+       message: "Preregistro guardado. Conserva tu folio para completar el registro.",
       folio,
       pdf_url: pdfUrl
+      registro_completado: false,
+      bloqueado: false,
     });
 
   } catch (err) {
