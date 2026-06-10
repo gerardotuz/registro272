@@ -17,8 +17,7 @@ const PARAESCOLARES_FALLBACK = [
   'TEATRO-CANTO',
   'TOCHO BANDERA',
   'VOLEIBOL',
-  'ORATORIADECLAMACION',
-  'CORO',
+  'ORATORIA-DECLAMACION',
   'MÚSICA'
 ];
 
@@ -27,6 +26,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   cargarCatalogo();
   cargarCatalogoGeneral();
   await cargarCuposParaescolar();
+   configurarValidacionHermanos();
   consultarFolioYAutocompletar();
 
   document.getElementById('registroForm').addEventListener('submit', async (e) => {
@@ -42,7 +42,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       alert('El paraescolar seleccionado ya alcanzó el cupo máximo. Selecciona otra opción.');
       return;
     }
-
+ const hermanoValido = await validarNumeroControlHermano(true);
+    if (!hermanoValido) return;
     const payload = {
       datos_alumno: {
         nombres: formData.get('nombres'), primer_apellido: formData.get('primer_apellido'), segundo_apellido: formData.get('segundo_apellido'),
@@ -51,7 +52,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         estado_nacimiento: clave('estado_nacimiento'), municipio_nacimiento: clave('municipio_nacimiento'), ciudad_nacimiento: clave('ciudad_nacimiento'), estado_civil: formData.get('estado_civil')
       },
       datos_generales: {
-        colonia: formData.get('colonia'), domicilio: formData.get('domicilio'), codigo_postal: formData.get('codigo_postal'), telefono_alumno: formData.get('telefono_alumno'), correo_alumno: formData.get('correo_alumno'), paraescolar: formData.get('paraescolar'), hermanos_activos: formData.get('hermanos_activos'), tipo_sangre: formData.get('tipo_sangre'),
+          colonia: formData.get('colonia'), domicilio: formData.get('domicilio'), codigo_postal: formData.get('codigo_postal'), telefono_alumno: formData.get('telefono_alumno'), correo_alumno: formData.get('correo_alumno'), paraescolar: formData.get('paraescolar'), hermanos_activos: formData.get('hermanos_activos'), numero_control_hermano: formData.get('numero_control_hermano'), tipo_sangre: formData.get('tipo_sangre'),
         contacto_emergencia_nombre: formData.get('contacto_emergencia_nombre'), contacto_emergencia_telefono: formData.get('contacto_emergencia_telefono'),
         habla_lengua_indigena: { respuesta: formData.get('habla_lengua_indigena_respuesta'), cual: formData.get('habla_lengua_indigena_cual') },
         entrega_diagnostico: formData.get('entrega_diagnostico'), detalle_enfermedad: formData.get('detalle_enfermedad'),
@@ -178,7 +179,80 @@ async function cargarCuposParaescolar(valorActual = '') {
     info.textContent = `Cupo máximo por paraescolar: ${limite} alumnos. Las opciones llenas se bloquean automáticamente.`;
   }
 }
+function respuestaEsSi(valor) {
+  return ['SI', 'SÍ'].includes(String(valor || '').trim().toUpperCase());
+}
 
+function configurarValidacionHermanos() {
+  const select = document.getElementById('hermanos_activos');
+  const input = document.getElementById('numero_control_hermano');
+  const wrapper = document.getElementById('numeroControlHermanoWrapper');
+  if (!select || !input || !wrapper) return;
+
+  const actualizar = () => {
+    const requiereNumero = respuestaEsSi(select.value);
+    wrapper.style.display = requiereNumero ? 'block' : 'none';
+    input.required = requiereNumero;
+    input.disabled = !requiereNumero;
+    if (!requiereNumero) {
+      input.value = '';
+      mostrarMensajeHermano('Captura el número de control y se validará en registrados.', '#555');
+    }
+  };
+
+  select.addEventListener('change', actualizar);
+  input.addEventListener('blur', () => validarNumeroControlHermano(false));
+  input.addEventListener('input', () => mostrarMensajeHermano('Pendiente de validar.', '#555'));
+  actualizar();
+}
+
+function mostrarMensajeHermano(mensaje, color = '#555') {
+  const mensajeEl = document.getElementById('numeroControlHermanoMensaje');
+  if (!mensajeEl) return;
+  mensajeEl.textContent = mensaje;
+  mensajeEl.style.color = color;
+}
+
+async function validarNumeroControlHermano(mostrarAlertas = false) {
+  const select = document.getElementById('hermanos_activos');
+  const input = document.getElementById('numero_control_hermano');
+  if (!select || !input || !respuestaEsSi(select.value)) return true;
+
+  const numeroControl = input.value.trim().toUpperCase();
+  input.value = numeroControl;
+
+  if (!numeroControl) {
+    const mensaje = 'Captura el número de control del hermano.';
+    mostrarMensajeHermano(mensaje, '#b00020');
+    if (mostrarAlertas) alert(mensaje);
+    input.focus();
+    return false;
+  }
+
+  try {
+    mostrarMensajeHermano('Validando número de control...', '#555');
+    const res = await fetch(`${BASE_URL}/api/hermanos/validar/${encodeURIComponent(numeroControl)}`);
+    const data = await res.json();
+
+    if (!res.ok || !data.disponible) {
+      const mensaje = data.message || 'El número de control del hermano no está disponible.';
+      mostrarMensajeHermano(mensaje, '#b00020');
+      if (mostrarAlertas) alert(mensaje);
+      input.focus();
+      return false;
+    }
+
+    mostrarMensajeHermano('Número de control encontrado en registrados y disponible.', '#0a7f28');
+    return true;
+  } catch (error) {
+    const mensaje = 'No se pudo validar el número de control del hermano. Intenta nuevamente.';
+    console.error('Error validando número de control de hermano:', error);
+    mostrarMensajeHermano(mensaje, '#b00020');
+    if (mostrarAlertas) alert(mensaje);
+    input.focus();
+    return false;
+  }
+}
 function registroEstaBloqueado(datos) {
   return Boolean(datos?.registro_completado || datos?.bloqueado);
 }
@@ -240,6 +314,7 @@ async function consultarFolioYAutocompletar(){
   if(!datos) return;
   const mappings={...datos.datos_alumno,...datos.datos_generales,...datos.datos_medicos,...datos.secundaria_origen,...datos.tutor_responsable,'habla_lengua_indigena_respuesta':datos.datos_generales?.habla_lengua_indigena?.respuesta,'habla_lengua_indigena_cual':datos.datos_generales?.habla_lengua_indigena?.cual,'enfermedad_cronica_o_alergia_respuesta':datos.datos_medicos?.enfermedad_cronica_o_alergia?.respuesta,'enfermedad_cronica_o_alergia_detalle':datos.datos_medicos?.enfermedad_cronica_o_alergia?.detalle,'persona_emergencia_nombre':datos.persona_emergencia?.nombre,'persona_emergencia_parentesco':datos.persona_emergencia?.parentesco,'persona_emergencia_telefono':datos.persona_emergencia?.telefono};
   Object.entries(mappings).forEach(([k,v])=>set(k,v));
+  document.getElementById('hermanos_activos')?.dispatchEvent(new Event('change'));
   cargarCuposParaescolar(datos?.datos_generales?.paraescolar || '');
 
   if (registroEstaBloqueado(datos)) {
