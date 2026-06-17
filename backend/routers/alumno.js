@@ -204,26 +204,6 @@ function construirResumenParaescolares(conteos) {
 }
 
 
-    { $match: { paraescolar: { $ne: '' } } },
-    { $group: { _id: '$paraescolar', ocupados: { $sum: 1 } } }
-  ]);
-
-  return new Map(conteos.map((item) => [item._id, item.ocupados]));
-}
-
-function construirResumenParaescolares(conteos) {
-  return PARAESCOLARES_DISPONIBLES.map((nombre) => {
-    const ocupados = conteos.get(nombre) || 0;
-    const disponibles = Math.max(MAX_PARAESCOLAR - ocupados, 0);
-    return {
-      nombre,
-      ocupados,
-      disponibles,
-      limite: MAX_PARAESCOLAR,
-      lleno: ocupados >= MAX_PARAESCOLAR
-    };
-  });
-}
 
 async function puedeAsignarParaescolar(paraescolar, alumnoId = null) {
   const limpio = normalizarParaescolar(paraescolar);
