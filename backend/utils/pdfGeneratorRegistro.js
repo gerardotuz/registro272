@@ -297,11 +297,11 @@ const esReinscripcion = String(datos.tipo_tramite || '').toUpperCase() === 'REIN
   y = drawBox('Municipio de Nacimiento', nacimiento.municipio, marginX, y);
   y = drawBox('Ciudad de Nacimiento', nacimiento.ciudad, marginX + 260, y); y += GAP_Y;
    if (!esReinscripcion) {
-    y = drawBox('Primera Opción', generales.primera_opcion, marginX, y);
-    y = drawBox('Segunda Opción', generales.segunda_opcion, marginX + 260, y); y += GAP_Y;
-    y = drawBox('Tercera Opción', generales.tercera_opcion, marginX, y);
-    y = drawBox('Cuarta Opción', generales.cuarta_opcion, marginX + 260, y); y += GAP_Y;
-    y = drawBox('Quinta Opción', generales.quinta_opcion, marginX, y); y += GAP_Y;
+   // y = drawBox('Primera Opción', generales.primera_opcion, marginX, y);
+   // y = drawBox('Segunda Opción', generales.segunda_opcion, marginX + 260, y); y += GAP_Y;
+   // y = drawBox('Tercera Opción', generales.tercera_opcion, marginX, y);
+    //y = drawBox('Cuarta Opción', generales.cuarta_opcion, marginX + 260, y); y += GAP_Y;
+   // y = drawBox('Quinta Opción', generales.quinta_opcion, marginX, y); y += GAP_Y;
   }
 
   y = drawSectionTitle('Datos Generales', y);
