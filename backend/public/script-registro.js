@@ -20,6 +20,10 @@ const PARAESCOLARES_FALLBACK = [
   'ORATORIA-DECLAMACION',
   'MÚSICA'
 ];
+function formatearFechaNacimiento(fecha) {
+  const partes = String(fecha || '').split('-');
+  return partes.length === 3 ? `${partes[2]}-${partes[1]}-${partes[0]}` : fecha;
+}
 
 document.addEventListener('DOMContentLoaded', async () => {
   inicializarOpcionesCarrera();
