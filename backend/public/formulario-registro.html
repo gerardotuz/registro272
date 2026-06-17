@@ -28,11 +28,13 @@
 <input name="periodo_semestral" placeholder="Periodo Semestral" readonly type="text" value="2025-2026"/>
 <input name="semestre" placeholder="Semestre" readonly type="text" value="Primer Semestre"/>
 <input name="grupo" placeholder="Grupo" readonly type="text"/>
-<select id="primera_opcion" name="primera_opcion" required><option value="">cuál fue tu 1era opción</option><option value="A Y B">A Y B</option><option value="PROGRAMACIÓN">PROGRAMACIÓN</option><option value="GESTIÓN E INNOVACIÓN TURÍSTICA">GESTIÓN E INNOVACIÓN TURÍSTICA</option><option value="VENTAS">VENTAS</option><option value="ROBOTICA">ROBOTICA</option></select>
-<select id="segunda_opcion" name="segunda_opcion" required><option value="">cuál fue tu 2da opción</option><option value="A Y B">A Y B</option><option value="PROGRAMACIÓN">PROGRAMACIÓN</option><option value="GESTIÓN E INNOVACIÓN TURÍSTICA">GESTIÓN E INNOVACIÓN TURÍSTICA</option><option value="VENTAS">VENTAS</option><option value="ROBOTICA">ROBOTICA</option></select>
-<select id="tercera_opcion" name="tercera_opcion" required><option value="">cuál fue tu 3era opción</option><option value="A Y B">A Y B</option><option value="PROGRAMACIÓN">PROGRAMACIÓN</option><option value="GESTIÓN E INNOVACIÓN TURÍSTICA">GESTIÓN E INNOVACIÓN TURÍSTICA</option><option value="VENTAS">VENTAS</option><option value="ROBOTICA">ROBOTICA</option></select>
-<select id="cuarta_opcion" name="cuarta_opcion" required><option value="">cuál fue tu 4ta opción</option><option value="A Y B">A Y B</option><option value="PROGRAMACIÓN">PROGRAMACIÓN</option><option value="GESTIÓN E INNOVACIÓN TURÍSTICA">GESTIÓN E INNOVACIÓN TURÍSTICA</option><option value="VENTAS">VENTAS</option><option value="ROBOTICA">ROBOTICA</option></select>
-<select id="quinta_opcion" name="quinta_opcion" required><option value="">cuál fue tu 5ta opción</option><option value="A Y B">A Y B</option><option value="PROGRAMACIÓN">PROGRAMACIÓN</option><option value="GESTIÓN E INNOVACIÓN TURÍSTICA">GESTIÓN E INNOVACIÓN TURÍSTICA</option><option value="VENTAS">VENTAS</option><option value="ROBOTICA">ROBOTICA</option></select>
+
+ <div id="opcionesCarreraWrapper" hidden><select id="primera_opcion" name="primera_opcion"><option value="">cuál fue tu 1era opción</option><option value="A Y B">A Y B</option><option value="PROGRAMACIÓN">PROGRAMACIÓN</option><option value="GESTIÓN E INNOVACIÓN TURÍSTICA">GESTIÓN E INNOVACIÓN TURÍSTICA</option><option value="VENTAS">VENTAS</option><option value="ROBOTICA">ROBOTICA</option></select>
+<select id="segunda_opcion" name="segunda_opcion"><option value="">cuál fue tu 2da opción</option><option value="A Y B">A Y B</option><option value="PROGRAMACIÓN">PROGRAMACIÓN</option><option value="GESTIÓN E INNOVACIÓN TURÍSTICA">GESTIÓN E INNOVACIÓN TURÍSTICA</option><option value="VENTAS">VENTAS</option><option value="ROBOTICA">ROBOTICA</option></select>
+<select id="tercera_opcion" name="tercera_opcion"><option value="">cuál fue tu 3era opción</option><option value="A Y B">A Y B</option><option value="PROGRAMACIÓN">PROGRAMACIÓN</option><option value="GESTIÓN E INNOVACIÓN TURÍSTICA">GESTIÓN E INNOVACIÓN TURÍSTICA</option><option value="VENTAS">VENTAS</option><option value="ROBOTICA">ROBOTICA</option></select>
+<select id="cuarta_opcion" name="cuarta_opcion"><option value="">cuál fue tu 4ta opción</option><option value="A Y B">A Y B</option><option value="PROGRAMACIÓN">PROGRAMACIÓN</option><option value="GESTIÓN E INNOVACIÓN TURÍSTICA">GESTIÓN E INNOVACIÓN TURÍSTICA</option><option value="VENTAS">VENTAS</option><option value="ROBOTICA">ROBOTICA</option></select>
+<select id="quinta_opcion" name="quinta_opcion"><option value="">cuál fue tu 5ta opción</option><option value="A Y B">A Y B</option><option value="PROGRAMACIÓN">PROGRAMACIÓN</option><option value="GESTIÓN E INNOVACIÓN TURÍSTICA">GESTIÓN E INNOVACIÓN TURÍSTICA</option><option value="VENTAS">VENTAS</option><option value="ROBOTICA">ROBOTICA</option></select></div>
+ 
 <select name="nacionalidad" required><option value="">Selecciona Nacionalidad</option><option value="Mexicano">Mexicano</option><option value="Extranjero">Extranjero</option></select>
 <input name="pais_extranjero" placeholder="País (si es extranjero)" type="text"/>
 <select name="estado_civil" required><option value="">Estado Civil</option><option value="Soltero">Soltero</option><option value="Casado">Casado</option><option value="Unión libre">Unión libre</option><option value="Otro">Otro</option></select>
@@ -58,9 +60,9 @@
 <input name="habla_lengua_indigena_cual" placeholder="¿Cuál lengua?" type="text"/>
  <label for="hermanos_activos">¿Cuentas con hermanos cursando actualmente en el plantel?:</label>
 <select id="hermanos_activos" name="hermanos_activos" required><option value="">¿Tiene hermanos activos en el plantel? (Sí/No)</option><option value="Sí">Sí</option><option value="No">No</option></select>
-<div id="numeroControlHermanoWrapper" style="display:none;">
+<!-- <div id="numeroControlHermanoWrapper" style="display:none;">
   <input id="numero_control_hermano" name="numero_control_hermano" placeholder="Número de control del hermano en el plantel" type="text" autocomplete="off"/>
-  <small id="numeroControlHermanoMensaje" style="display:block;margin:4px 0 10px;color:#555;">Captura el número de control y se validará en registrados.</small>
+  <small id="numeroControlHermanoMensaje" style="display:block;margin:4px 0 10px;color:#555;">Captura el número de control del hermano (sin validar en base de datos).</small> -->
 </div>
 <div class="campo-select"><label for="estado_nacimiento_general">Estado de Residencia</label><select id="estado_nacimiento_general" name="estado_nacimiento_general" required></select></div>
 <div class="campo-select"><label for="municipio_nacimiento_general">Municipio de Residencia</label><select id="municipio_nacimiento_general" name="municipio_nacimiento_general" required disabled></select></div>
@@ -96,10 +98,13 @@ const PARAESCOLARES_FALLBACK = [
   'TEATRO-CANTO',
   'TOCHO BANDERA',
   'VOLEIBOL',
-  'ORATORIADECLAMACION',
-  'CORO',
+  'ORATORIA - DECLAMACION',
   'MÚSICA'
 ];
+ function formatearFechaNacimiento(fecha) {
+  const partes = String(fecha || '').split('-');
+  return partes.length === 3 ? `${partes[2]}-${partes[1]}-${partes[0]}` : fecha;
+}
 
 document.addEventListener('DOMContentLoaded', async () => {
   inicializarOpcionesCarrera();
@@ -122,13 +127,14 @@ document.addEventListener('DOMContentLoaded', async () => {
       alert('El paraescolar seleccionado ya alcanzó el cupo máximo. Selecciona otra opción.');
       return;
     }
-const hermanoValido = await validarNumeroControlHermano(true);
+// La validación contra la base de datos queda desactivada; solo se captura la información.
+    const hermanoValido = true;
     if (!hermanoValido) return;
     const payload = {
       datos_alumno: {
         nombres: formData.get('nombres'), primer_apellido: formData.get('primer_apellido'), segundo_apellido: formData.get('segundo_apellido'),
         curp: formData.get('curp'), carrera: formData.get('carrera'), periodo_semestral: formData.get('periodo_semestral'), semestre: formData.get('semestre'), grupo: formData.get('grupo'), turno: formData.get('turno'),
-        fecha_nacimiento: formData.get('fecha_nacimiento'), edad: formData.get('edad'), sexo: formData.get('sexo'),
+        fecha_nacimiento: formatearFechaNacimiento(formData.get('fecha_nacimiento')), edad: formData.get('edad'), sexo: formData.get('sexo'),
         estado_nacimiento: clave('estado_nacimiento'), municipio_nacimiento: clave('municipio_nacimiento'), ciudad_nacimiento: clave('ciudad_nacimiento'), estado_civil: formData.get('estado_civil')
       },
       datos_generales: {
