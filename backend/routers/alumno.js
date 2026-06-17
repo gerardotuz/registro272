@@ -20,7 +20,7 @@ const Paraescolar = require('../models/paraescolar.model');
 const Alumno = conexiones.registro272.model("Alumno", AlumnoSchema);
 const Registrado = conexiones.registro272.models.Registrado || conexiones.registro272.model('Registrado', RegistradoBase.schema);
 const HermanoControlUsado = conexiones.registro272.models.HermanoControlUsado || conexiones.registro272.model('HermanoControlUsado', HermanoControlUsadoBase.schema);
-
+const VALIDAR_NUMERO_CONTROL_HERMANO = false;
 // ============================================
 // VALIDAR CURP GLOBAL ENTRE PLANTELES (BLINDADO)
 // ============================================
@@ -108,7 +108,14 @@ function toUpperData(obj) {
 function normalizarParaescolar(paraescolar) {
   return String(paraescolar || '').trim().toUpperCase();
 }
+function formatearFechaNacimiento(fecha) {
+  const partes = String(fecha || '').trim().split('-');
+  if (partes.length !== 3) return fecha || '';
 
+  const [a, b, c] = partes;
+  if (a.length === 4) return `${c}-${b}-${a}`;
+  return `${a}-${b}-${c}`;
+}
 function obtenerIdentificadorConteo(doc, prefijo) {
   return String(
     doc?.datos_alumno?.curp ||
@@ -196,34 +203,7 @@ function construirResumenParaescolares(conteos) {
   });
 }
 
-async function puedeAsignarParaescolar(paraescolar, alumnoId = null) {
-  const limpio = normalizarParaescolar(paraescolar);
-  if (!limpio) return true;
-  const conteos = await contarParaescolares(alumnoId);
-  return (conteos.get(limpio) || 0) < MAX_PARAESCOLAR;
-}
 
-async function contarParaescolares(alumnoId = null) {
-  const match = {
-    registro_completado: true,
-    "datos_generales.paraescolar": { $exists: true, $nin: [null, ''] }
-  };
-
-  if (alumnoId && mongoose.Types.ObjectId.isValid(alumnoId)) {
-    match._id = { $ne: new mongoose.Types.ObjectId(alumnoId) };
-  }
-
-  const conteos = await Alumno.aggregate([
-    { $match: match },
-    {
-      $project: {
-        paraescolar: {
-          $toUpper: {
-            $trim: { input: { $ifNull: ['$datos_generales.paraescolar', ''] } }
-          }
-        }
-      }
-    },
     { $match: { paraescolar: { $ne: '' } } },
     { $group: { _id: '$paraescolar', ocupados: { $sum: 1 } } }
   ]);
@@ -687,7 +667,9 @@ router.post('/guardar', async (req, res) => {
     }
 
     const data = normalizarEstadoCivilAlumno(req.body);
-
+if (data?.datos_alumno) {
+      data.datos_alumno.fecha_nacimiento = formatearFechaNacimiento(data.datos_alumno.fecha_nacimiento);
+    }
     const curp = data.datos_alumno?.curp?.toUpperCase();
 
     if (!curp) {
@@ -1294,6 +1276,7 @@ router.post('/guardar-registro', async (req, res) => {
     );
 
     normalizarEstadoCivilAlumno(upperCaseData);
+    upperCaseData.datos_alumno.fecha_nacimiento = formatearFechaNacimiento(upperCaseData.datos_alumno.fecha_nacimiento);
 
     upperCaseData.datos_generales.primera_opcion = data.datos_generales.primera_opcion || '';
     upperCaseData.datos_generales.segunda_opcion = data.datos_generales.segunda_opcion || '';
