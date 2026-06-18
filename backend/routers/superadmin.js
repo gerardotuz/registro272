@@ -3,6 +3,8 @@ const router = express.Router();
 const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken");
 const XLSX = require("xlsx");
+const multer = require("multer");
+const fs = require("fs");
 
 const alumnoSchema = require("../models/Alumno").schema;
 
@@ -375,6 +377,175 @@ router.get("/curps-matriz", verificarToken, async (req, res) => {
   });
 });
 
+/* =========================================
+   🧩 ASIGNACIÓN EQUILIBRADA DE GRUPOS
+========================================= */
+const uploadAsignacion = multer({ dest: "uploads/" });
+
+function normalizarTexto(valor) {
+  return String(valor || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim()
+    .toLowerCase();
+}
+
+function obtenerValor(row, aliases) {
+  const entradas = Object.entries(row);
+  for (const alias of aliases) {
+    const normalizado = normalizarTexto(alias);
+    const encontrado = entradas.find(([key]) => normalizarTexto(key) === normalizado);
+    if (encontrado) return encontrado[1];
+  }
+  return "";
+}
+
+function detectarSexo(valor) {
+  const sexo = normalizarTexto(valor);
+  if (["h", "hombre", "masculino", "m", "male"].includes(sexo)) return "H";
+  if (["f", "mujer", "femenino", "female"].includes(sexo)) return "M";
+  return "N/D";
+}
+
+function obtenerNumero(valor) {
+  const numero = Number(String(valor || "").replace(",", "."));
+  return Number.isFinite(numero) ? numero : 0;
+}
+
+function crearGruposParaCarrera(carrera, config, totalAlumnos) {
+  const grupos = [];
+  const matutino = Math.max(0, Number(config?.matutino || 0));
+  const vespertino = Math.max(0, Number(config?.vespertino || 0));
+  const capacidad = Math.max(1, Number(config?.capacidad || 50));
+
+  for (let i = 1; i <= matutino; i++) {
+    grupos.push({ carrera, turno: "Matutino", grupo: `M${i}`, capacidad, alumnos: [] });
+  }
+
+  for (let i = 1; i <= vespertino; i++) {
+    grupos.push({ carrera, turno: "Vespertino", grupo: `V${i}`, capacidad, alumnos: [] });
+  }
+
+  if (grupos.length === 0) {
+    const necesarios = Math.max(1, Math.ceil(totalAlumnos / capacidad));
+    for (let i = 1; i <= necesarios; i++) {
+      grupos.push({ carrera, turno: i % 2 ? "Matutino" : "Vespertino", grupo: `AUTO${i}`, capacidad, alumnos: [] });
+    }
+  }
+
+  return grupos;
+}
+
+function puntajeGrupo(grupo, alumno) {
+  const total = grupo.alumnos.length;
+  const cupoPenalizacion = total >= grupo.capacidad ? 100000 : 0;
+  const sexoActual = grupo.alumnos.filter(a => a.sexo === alumno.sexo).length;
+  const promedioGrupo = total
+    ? grupo.alumnos.reduce((sum, a) => sum + a.promedio, 0) / total
+    : 0;
+
+  return (total * 12) + (sexoActual * 8) + Math.abs(promedioGrupo - alumno.promedio) + cupoPenalizacion;
+}
+
+function asignarAlumnosPorCarrera(alumnos, configuracion) {
+  const porCarrera = alumnos.reduce((acc, alumno) => {
+    acc[alumno.carrera] = acc[alumno.carrera] || [];
+    acc[alumno.carrera].push(alumno);
+    return acc;
+  }, {});
+
+  const resultado = [];
+  const resumen = [];
+
+  for (const [carrera, lista] of Object.entries(porCarrera)) {
+    const config = configuracion[carrera] || configuracion[normalizarTexto(carrera)] || {};
+    const grupos = crearGruposParaCarrera(carrera, config, lista.length);
+    const ordenados = [...lista].sort((a, b) => b.promedio - a.promedio);
+
+    ordenados.forEach((alumno, index) => {
+      const candidatos = grupos
+        .map(grupo => ({ grupo, score: puntajeGrupo(grupo, alumno) }))
+        .sort((a, b) => a.score - b.score || a.grupo.alumnos.length - b.grupo.alumnos.length);
+      const elegido = candidatos[0].grupo;
+      elegido.alumnos.push({ ...alumno, ordenPromedioCarrera: index + 1 });
+    });
+
+    grupos.forEach(grupo => {
+      const hombres = grupo.alumnos.filter(a => a.sexo === "H").length;
+      const mujeres = grupo.alumnos.filter(a => a.sexo === "M").length;
+      const promedio = grupo.alumnos.length
+        ? grupo.alumnos.reduce((sum, a) => sum + a.promedio, 0) / grupo.alumnos.length
+        : 0;
+
+      resumen.push({
+        carrera: grupo.carrera,
+        turno: grupo.turno,
+        grupo: grupo.grupo,
+        total: grupo.alumnos.length,
+        hombres,
+        mujeres,
+        sin_dato_sexo: grupo.alumnos.length - hombres - mujeres,
+        promedio_grupo: Number(promedio.toFixed(2))
+      });
+
+      grupo.alumnos
+        .sort((a, b) => b.promedio - a.promedio)
+        .forEach((alumno, posicion) => {
+          resultado.push({
+            carrera: grupo.carrera,
+            turno: grupo.turno,
+            grupo: grupo.grupo,
+            numero_lista: posicion + 1,
+            nombre: alumno.nombre,
+            sexo: alumno.sexo,
+            promedio_examen: alumno.promedio,
+            orden_promedio_carrera: alumno.ordenPromedioCarrera
+          });
+        });
+    });
+  }
+
+  return { resultado, resumen };
+}
+
+router.post("/asignacion-grupos", verificarToken, uploadAsignacion.single("excel"), async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ error: "No se recibió archivo Excel" });
+
+    const configuracion = JSON.parse(req.body.configuracion || "{}");
+    const workbook = XLSX.readFile(req.file.path);
+    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+    const rows = XLSX.utils.sheet_to_json(sheet, { defval: "" });
+
+    const alumnos = rows.map((row, index) => ({
+      filaExcel: index + 2,
+      carrera: String(obtenerValor(row, ["carrera", "especialidad", "programa"]) || "SIN CARRERA").trim(),
+      nombre: String(obtenerValor(row, ["nombre", "alumno", "alumna", "nombre completo", "nombres"]) || "").trim(),
+      sexo: detectarSexo(obtenerValor(row, ["sexo", "genero", "género"])),
+      promedio: obtenerNumero(obtenerValor(row, ["promedio", "promedio examen", "promedio del examen de admisión", "examen", "calificacion", "calificación"]))
+    })).filter(alumno => alumno.nombre && alumno.carrera);
+
+    fs.unlinkSync(req.file.path);
+
+    if (!alumnos.length) {
+      return res.status(400).json({ error: "El Excel no contiene alumnos válidos. Revisa encabezados: carrera, nombre, sexo y promedio." });
+    }
+
+    const { resultado, resumen } = asignarAlumnosPorCarrera(alumnos, configuracion);
+    const libro = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(libro, XLSX.utils.json_to_sheet(resultado), "Asignacion");
+    XLSX.utils.book_append_sheet(libro, XLSX.utils.json_to_sheet(resumen), "Resumen");
+
+    const buffer = XLSX.write(libro, { type: "buffer", bookType: "xlsx" });
+    res.setHeader("Content-Disposition", "attachment; filename=asignacion-grupos.xlsx");
+    res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+    res.send(buffer);
+  } catch (error) {
+    if (req.file?.path && fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
+    console.error("ERROR ASIGNACION GRUPOS:", error);
+    res.status(500).json({ error: "Error al generar asignación de grupos" });
+  }
+});
 
 
 module.exports = router;
