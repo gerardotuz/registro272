@@ -1172,7 +1172,7 @@ router.post('/guardar-registro', async (req, res) => {
     });
   } catch (err) {
     
-    }
+    
     console.error('Error en /guardar-registro:', err);
     res.status(err.status || 500).json({ message: err.message });
   }
