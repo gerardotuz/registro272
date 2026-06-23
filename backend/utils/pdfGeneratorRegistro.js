@@ -2,7 +2,7 @@ const PDFDocument = require('pdfkit');
 const fs = require('fs');
 const path = require('path');
 const zlib = require('zlib');
-
+const { anexarPDFs } = require('./pdfAnexos');
 const PNG_SIGNATURE = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
 const crcTable = Array.from({ length: 256 }, (_, n) => {
   let c = n;
@@ -401,7 +401,14 @@ const esReinscripcion = String(datos.tipo_tramite || '').toUpperCase() === 'REIN
   doc.end();
 
   return new Promise((resolve, reject) => {
-    stream.on('finish', () => resolve(`/pdfs/${nombreArchivo}`));
+    stream.on('finish', async () => {
+      try {
+        await anexarPDFs(rutaPDF, esReinscripcion ? 'REINSCRIPCION' : 'INSCRIPCION');
+        resolve(`/pdfs/${nombreArchivo}`);
+      } catch (error) {
+        reject(error);
+      }
+    });
     stream.on('error', reject);
   });
 }
