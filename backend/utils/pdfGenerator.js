@@ -2,7 +2,7 @@ const PDFDocument = require('pdfkit');
 const fs = require('fs');
 const path = require('path');
 // const { PDFDocument: PDFLibDocument } = require('pdf-lib'); // para fusionar PDFs
-
+const { anexarPDFs } = require('./pdfAnexos');
 const catalogoPath = path.resolve(__dirname, './catalogo.json');
 const catalogo = JSON.parse(fs.readFileSync(catalogoPath, 'utf8'));
 
