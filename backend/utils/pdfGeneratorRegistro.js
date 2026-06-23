@@ -382,7 +382,8 @@ const esReinscripcion = String(datos.tipo_tramite || '').toUpperCase() === 'REIN
   drawFooterImage();
 
  y += 90;
-  y = drawSectionTitle('Solicitud de Inscripción', y);
+  const tituloSolicitud = esReinscripcion ? 'Solicitud de Reinscripción' : 'Solicitud de Inscripción';
+  y = drawSectionTitle(tituloSolicitud, y);
   y = drawBox('Nombre completo del alumno', nombreCompletoAlumno, marginX, y, 500); y += GAP_Y;
   y = drawBox('Fecha de registro', fechaRegistro, marginX, y);
   y = drawBox('Folio / Número de control', datos.folio || datos.numero_control || datos.numeroControl || '', marginX + 260, y); y += GAP_Y;
