@@ -98,12 +98,23 @@ const PARAESCOLARES_FALLBACK = [
   'ORATORIA - DECLAMACION',
   'MÚSICA'
 ];
+ function marcarCamposObligatorios() {
+  const formulario = document.getElementById('registroForm');
+  if (!formulario) return;
+
+  formulario.querySelectorAll('input, select, textarea').forEach((campo) => {
+    const tipo = (campo.getAttribute('type') || '').toLowerCase();
+    if (tipo === 'hidden') return;
+    campo.required = true;
+  });
+}
  function formatearFechaNacimiento(fecha) {
   const partes = String(fecha || '').split('-');
   return partes.length === 3 ? `${partes[2]}-${partes[1]}-${partes[0]}` : fecha;
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
+ marcarCamposObligatorios();
   inicializarOpcionesCarrera();
   cargarCatalogo();
   cargarCatalogoGeneral();
