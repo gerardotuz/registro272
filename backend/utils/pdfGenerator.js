@@ -218,8 +218,13 @@ y += 60; // espacio adicional antes del footer
   doc.end();
 
   return new Promise((resolve, reject) => {
-  stream.on('finish', () => {
-    resolve(`/pdfs/${nombreArchivo}`);
+   stream.on('finish', async () => {
+    try {
+      await anexarPDFs(rutaPDF, 'INSCRIPCION');
+      resolve(`/pdfs/${nombreArchivo}`);
+    } catch (error) {
+      reject(error);
+    }
   });
   stream.on('error', reject);
 });
