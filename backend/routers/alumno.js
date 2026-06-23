@@ -214,7 +214,19 @@ async function puedeAsignarParaescolar(paraescolar, alumnoId = null) {
 function escaparRegex(valor) {
   return String(valor).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
+function normalizarNumeroSeguroSocial(data) {
+  if (!data || typeof data !== 'object') return data;
 
+  if (data.datos_medicos?.numero_seguro_social !== undefined) {
+    data.datos_medicos.numero_seguro_social = String(data.datos_medicos.numero_seguro_social || '').replace(/\D/g, '');
+  }
+
+  if (data.numero_seguro_social !== undefined) {
+    data.numero_seguro_social = String(data.numero_seguro_social || '').replace(/\D/g, '');
+  }
+
+  return data;
+}
 function normalizarEstadoCivilAlumno(data) {
   if (!data?.datos_alumno) return data;
 
@@ -529,7 +541,7 @@ router.post('/guardar', async (req, res) => {
       });
     }
 
-    const data = normalizarEstadoCivilAlumno(req.body);
+    const data = normalizarNumeroSeguroSocial(normalizarEstadoCivilAlumno(req.body));
     if (data?.datos_alumno) {
       data.datos_alumno.fecha_nacimiento = formatearFechaNacimiento(data.datos_alumno.fecha_nacimiento);
     }
@@ -838,7 +850,7 @@ router.get('/dashboard/alumnos/:id', async (req, res) => {
 
 router.put('/dashboard/registrados/:id', async (req, res) => {
   try {
-    const bodyUpper = toUpperData(req.body);
+    const bodyUpper = normalizarNumeroSeguroSocial(toUpperData(req.body));
     const registrado = await Registrado.findByIdAndUpdate(req.params.id, bodyUpper, { new: true, strict: false });
     if (!registrado) return res.status(404).json({ message: 'No encontrado' });
     res.json(registrado);
@@ -849,7 +861,7 @@ router.put('/dashboard/registrados/:id', async (req, res) => {
 
 router.post('/dashboard/registrados', async (req, res) => {
   try {
-    const bodyUpper = toUpperData(req.body);
+    const bodyUpper = normalizarNumeroSeguroSocial(toUpperData(req.body));
     const nuevoRegistrado = new Registrado(bodyUpper);
     await nuevoRegistrado.save();
     res.status(201).json(nuevoRegistrado);
@@ -873,7 +885,7 @@ router.put('/dashboard/alumnos/:id', async (req, res) => {
     const alumnoActual = await Alumno.findById(req.params.id);
     if (!alumnoActual) return res.status(404).json({ message: 'No encontrado' });
 
-    const bodyUpper = toUpperData(req.body);
+    const bodyUpper = normalizarNumeroSeguroSocial(toUpperData(req.body));
     const nuevoPara = bodyUpper?.datos_generales?.paraescolar;
     const previoPara = alumnoActual?.datos_generales?.paraescolar;
     const cambiando = nuevoPara && (nuevoPara.toUpperCase() !== (previoPara || '').toUpperCase());
@@ -895,7 +907,7 @@ router.put('/dashboard/alumnos/:id', async (req, res) => {
 
 router.post('/dashboard/alumnos', async (req, res) => {
   try {
-    const bodyUpper = toUpperData(req.body);
+    const bodyUpper = normalizarNumeroSeguroSocial(toUpperData(req.body));
     const nuevoPara = bodyUpper?.datos_generales?.paraescolar;
 
     if (nuevoPara) {
@@ -1139,6 +1151,7 @@ router.post('/guardar-registro', async (req, res) => {
     );
 
     normalizarEstadoCivilAlumno(upperCaseData);
+    normalizarNumeroSeguroSocial(upperCaseData);
     upperCaseData.datos_alumno.fecha_nacimiento = formatearFechaNacimiento(upperCaseData.datos_alumno.fecha_nacimiento);
     upperCaseData.datos_generales.numero_control_hermano = '';
 
@@ -1194,7 +1207,8 @@ router.post('/guardar-reinscripcion', async (req, res) => {
     }
 
     const materiasReprobadas = Number(data?.materias_reprobadas ?? data?.materiasReprobadas ?? data?.adeudo ?? 0);
-    const requiereControlEscolar = materiasReprobadas > 3;
+    const requiereControlEscolar = materiasReprobadas > 2;
+    normalizarNumeroSeguroSocial(data);
     const payload = {
       ...data,
       numero_control: numeroControl,
