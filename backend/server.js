@@ -5,6 +5,14 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const path = require('path');
 const Paraescolar = require("./models/paraescolar.model");
+const AlumnoSchema = require("./models/Alumno").schema;
+const {
+  MAX_PARAESCOLAR,
+  construirResumenParaescolares,
+  contarParaescolares,
+  normalizarParaescolar,
+  puedeAsignarParaescolar
+} = require("./utils/paraescolares");
 const multer = require("multer");
 const XLSX = require("xlsx");
 
@@ -75,6 +83,15 @@ Object.entries(conexiones).forEach(([key, conn]) => {
 module.exports.conexiones = conexiones;
 
 
+const Alumno = conexiones.registro272.models.Alumno || conexiones.registro272.model("Alumno", AlumnoSchema);
+
+function obtenerConteosParaescolares(paraescolarId = null) {
+  return contarParaescolares({ Alumno, Paraescolar, paraescolarId });
+}
+
+async function validarCupoParaescolar(paraescolar, paraescolarId = null) {
+  return puedeAsignarParaescolar({ Alumno, Paraescolar, paraescolar, paraescolarId });
+}
 /* =========================
    RUTAS API EXISTENTES
 ========================= */
@@ -100,7 +117,7 @@ app.use("/api/superadmin", require("./routers/superadmin.auth"));
 // Guardar paraescolar
 app.put("/api/paraescolar/:id", async (req, res) => {
   try {
-    const { paraescolar } = req.body;
+    const paraescolar = normalizarParaescolar(req.body?.paraescolar);
 
     const alumno = await Paraescolar.findById(req.params.id);
 
@@ -114,10 +131,14 @@ app.put("/api/paraescolar/:id", async (req, res) => {
       });
     }
 
-    const total = await Paraescolar.countDocuments({ paraescolar });
-    if (total >= 50) {
+     if (!paraescolar) {
+      return res.status(400).json({ error: "Selecciona un paraescolar válido" });
+    }
+
+    const tieneCupo = await validarCupoParaescolar(paraescolar, alumno._id);
+    if (!tieneCupo) {
       return res.status(400).json({
-        error: "Este paraescolar ya alcanzó el límite de 50 alumnos"
+        error: `Este paraescolar ya alcanzó el límite de ${MAX_PARAESCOLAR} alumnos`
       });
     }
 
@@ -267,16 +288,10 @@ app.get("/api/paraescolar/exportar", async (req, res) => {
 // 📊 Contador por paraescolar
 app.get("/api/paraescolar/estadisticas", async (req, res) => {
   try {
-    const stats = await Paraescolar.aggregate([
-      { $match: { paraescolar: { $ne: null } } },
-      {
-        $group: {
-          _id: "$paraescolar",
-          total: { $sum: 1 }
-        }
-      },
-      { $sort: { total: -1 } }
-    ]);
+   const conteos = await obtenerConteosParaescolares();
+    const stats = Array.from(conteos.entries())
+      .map(([nombre, total]) => ({ _id: nombre, total }))
+      .sort((a, b) => b.total - a.total);
 
     res.json(stats);
   } catch (error) {
@@ -291,28 +306,12 @@ app.get("/api/paraescolar/estadisticas", async (req, res) => {
 // 🎯 Cupos disponibles por paraescolar (normalizado)
 app.get("/api/paraescolar/cupos", async (req, res) => {
   try {
-    const limite = 50;
-
-    const conteos = await Paraescolar.aggregate([
-      { $match: { paraescolar: { $ne: null } } },
-      {
-        $project: {
-          nombre: {
-            $toUpper: { $trim: { input: "$paraescolar" } }
-          }
-        }
-      },
-      {
-        $group: {
-          _id: "$nombre",
-          total: { $sum: 1 }
-        }
-      }
-    ]);
+const conteos = await obtenerConteosParaescolares();
+    const resumen = construirResumenParaescolares(conteos);
 
     const mapa = {};
-    conteos.forEach(c => {
-      mapa[c._id] = limite - c.total;
+    resumen.forEach((item) => {
+      mapa[item.nombre] = item.disponibles;
     });
 
     res.json(mapa);
