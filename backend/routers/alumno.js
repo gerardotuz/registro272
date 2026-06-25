@@ -15,9 +15,16 @@ const { conexiones } = require('../server');
 const RegistradoBase = require('../models/Registrado');
 
 const Paraescolar = require('../models/paraescolar.model');
+const {
+  MAX_PARAESCOLAR,
+  normalizarParaescolar,
+  construirResumenParaescolares,
+  contarParaescolares,
+  puedeAsignarParaescolar
+} = require('../utils/paraescolares');
 
 // 👇 usar SIEMPRE la conexión del plantel actual
-const Alumno = conexiones.registro272.model("Alumno", AlumnoSchema);
+const Alumno = conexiones.registro272.models.Alumno || conexiones.registro272.model("Alumno", AlumnoSchema);
 const Registrado = conexiones.registro272.models.Registrado || conexiones.registro272.model('Registrado', RegistradoBase.schema);
 
 // ============================================
@@ -59,7 +66,7 @@ router.get('/ping', (req, res) => {
 
 router.get('/paraescolares/cupos', async (req, res) => {
   try {
-    const conteos = await contarParaescolares();
+    const conteos = await obtenerConteosParaescolares();
     res.json({
       limite: MAX_PARAESCOLAR,
       paraescolares: construirResumenParaescolares(conteos)
@@ -71,24 +78,7 @@ router.get('/paraescolares/cupos', async (req, res) => {
 });
 
 const upload = multer({ storage: multer.memoryStorage() });
-const MAX_PARAESCOLAR = 50;
-const PARAESCOLARES_DISPONIBLES = [
-  'AJEDREZ',
-  'ATLETISMO',
-  'BANDA DE GUERRA',
-  'BASQUETBOL',
-  'DANZA',
-  'ESCOLTA DE BANDERA',
-  'FOTOGRAFÍA',
-  'FUTBOL',
-  'PINTURA',
-  'TEATRO-CANTO',
-  'TOCHO BANDERA',
-  'VOLEIBOL',
-  'ORATORIADECLAMACION',
-  'CORO',
-  'MÚSICA'
-];
+
 
 // ---------- Helpers ----------
 const CLAVES_EXENTAS = new Set([
@@ -104,9 +94,13 @@ function toUpperData(obj) {
 }
 
 
-function normalizarParaescolar(paraescolar) {
-  return String(paraescolar || '').trim().toUpperCase();
+function obtenerConteosParaescolares(alumnoId = null) {
+  return contarParaescolares({ Alumno, Paraescolar, alumnoId });
 }
+async function validarCupoParaescolar(paraescolar, alumnoId = null) {
+  return puedeAsignarParaescolar({ Alumno, Paraescolar, paraescolar, alumnoId });
+}
+
 function formatearFechaNacimiento(fecha) {
   const partes = String(fecha || '').trim().split('-');
   if (partes.length !== 3) return fecha || '';
@@ -115,101 +109,7 @@ function formatearFechaNacimiento(fecha) {
   if (a.length === 4) return `${c}-${b}-${a}`;
   return `${a}-${b}-${c}`;
 }
-function obtenerIdentificadorConteo(doc, prefijo) {
-  return String(
-    doc?.datos_alumno?.curp ||
-    doc?.curp ||
-    doc?.numero_control ||
-    doc?.numeroControl ||
-    doc?.folio ||
-    `${prefijo}:${doc?._id}`
-  ).trim().toUpperCase();
-}
 
-function agregarConteoParaescolar(conteos, doc, valorParaescolar, prefijo) {
-  const paraescolar = normalizarParaescolar(valorParaescolar);
-  if (!paraescolar) return;
-
-  if (!conteos.has(paraescolar)) {
-    conteos.set(paraescolar, new Set());
-  }
-
-  conteos.get(paraescolar).add(obtenerIdentificadorConteo(doc, prefijo));
-}
-
-async function contarParaescolares(alumnoId = null) {
-  const filtroAlumnos = {
-    $or: [
-      { "datos_generales.paraescolar": { $exists: true, $nin: [null, ''] } },
-      { paraescolar: { $exists: true, $nin: [null, ''] } }
-    ]
-  };
-
-  if (alumnoId && mongoose.Types.ObjectId.isValid(alumnoId)) {
-    filtroAlumnos._id = { $ne: new mongoose.Types.ObjectId(alumnoId) };
-  }
-
-  const [alumnos, paraescolares] = await Promise.all([
-    Alumno.find(filtroAlumnos, {
-      _id: 1,
-      folio: 1,
-      paraescolar: 1,
-      'datos_alumno.curp': 1,
-      'datos_generales.paraescolar': 1
-    }).lean(),
-    Paraescolar.find({ paraescolar: { $exists: true, $nin: [null, ''] } }, {
-      _id: 1,
-      numero_control: 1,
-      curp: 1,
-      paraescolar: 1
-    }).lean()
-  ]);
-
-  const conteos = new Map();
-
-  alumnos.forEach((alumno) => {
-    agregarConteoParaescolar(
-      conteos,
-      alumno,
-      alumno?.datos_generales?.paraescolar || alumno?.paraescolar,
-      'alumno'
-    );
-  });
-
-  paraescolares.forEach((alumnoParaescolar) => {
-    agregarConteoParaescolar(
-      conteos,
-      alumnoParaescolar,
-      alumnoParaescolar?.paraescolar,
-      'paraescolar'
-    );
-  });
-
-  return new Map(Array.from(conteos.entries()).map(([nombre, alumnosSet]) => [nombre, alumnosSet.size]));
-}
-
-function construirResumenParaescolares(conteos) {
-  return PARAESCOLARES_DISPONIBLES.map((nombre) => {
-    const ocupados = conteos.get(nombre) || 0;
-    const disponibles = Math.max(MAX_PARAESCOLAR - ocupados, 0);
-    return {
-      nombre,
-      ocupados,
-      disponibles,
-      limite: MAX_PARAESCOLAR,
-      lleno: ocupados >= MAX_PARAESCOLAR
-    };
-  });
-}
-
-
-
-async function puedeAsignarParaescolar(paraescolar, alumnoId = null) {
-  const limpio = normalizarParaescolar(paraescolar);
-  if (!limpio) return true;
-  const conteos = await contarParaescolares(alumnoId);
-  return (conteos.get(limpio) || 0) < MAX_PARAESCOLAR;
-}
 
 function escaparRegex(valor) {
   return String(valor).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -594,7 +494,7 @@ if (resultado.existe) {
     
     const paraescolarSolicitado = data?.datos_generales?.paraescolar;
     if (paraescolarSolicitado) {
-     const okParaescolar = await puedeAsignarParaescolar(paraescolarSolicitado, existe?._id);
+     const okParaescolar = await validarCupoParaescolar(paraescolarSolicitado, existe?._id);
       if (!okParaescolar) {
         return res.status(400).json({
           message: `El paraescolar ${paraescolarSolicitado} ya alcanzó el límite de ${MAX_PARAESCOLAR} alumno(s).`
@@ -891,7 +791,7 @@ router.put('/dashboard/alumnos/:id', async (req, res) => {
     const cambiando = nuevoPara && (nuevoPara.toUpperCase() !== (previoPara || '').toUpperCase());
 
     if (cambiando) {
-      const ok = await puedeAsignarParaescolar(nuevoPara, alumnoActual._id);
+      const ok = await validarCupoParaescolar(nuevoPara, alumnoActual._id);
       if (!ok) {
         return res.status(400).json({ message: `No se puede cambiar a ${nuevoPara}, ya alcanzó su límite de ${MAX_PARAESCOLAR}.` });
       }
@@ -911,7 +811,7 @@ router.post('/dashboard/alumnos', async (req, res) => {
     const nuevoPara = bodyUpper?.datos_generales?.paraescolar;
 
     if (nuevoPara) {
-      const ok = await puedeAsignarParaescolar(nuevoPara);
+      const ok = await validarCupoParaescolar(nuevoPara);
       if (!ok) {
         return res.status(400).json({ message: `El paraescolar ${nuevoPara} ya alcanzó el límite de ${MAX_PARAESCOLAR} alumno(s).` });
       }
@@ -1163,7 +1063,7 @@ router.post('/guardar-registro', async (req, res) => {
 
     const nuevoParaescolar = upperCaseData?.datos_generales?.paraescolar;
     if (nuevoParaescolar) {
-      const okParaescolar = await puedeAsignarParaescolar(nuevoParaescolar, registroExistente?._id);
+      const okParaescolar = await validarCupoParaescolar(nuevoParaescolar, registroExistente?._id);
       if (!okParaescolar) {
         return res.status(400).json({
           message: `El paraescolar ${nuevoParaescolar} ya alcanzó el límite de ${MAX_PARAESCOLAR} alumno(s).`
