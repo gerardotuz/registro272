@@ -32,11 +32,19 @@
   <button type="submit">Reimprimir PDF</button>
 </form>
   <script>
-    document.getElementById('reimprimirForm').addEventListener('submit', (e) => {
+    document.getElementById('reimprimirForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const identificador = document.getElementById('folioReimpresion').value.trim().toUpperCase();
       if (!identificador) return alert('Ingresa un folio o número de control válido');
-      window.open(`/api/reimprimir/${encodeURIComponent(identificador)}`, '_blank');
+       const res = await fetch(`/api/reimprimir/${encodeURIComponent(identificador)}`);
+      if (!res.ok) {
+        const error = await res.json().catch(() => ({}));
+        alert(error.message || 'No se pudo reimprimir la ficha');
+        return;
+      }
+
+      const pdf = await res.blob();
+      window.open(URL.createObjectURL(pdf), '_blank');
     });
 
     async function buscarRegistroOReinscripcion(identificador) {
