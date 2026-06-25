@@ -164,7 +164,18 @@ function reinscripcionYaFueCapturada(registrado) {
     registrado?.bloqueado_reinscripcion === true
   );
 }
+function obtenerMateriasReprobadas(registrado) {
+  const valor = registrado?.materias_reprobadas ?? registrado?.materiasReprobadas ?? registrado?.adeudo;
+  const numero = Number(valor);
+  return Number.isFinite(numero) ? numero : 0;
+}
 
+function requiereControlEscolarParaPDF(registrado) {
+  return Boolean(
+    registrado?.requiere_control_escolar === true ||
+    obtenerMateriasReprobadas(registrado) > 2
+  );
+}
 function crearFiltroNumeroControl(numeroControl) {
   const limpio = String(numeroControl || '').trim().toUpperCase();
   const comoNumero = Number(limpio);
@@ -611,7 +622,13 @@ router.get('/reimprimir/:folio', async (req, res) => {
     if (!encontrado) {
       return res.status(404).json({ message: 'Folio o número de control no encontrado' });
     }
-
+ if (requiereControlEscolarParaPDF(encontrado.alumno)) {
+      return res.status(403).json({
+        message: 'No se puede reimprimir la ficha porque tienes 3 o más materias reprobadas. Acude a control escolar.',
+        requiere_control_escolar: true,
+        pdf_generado: false
+      });
+    }
     const datosRegistradoPDF = normalizarRegistradoParaPDF(encontrado.alumno, identificador);
     const nombreArchivoRegistrado = `${identificador}.pdf`;
     const rutaPDFRegistrado = await generarPDFRegistro(datosRegistradoPDF, nombreArchivoRegistrado);
@@ -1132,7 +1149,7 @@ router.post('/guardar-reinscripcion', async (req, res) => {
 
     if (requiereControlEscolar) {
       return res.status(200).json({
-        message: 'Reinscripción guardada. Debes acudir a control escolar por tener más de 3 materias reprobadas.',
+        message: 'Reinscripción guardada. Debes acudir a control escolar por tener más de 3 o más materias reprobadas.',
         pdf_generado: false,
         requiere_control_escolar: true
       });
