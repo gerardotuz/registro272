@@ -31,7 +31,7 @@ async function generarPDF(datos, nombreArchivo = 'formulario.pdf') {
   const medicos = datos.datos_medicos || {};
   const secundaria = datos.secundaria_origen || {};
   const tutor = datos.tutor_responsable || {};
-
+const tituloTramite = 'Inscripción';
   const logoPath = path.join(__dirname, '../public/images/logo.png');
   const footerPath = path.join(__dirname, '../public/images/firma_footer.png');
 
@@ -106,7 +106,8 @@ const folioBoxX = 340;
 const folioBoxY = y - 5;
 const folioBoxWidth = 210;
 const folioBoxHeight = 38;
-
+const tituloBoxX = 190;
+const tituloBoxWidth = 135;
 doc
   .lineWidth(2)
   .strokeColor('#7A1E2C')
@@ -122,7 +123,16 @@ doc
     align: 'center'
   });
 
-doc.fillColor('black');
+doc
+  .fontSize(14)
+  .fillColor('#7A1E2C')
+  .font('Helvetica-Bold')
+  .text(tituloTramite, tituloBoxX, folioBoxY + 11, {
+    width: tituloBoxWidth,
+    align: 'right'
+  });
+
+doc.font('Helvetica').fillColor('black');
 
 y += 45;
 
