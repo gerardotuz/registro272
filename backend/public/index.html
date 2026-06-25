@@ -46,7 +46,7 @@
   ⚠️ El servidor está experimentando una alta demanda. Si no carga correctamente, intenta más tarde.
 </div>
 <script>
-document.getElementById("reimprimirForm").addEventListener("submit", function(e) {
+document.getElementById("reimprimirForm").addEventListener("submit", async function(e) {
   e.preventDefault();
 
   const folio = document.getElementById("folioReimpresion").value.trim();
@@ -57,7 +57,15 @@ document.getElementById("reimprimirForm").addEventListener("submit", function(e)
   }
 
   // 🔥 Abrir directamente el endpoint que genera el PDF
-  window.open(`/api/reimprimir/${encodeURIComponent(folio)}`, "_blank");
+  const respuesta = await fetch(`/api/reimprimir/${encodeURIComponent(folio)}`);
+  if (!respuesta.ok) {
+    const error = await respuesta.json().catch(() => ({}));
+    alert(error.message || "No se pudo reimprimir la ficha");
+    return;
+  }
+
+  const pdf = await respuesta.blob();
+  window.open(URL.createObjectURL(pdf), "_blank");
 });
 </script>
 
