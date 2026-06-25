@@ -52,7 +52,7 @@
 <input name="domicilio" placeholder=" CALLE MZ LT EDIFICIO DEPTO" type="text"/>
 <input name="codigo_postal" placeholder="CÓDIGO POSTAL" type="text"/>
 <input name="telefono_alumno" placeholder="TÉLEFONO DEL ALUMNO" type="text"/>
-<input name="correo_alumno" placeholder="CORREO" required type="email"/>
+<input name="correo_alumno" placeholder="CORREO" required type="email" pattern="^[^\s@]+@[^\s@]+\.[^\s@]{2,}$" title="Ingresa un correo válido, por ejemplo: alumno@correo.com"/>
 <input name="tipo_sangre" placeholder="TIPO DE SANGRE" type="text"/>
 <input name="contacto_emergencia_nombre" placeholder="CONTACTO DE EMERGENCIA-NOMBRE" type="text"/>
 <input name="contacto_emergencia_telefono" placeholder="CONTACTO DE EMERGENCIA- TELÉFONO" type="text"/>
@@ -109,6 +109,43 @@ const PARAESCOLARES_FALLBACK = [
     campo.required = true;
   });
 }
+
+function configurarCampoNumerico(nombre) {
+  const campo = document.querySelector(`[name="${nombre}"]`);
+  if (!campo) return;
+
+  campo.setAttribute('inputmode', 'numeric');
+  campo.setAttribute('pattern', '[0-9]*');
+  campo.setAttribute('title', 'Ingresa únicamente números');
+  campo.addEventListener('input', () => {
+    campo.value = campo.value.replace(/[^0-9]/g, '');
+  });
+}
+
+function configurarValidacionCorreo(nombre) {
+  const campo = document.querySelector(`[name="${nombre}"]`);
+  if (!campo) return;
+
+  campo.setAttribute('type', 'email');
+  campo.setAttribute('pattern', '^[^\\s@]+@[^\\s@]+\\.[^\\s@]{2,}$');
+  campo.setAttribute('title', 'Ingresa un correo válido, por ejemplo: alumno@correo.com');
+}
+
+function inicializarValidacionesFormulario() {
+  [
+    'edad',
+    'telefono_alumno',
+    'codigo_postal',
+    'contacto_emergencia_telefono',
+    'persona_emergencia_telefono',
+    'responsable_emergencia_telefono'
+  ].forEach(configurarCampoNumerico);
+
+  configurarValidacionCorreo('correo_alumno');
+}
+
+
+ 
  function formatearFechaNacimiento(fecha) {
   const partes = String(fecha || '').split('-');
   return partes.length === 3 ? `${partes[2]}-${partes[1]}-${partes[0]}` : fecha;
@@ -116,6 +153,7 @@ const PARAESCOLARES_FALLBACK = [
 
 document.addEventListener('DOMContentLoaded', async () => {
  marcarCamposObligatorios();
+ inicializarValidacionesFormulario();
   inicializarOpcionesCarrera();
   cargarCatalogo();
   cargarCatalogoGeneral();
