@@ -170,7 +170,10 @@ async function generarPDF(datos, nombreArchivo = 'formulario.pdf') {
   const secundaria = datos.secundaria_origen || {};
   const tutor = datos.tutor_responsable || {};
   const emergencia = datos.persona_emergencia || {};
-const esReinscripcion = String(datos.tipo_tramite || '').toUpperCase() === 'REINSCRIPCION';
+  
+const tipoTramite = String(datos.tipo_tramite || '').trim().toUpperCase();
+  const esReinscripcion = tipoTramite === 'REINSCRIPCION';
+  const tituloTramite = esReinscripcion ? 'Reinscripción' : 'Inscripción';
   const logoPath = path.join(__dirname, '../public/images/logo.png');
   const footerPath = path.join(__dirname, '../public/images/firma_footer.png');
 
@@ -272,8 +275,17 @@ const esReinscripcion = String(datos.tipo_tramite || '').toUpperCase() === 'REIN
 
   const folioBoxX = 340;
   const folioBoxY = y - 5;
-  doc.lineWidth(2).strokeColor('#000').roundedRect(folioBoxX, folioBoxY, 210, 38, 10).stroke();
-  doc.fontSize(16).fillColor('#000').font('Helvetica-Bold').text(datos.folio || '', folioBoxX, folioBoxY + 10, { width: 210, align: 'center' });
+  const folioBoxWidth = 210;
+  const folioBoxHeight = 38;
+  const tituloBoxX = 190;
+  const tituloBoxWidth = 135;
+
+  doc.lineWidth(2).strokeColor('#000').roundedRect(folioBoxX, folioBoxY, folioBoxWidth, folioBoxHeight, 10).stroke();
+  doc.fontSize(16).fillColor('#000').font('Helvetica-Bold').text(datos.folio || '', folioBoxX, folioBoxY + 10, { width: folioBoxWidth, align: 'center' });
+  doc.fontSize(14).fillColor('#000').font('Helvetica-Bold').text(tituloTramite, tituloBoxX, folioBoxY + 11, {
+    width: tituloBoxWidth,
+    align: 'right'
+  });
   doc.font('Helvetica').fillColor('black');
   y += 45;
 
