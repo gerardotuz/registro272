@@ -449,20 +449,20 @@ function puntajeGrupo(grupo, alumno) {
 
 function crearWorkbookPlantillaAsignacion() {
   const encabezados = [
-    "carrera",
+   
     "nombre",
     "sexo",
     "promedio"
   ];
 
   const ejemplo = [
-    { carrera: "Programación", nombre: "JUAN PEREZ LOPEZ", sexo: "H", promedio: 92.5 },
-    { carrera: "Programación", nombre: "MARIA GARCIA RUIZ", sexo: "M", promedio: 89.75 },
-    { carrera: "Contabilidad", nombre: "ANA LOPEZ MARTINEZ", sexo: "F", promedio: 95 }
+   { nombre: "JUAN PEREZ LOPEZ", sexo: "H", promedio: 92.5 },
+    { nombre: "MARIA GARCIA RUIZ", sexo: "M", promedio: 89.75 },
+    { nombre: "ANA LOPEZ MARTINEZ", sexo: "F", promedio: 95 }
   ];
 
   const instrucciones = [
-    { campo: "carrera", descripcion: "Nombre de la carrera o especialidad. Debe coincidir con la configuración de grupos." },
+   
     { campo: "nombre", descripcion: "Nombre completo del alumno." },
     { campo: "sexo", descripcion: "Acepta H/M, Hombre/Mujer, Masculino/Femenino o F." },
     { campo: "promedio", descripcion: "Promedio del examen de admisión. Usa número, por ejemplo 92.5." }
@@ -472,7 +472,7 @@ function crearWorkbookPlantillaAsignacion() {
   const hojaAlumnos = XLSX.utils.json_to_sheet(ejemplo, { header: encabezados });
   XLSX.utils.sheet_add_aoa(hojaAlumnos, [encabezados], { origin: "A1" });
   hojaAlumnos["!cols"] = [
-    { wch: 24 },
+    
     { wch: 34 },
     { wch: 12 },
     { wch: 14 }
@@ -485,62 +485,90 @@ function crearWorkbookPlantillaAsignacion() {
   XLSX.utils.book_append_sheet(libro, hojaInstrucciones, "Instrucciones");
   return libro;
 }
+
+function crearGruposDesdeConfiguracion(configuracion, totalAlumnos) {
+  const entradas = Object.entries(configuracion || {}).filter(([carrera]) => carrera.trim());
+
+  if (!entradas.length) {
+    return crearGruposParaCarrera("GENERAL", {}, totalAlumnos);
+  }
+
+  return entradas.flatMap(([carrera, config]) => crearGruposParaCarrera(carrera.trim(), config, totalAlumnos));
+}
+
+function agregarResumenYResultado(grupos, resultado, resumen) {
+  grupos.forEach(grupo => {
+    const hombres = grupo.alumnos.filter(a => a.sexo === "H").length;
+    const mujeres = grupo.alumnos.filter(a => a.sexo === "M").length;
+    const promedio = grupo.alumnos.length
+      ? grupo.alumnos.reduce((sum, a) => sum + a.promedio, 0) / grupo.alumnos.length
+      : 0;
+
+    resumen.push({
+      carrera: grupo.carrera,
+      turno: grupo.turno,
+      grupo: grupo.grupo,
+      total: grupo.alumnos.length,
+      hombres,
+      mujeres,
+      sin_dato_sexo: grupo.alumnos.length - hombres - mujeres,
+      promedio_grupo: Number(promedio.toFixed(2))
+    });
+
+    grupo.alumnos
+      .sort((a, b) => b.promedio - a.promedio)
+      .forEach((alumno, posicion) => {
+        resultado.push({
+          carrera: grupo.carrera,
+          turno: grupo.turno,
+          grupo: grupo.grupo,
+          numero_lista: posicion + 1,
+          nombre: alumno.nombre,
+          sexo: alumno.sexo,
+          promedio_examen: alumno.promedio,
+          orden_promedio_carrera: alumno.ordenPromedioCarrera
+        });
+      });
+  });
+}
+
+function asignarListaEnGrupos(lista, grupos) {
+  const ordenados = [...lista].sort((a, b) => b.promedio - a.promedio);
+
+  ordenados.forEach((alumno, index) => {
+    const candidatos = grupos
+      .map(grupo => ({ grupo, score: puntajeGrupo(grupo, alumno) }))
+      .sort((a, b) => a.score - b.score || a.grupo.alumnos.length - b.grupo.alumnos.length);
+    const elegido = candidatos[0].grupo;
+    elegido.alumnos.push({ ...alumno, ordenPromedioCarrera: index + 1 });
+  });
+}
+
 function asignarAlumnosPorCarrera(alumnos, configuracion) {
+   const resultado = [];
+  const resumen = [];
+  const todosSinCarrera = alumnos.every(alumno => !alumno.carrera);
+
+  if (todosSinCarrera) {
+    const grupos = crearGruposDesdeConfiguracion(configuracion, alumnos.length);
+    asignarListaEnGrupos(alumnos, grupos);
+    agregarResumenYResultado(grupos, resultado, resumen);
+    return { resultado, resumen };
+  }
   const porCarrera = alumnos.reduce((acc, alumno) => {
-    acc[alumno.carrera] = acc[alumno.carrera] || [];
-    acc[alumno.carrera].push(alumno);
+  const carrera = alumno.carrera || "GENERAL";
+    acc[carrera] = acc[carrera] || [];
+    acc[carrera].push(alumno);
     return acc;
   }, {});
 
-  const resultado = [];
-  const resumen = [];
+ 
 
   for (const [carrera, lista] of Object.entries(porCarrera)) {
     const config = configuracion[carrera] || configuracion[normalizarTexto(carrera)] || {};
     const grupos = crearGruposParaCarrera(carrera, config, lista.length);
-    const ordenados = [...lista].sort((a, b) => b.promedio - a.promedio);
-
-    ordenados.forEach((alumno, index) => {
-      const candidatos = grupos
-        .map(grupo => ({ grupo, score: puntajeGrupo(grupo, alumno) }))
-        .sort((a, b) => a.score - b.score || a.grupo.alumnos.length - b.grupo.alumnos.length);
-      const elegido = candidatos[0].grupo;
-      elegido.alumnos.push({ ...alumno, ordenPromedioCarrera: index + 1 });
-    });
-
-    grupos.forEach(grupo => {
-      const hombres = grupo.alumnos.filter(a => a.sexo === "H").length;
-      const mujeres = grupo.alumnos.filter(a => a.sexo === "M").length;
-      const promedio = grupo.alumnos.length
-        ? grupo.alumnos.reduce((sum, a) => sum + a.promedio, 0) / grupo.alumnos.length
-        : 0;
-
-      resumen.push({
-        carrera: grupo.carrera,
-        turno: grupo.turno,
-        grupo: grupo.grupo,
-        total: grupo.alumnos.length,
-        hombres,
-        mujeres,
-        sin_dato_sexo: grupo.alumnos.length - hombres - mujeres,
-        promedio_grupo: Number(promedio.toFixed(2))
-      });
-
-      grupo.alumnos
-        .sort((a, b) => b.promedio - a.promedio)
-        .forEach((alumno, posicion) => {
-          resultado.push({
-            carrera: grupo.carrera,
-            turno: grupo.turno,
-            grupo: grupo.grupo,
-            numero_lista: posicion + 1,
-            nombre: alumno.nombre,
-            sexo: alumno.sexo,
-            promedio_examen: alumno.promedio,
-            orden_promedio_carrera: alumno.ordenPromedioCarrera
-          });
-        });
-    });
+    asignarListaEnGrupos(lista, grupos);
+    agregarResumenYResultado(grupos, resultado, resumen);
   }
 
   return { resultado, resumen };
@@ -570,16 +598,16 @@ router.post("/asignacion-grupos", uploadAsignacion.single("excel"), async (req, 
 
     const alumnos = rows.map((row, index) => ({
       filaExcel: index + 2,
-      carrera: String(obtenerValor(row, ["carrera", "especialidad", "programa"]) || "SIN CARRERA").trim(),
+       carrera: String(obtenerValor(row, ["carrera", "especialidad", "programa"]) || "").trim(),
       nombre: String(obtenerValor(row, ["nombre", "alumno", "alumna", "nombre completo", "nombres"]) || "").trim(),
       sexo: detectarSexo(obtenerValor(row, ["sexo", "genero", "género"])),
       promedio: obtenerNumero(obtenerValor(row, ["promedio", "promedio examen", "promedio del examen de admisión", "examen", "calificacion", "calificación"]))
-    })).filter(alumno => alumno.nombre && alumno.carrera);
+   })).filter(alumno => alumno.nombre);
 
     fs.unlinkSync(req.file.path);
 
     if (!alumnos.length) {
-      return res.status(400).json({ error: "El Excel no contiene alumnos válidos. Revisa encabezados: carrera, nombre, sexo y promedio." });
+       return res.status(400).json({ error: "El Excel no contiene alumnos válidos. Revisa encabezados: nombre, sexo y promedio." });
     }
 
     const { resultado, resumen } = asignarAlumnosPorCarrera(alumnos, configuracion);
