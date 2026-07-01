@@ -366,3 +366,434 @@ select:required:invalid {
   font-weight: 600;
   line-height: 1.4;
 }
+/* ===== Rediseño visual Registro 272 estilo Águilas ===== */
+:root {
+  --aguila-vino: #8b001f;
+  --aguila-vino-oscuro: #5e0016;
+  --aguila-dorado: #c99028;
+  --aguila-tinta: #32101a;
+  --aguila-gris: #eef0f3;
+  --aguila-borde: #d9dde4;
+  --aguila-sombra: 0 18px 40px rgba(58, 10, 24, 0.14);
+}
+
+body.registro-aguilas {
+  min-height: 100vh;
+  padding: 0;
+  color: var(--aguila-tinta);
+  background:
+    radial-gradient(circle at 82% 18%, rgba(139, 0, 31, 0.10) 0 14%, transparent 15%),
+    radial-gradient(circle at 12% 86%, rgba(139, 0, 31, 0.10) 0 13%, transparent 14%),
+    linear-gradient(135deg, #ffffff 0%, #f7f8fb 42%, #ffffff 100%);
+  overflow-x: hidden;
+}
+
+body.registro-aguilas::before,
+body.registro-aguilas::after {
+  content: "";
+  position: fixed;
+  z-index: -1;
+  width: 360px;
+  height: 360px;
+  pointer-events: none;
+  opacity: 0.95;
+}
+
+body.registro-aguilas::before {
+  left: -130px;
+  bottom: -155px;
+  background: linear-gradient(135deg, transparent 0 38%, var(--aguila-vino) 39% 52%, #ffffff 53% 57%, #b9bdc5 58% 68%, transparent 69%);
+}
+
+body.registro-aguilas::after {
+  right: -115px;
+  top: 145px;
+  background: linear-gradient(135deg, transparent 0 35%, #c4c7ce 36% 45%, #ffffff 46% 51%, var(--aguila-vino) 52% 66%, transparent 67%);
+}
+
+.registro-hero {
+  position: relative;
+  isolation: isolate;
+  min-height: 146px;
+  border-bottom: 4px solid rgba(201, 144, 40, 0.85);
+  background:
+    linear-gradient(110deg, rgba(94, 0, 22, 0.98), rgba(139, 0, 31, 0.98) 58%, rgba(94, 0, 22, 0.94)),
+    repeating-radial-gradient(circle at 78% 110%, rgba(255,255,255,.35) 0 2px, transparent 3px 11px);
+  box-shadow: 0 16px 38px rgba(55, 0, 14, 0.22);
+}
+
+.registro-nav {
+  width: min(1180px, calc(100% - 44px));
+  margin: 0 auto;
+  padding: 18px 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.brand-lockup {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+}
+
+.brand-lockup img {
+  width: 112px;
+  height: 112px;
+  object-fit: contain;
+  filter: drop-shadow(0 10px 14px rgba(0, 0, 0, .32));
+}
+
+.brand-lockup h1 {
+  color: #fff;
+  font-size: clamp(2rem, 4vw, 3.25rem);
+  line-height: 1;
+  letter-spacing: -0.04em;
+  margin: 0;
+}
+
+.eyebrow,
+.hero-subtitle {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.88);
+  font-weight: 800;
+}
+
+.eyebrow {
+  color: #ffd98e;
+  font-size: 0.78rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.hero-subtitle {
+  margin-top: 7px;
+  font-size: clamp(1rem, 2vw, 1.22rem);
+}
+
+.registro-aguilas .nav-links {
+  gap: 0;
+  align-items: stretch;
+}
+
+.registro-aguilas .nav-links a {
+  min-width: 135px;
+  padding: 10px 24px;
+  border-left: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 0;
+  display: grid;
+  place-items: center;
+  gap: 6px;
+  font-size: 0.95rem;
+  text-align: center;
+}
+
+.registro-aguilas .nav-links a span {
+  display: block;
+  font-size: 1.65rem;
+  line-height: 1;
+}
+
+.registro-aguilas .nav-links a:hover {
+  background: rgba(255, 255, 255, 0.12);
+  transform: translateY(-2px);
+}
+
+.hero-mascot {
+  position: absolute;
+  right: clamp(14px, 5vw, 86px);
+  bottom: -78px;
+  z-index: -1;
+  width: clamp(150px, 23vw, 280px);
+  opacity: 0.16;
+  transform: rotate(-6deg);
+}
+
+.hero-mascot img {
+  width: 100%;
+  filter: drop-shadow(0 16px 18px rgba(0, 0, 0, 0.18));
+}
+
+.registro-shell {
+  width: min(1180px, calc(100% - 40px));
+  margin: 42px auto 56px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.registro-aguilas form {
+  max-width: none;
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
+  gap: 20px;
+}
+
+.registro-aguilas fieldset {
+  position: relative;
+  border: 1px solid var(--aguila-borde);
+  border-radius: 16px;
+  padding: 38px 22px 22px;
+  background: rgba(255, 255, 255, 0.88);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 17px 20px;
+  box-shadow: var(--aguila-sombra);
+  backdrop-filter: blur(8px);
+}
+
+.registro-aguilas fieldset:nth-of-type(3),
+.registro-aguilas fieldset:nth-of-type(4) {
+  width: calc(50% - 10px);
+  display: inline-grid;
+  vertical-align: top;
+}
+
+.registro-aguilas fieldset:nth-of-type(3) {
+  margin-right: 16px;
+}
+
+.registro-aguilas fieldset:nth-of-type(6) {
+  grid-template-columns: minmax(220px, 430px) 1fr;
+}
+
+.registro-aguilas fieldset:hover {
+  box-shadow: 0 22px 48px rgba(58, 10, 24, 0.18);
+}
+
+.registro-aguilas legend {
+  position: absolute;
+  top: -18px;
+  left: 80px;
+  min-height: 52px;
+  padding: 15px 28px 12px 54px;
+  border: 1px solid var(--aguila-borde);
+  border-left: 0;
+  border-radius: 0 999px 999px 0;
+  background: linear-gradient(180deg, #ffffff, #f8f8fa);
+  color: #6f001a;
+  font-size: 1.02rem;
+  font-weight: 900;
+  line-height: 1.2;
+  text-transform: uppercase;
+  box-shadow: 9px 10px 18px rgba(0, 0, 0, 0.05);
+}
+
+.registro-aguilas legend::before {
+  counter-increment: seccion;
+  content: counter(seccion);
+  position: absolute;
+  left: -58px;
+  top: -1px;
+  width: 58px;
+  height: 58px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px 10px 18px 10px;
+  background: linear-gradient(145deg, #a9042a, #690016);
+  color: #fff;
+  font-size: 1.65rem;
+  font-weight: 950;
+  box-shadow: inset 0 0 0 2px rgba(255,255,255,.22), 0 10px 18px rgba(105,0,22,.26);
+}
+
+.registro-aguilas form {
+  counter-reset: seccion;
+}
+
+.registro-aguilas input,
+.registro-aguilas select,
+.registro-aguilas textarea {
+  min-height: 43px;
+  border: 1px solid #dce0e6;
+  border-radius: 7px;
+  background-color: rgba(255, 255, 255, 0.96);
+  color: #222936;
+  font-size: 0.84rem;
+  font-weight: 700;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.9), 0 3px 10px rgba(38, 45, 54, 0.04);
+}
+
+.registro-aguilas textarea {
+  width: 100%;
+  min-height: 78px;
+  padding: 12px 14px;
+  resize: vertical;
+  grid-column: 1 / -1;
+}
+
+.registro-aguilas input:focus,
+.registro-aguilas select:focus,
+.registro-aguilas textarea:focus {
+  border-color: var(--aguila-vino);
+  box-shadow: 0 0 0 4px rgba(139, 0, 31, .11);
+}
+
+.registro-aguilas label,
+.registro-aguilas .campo-fecha label,
+.registro-aguilas .campo-select label {
+  color: #4b2430;
+  font-size: 0.74rem;
+  font-weight: 900;
+}
+
+.registro-aguilas a {
+  color: var(--aguila-vino);
+  font-weight: 900;
+}
+
+.registro-aguilas .contador-paraescolar {
+  align-self: center;
+  padding: 16px 18px 16px 56px;
+  border: 1px solid #f1bd58;
+  border-radius: 10px;
+  background: linear-gradient(90deg, #fff7df, #fffdf8);
+  color: #694100;
+  font-size: 0.92rem;
+  position: relative;
+}
+
+.registro-aguilas .contador-paraescolar::before {
+  content: "★";
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: #b37615;
+  color: #fff;
+}
+
+.registro-aguilas button[type="submit"] {
+  align-self: center;
+  min-width: 286px;
+  margin-top: 8px;
+  padding: 17px 34px;
+  border-radius: 8px;
+  background: linear-gradient(180deg, #9c0429, #650017);
+  font-size: 1rem;
+  font-weight: 950;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  box-shadow: 0 12px 22px rgba(101, 0, 23, .32);
+}
+
+.registro-aguilas button[type="submit"]::before {
+  content: "🛡️ ";
+}
+
+.registro-aguilas button[type="submit"]:hover {
+  background: linear-gradient(180deg, #b30b35, #76001b);
+  transform: translateY(-2px) scale(1.01);
+}
+
+@media (max-width: 980px) {
+  .registro-nav,
+  .brand-lockup,
+  .registro-aguilas .nav-links {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .registro-aguilas .nav-links a {
+    width: 100%;
+    border-left: 0;
+    border-top: 1px solid rgba(255,255,255,.22);
+  }
+
+  .registro-aguilas fieldset,
+  .registro-aguilas fieldset:nth-of-type(6) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .registro-aguilas fieldset:nth-of-type(3),
+  .registro-aguilas fieldset:nth-of-type(4) {
+    width: 100%;
+    margin-right: 0;
+  }
+}
+
+@media (max-width: 620px) {
+  .brand-lockup img {
+    width: 86px;
+    height: 86px;
+  }
+
+  .registro-shell {
+    width: min(100% - 24px, 1180px);
+    margin-top: 32px;
+  }
+
+  .registro-aguilas fieldset,
+  .registro-aguilas fieldset:nth-of-type(6) {
+    grid-template-columns: 1fr;
+    padding: 48px 14px 16px;
+  }
+
+  .registro-aguilas legend {
+    left: 58px;
+    right: 10px;
+    padding-left: 20px;
+    font-size: 0.88rem;
+  }
+
+  .registro-aguilas legend::before {
+    left: -50px;
+    width: 50px;
+    height: 50px;
+  }
+}
+
+/* Distribución tipo tablero: secciones completas y dos tarjetas medias. */
+.registro-aguilas form {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+.registro-aguilas fieldset {
+  width: 100%;
+}
+
+.registro-aguilas fieldset:nth-of-type(3),
+.registro-aguilas fieldset:nth-of-type(4) {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.registro-aguilas button[type="submit"],
+.registro-aguilas #pdfLink {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+@media (max-width: 980px) {
+  .registro-aguilas fieldset:nth-of-type(3),
+  .registro-aguilas fieldset:nth-of-type(4) {
+    width: 100%;
+    margin-right: 0;
+  }
+}
+
+@media (max-width: 620px) {
+  .registro-aguilas fieldset:nth-of-type(3),
+  .registro-aguilas fieldset:nth-of-type(4) {
+    grid-template-columns: 1fr;
+  }
+}
