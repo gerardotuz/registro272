@@ -6,6 +6,7 @@ const COLECCION_ALUMNOS = 'alumnos';
 const COLECCION_REGISTRADOS = 'registrados';
 
 const obtenerValor = (id) => document.getElementById(id)?.value || '';
+const obtenerChecked = (id) => Boolean(document.getElementById(id)?.checked);
 const asignarValor = (id, valor = '') => {
   const campo = document.getElementById(id);
   if (campo) campo.value = valor ?? '';
@@ -187,6 +188,7 @@ function construirDatosFormulario() {
     datos.materias_reprobadas = obtenerValor('materias_reprobadas');
     datos.adeudo = obtenerValor('materias_reprobadas');
     datos.tipo_tramite = obtenerValor('tipo_tramite') || 'REINSCRIPCION';
+    datos.desbloquear_reinscripcion = obtenerChecked('desbloquear_reinscripcion');
     datos.nombres = datos.datos_alumno.nombres;
     datos.primer_apellido = datos.datos_alumno.primer_apellido;
     datos.segundo_apellido = datos.datos_alumno.segundo_apellido;
@@ -303,7 +305,8 @@ function cargarFormulario(alumnoOriginal, coleccion) {
     asignarValor('estatus', alumno.estatus);
     asignarValor('materias_reprobadas', alumno.materias_reprobadas);
     asignarValor('tipo_tramite', alumno.tipo_tramite);
-
+const desbloquear = document.getElementById('desbloquear_reinscripcion');
+    if (desbloquear) desbloquear.checked = false;
     Object.entries(da).forEach(([key, value]) => asignarValor(key, value));
     asignarValor('colonia', dg.colonia);
     asignarValor('domicilio', dg.domicilio);
@@ -372,6 +375,12 @@ document.getElementById('btnGuardar').addEventListener('click', async () => {
     const id = obtenerValor('editId');
     const coleccion = obtenerValor('editCollection') || COLECCION_ALUMNOS;
     const datos = construirDatosFormulario();
+    if (coleccion === COLECCION_REGISTRADOS && datos.desbloquear_reinscripcion) {
+      const materias = Number(datos.materias_reprobadas || 0);
+      if (materias > 2 && !confirm('El alumno aún tiene más de 2 materias reprobadas. ¿Deseas desbloquearlo de todos modos?')) {
+        return;
+      }
+    }
     const metodo = id ? 'PUT' : 'POST';
     const url = id ? `/api/dashboard/${coleccion}/${id}` : `/api/dashboard/${coleccion}`;
 
