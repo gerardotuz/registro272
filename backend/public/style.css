@@ -566,7 +566,7 @@ body.registro-aguilas::after {
 }
 
 .registro-aguilas fieldset:nth-of-type(3) {
-  margin-right: 16px;
+  /*margin-right: 16px; */
 }
 
 .registro-aguilas fieldset:nth-of-type(6) {
