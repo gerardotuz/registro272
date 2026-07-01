@@ -558,7 +558,8 @@ router.get("/asignacion-grupos/template", (req, res) => {
     res.status(500).json({ error: "Error al generar la plantilla de asignación de grupos" });
   }
 });
-router.post("/asignacion-grupos", verificarToken, uploadAsignacion.single("excel"), async (req, res) => {
+
+router.post("/asignacion-grupos", uploadAsignacion.single("excel"), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: "No se recibió archivo Excel" });
 
