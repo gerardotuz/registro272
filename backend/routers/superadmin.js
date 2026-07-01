@@ -545,7 +545,7 @@ function asignarAlumnosPorCarrera(alumnos, configuracion) {
 
   return { resultado, resumen };
 }
-router.get("/asignacion-grupos/template", verificarToken, (req, res) => {
+router.get("/asignacion-grupos/template", (req, res) => {
   try {
     const libro = crearWorkbookPlantillaAsignacion();
     const buffer = XLSX.write(libro, { type: "buffer", bookType: "xlsx" });
