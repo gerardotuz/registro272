@@ -768,6 +768,18 @@ router.get('/dashboard/alumnos/:id', async (req, res) => {
 router.put('/dashboard/registrados/:id', async (req, res) => {
   try {
     const bodyUpper = normalizarNumeroSeguroSocial(toUpperData(req.body));
+    const desbloquearSolicitado = bodyUpper.desbloquear_reinscripcion === true;
+    delete bodyUpper.desbloquear_reinscripcion;
+
+    const materiasReprobadas = Number(bodyUpper.materias_reprobadas ?? bodyUpper.adeudo ?? 0);
+    const puedeGenerarPDF = Number.isFinite(materiasReprobadas) && materiasReprobadas <= 2;
+
+    if (desbloquearSolicitado || puedeGenerarPDF) {
+      bodyUpper.requiere_control_escolar = false;
+      bodyUpper.bloqueado_reinscripcion = false;
+      bodyUpper.reinscripcion_completada = false;
+      bodyUpper.pdf_generado = false;
+    }
     const registrado = await Registrado.findByIdAndUpdate(req.params.id, bodyUpper, { new: true, strict: false });
     if (!registrado) return res.status(404).json({ message: 'No encontrado' });
     res.json(registrado);
