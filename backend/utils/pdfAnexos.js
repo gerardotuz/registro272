@@ -7,10 +7,7 @@ const TIPOS_TRAMITE = {
   INSCRIPCION: 'inscripcion',
   REINSCRIPCION: 'reinscripcion'
 };
-const CARPETAS_ALTERNAS_TIPO_TRAMITE = {
-  INSCRIPCION: ['inscripciones'],
-  REINSCRIPCION: ['reinscripciones']
-};
+
 function obtenerCarpetaAnexos(tipoTramite = 'INSCRIPCION') {
   const tipoNormalizado = String(tipoTramite || 'INSCRIPCION')
     .trim()
@@ -19,27 +16,17 @@ function obtenerCarpetaAnexos(tipoTramite = 'INSCRIPCION') {
   return TIPOS_TRAMITE[tipoNormalizado] || TIPOS_TRAMITE.INSCRIPCION;
 }
 
-function obtenerRutasCarpetasAnexos(tipoTramite = 'INSCRIPCION') {
-  const tipoNormalizado = String(tipoTramite || 'INSCRIPCION')
-    .trim()
-    .toUpperCase();
-  const carpetaPrincipal = obtenerCarpetaAnexos(tipoNormalizado);
-  const carpetas = [
-    carpetaPrincipal,
-    ...(CARPETAS_ALTERNAS_TIPO_TRAMITE[tipoNormalizado] || [])
-  ];
+function listarAnexos(tipoTramite) {
+  const carpeta = obtenerCarpetaAnexos(tipoTramite);
+  const rutaCarpeta = path.join(ANEXOS_BASE_DIR, carpeta);
 
-  return [...new Set(carpetas)].map((carpeta) => path.join(ANEXOS_BASE_DIR, carpeta));
-}
+  if (!fs.existsSync(rutaCarpeta)) return [];
 
-  function listarAnexos(tipoTramite) {
-  return obtenerRutasCarpetasAnexos(tipoTramite)
-    .filter((rutaCarpeta) => fs.existsSync(rutaCarpeta))
-    .flatMap((rutaCarpeta) => fs
-      .readdirSync(rutaCarpeta)
-      .filter((archivo) => archivo.toLowerCase().endsWith('.pdf'))
-      .sort((a, b) => a.localeCompare(b, 'es'))
-      .map((archivo) => path.join(rutaCarpeta, archivo)));
+  return fs
+    .readdirSync(rutaCarpeta)
+    .filter((archivo) => archivo.toLowerCase().endsWith('.pdf'))
+    .sort((a, b) => a.localeCompare(b, 'es'))
+    .map((archivo) => path.join(rutaCarpeta, archivo));
 }
 
 async function anexarPDFs(rutaPDFPrincipal, tipoTramite = 'INSCRIPCION') {
@@ -64,6 +51,5 @@ module.exports = {
   ANEXOS_BASE_DIR,
   anexarPDFs,
   listarAnexos,
-   obtenerCarpetaAnexos,
-  obtenerRutasCarpetasAnexos
+  obtenerCarpetaAnexos
 };
