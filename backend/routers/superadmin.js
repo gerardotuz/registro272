@@ -447,6 +447,44 @@ function puntajeGrupo(grupo, alumno) {
   return (total * 12) + (sexoActual * 8) + Math.abs(promedioGrupo - alumno.promedio) + cupoPenalizacion;
 }
 
+function crearWorkbookPlantillaAsignacion() {
+  const encabezados = [
+    "carrera",
+    "nombre",
+    "sexo",
+    "promedio"
+  ];
+
+  const ejemplo = [
+    { carrera: "Programación", nombre: "JUAN PEREZ LOPEZ", sexo: "H", promedio: 92.5 },
+    { carrera: "Programación", nombre: "MARIA GARCIA RUIZ", sexo: "M", promedio: 89.75 },
+    { carrera: "Contabilidad", nombre: "ANA LOPEZ MARTINEZ", sexo: "F", promedio: 95 }
+  ];
+
+  const instrucciones = [
+    { campo: "carrera", descripcion: "Nombre de la carrera o especialidad. Debe coincidir con la configuración de grupos." },
+    { campo: "nombre", descripcion: "Nombre completo del alumno." },
+    { campo: "sexo", descripcion: "Acepta H/M, Hombre/Mujer, Masculino/Femenino o F." },
+    { campo: "promedio", descripcion: "Promedio del examen de admisión. Usa número, por ejemplo 92.5." }
+  ];
+
+  const libro = XLSX.utils.book_new();
+  const hojaAlumnos = XLSX.utils.json_to_sheet(ejemplo, { header: encabezados });
+  XLSX.utils.sheet_add_aoa(hojaAlumnos, [encabezados], { origin: "A1" });
+  hojaAlumnos["!cols"] = [
+    { wch: 24 },
+    { wch: 34 },
+    { wch: 12 },
+    { wch: 14 }
+  ];
+
+  const hojaInstrucciones = XLSX.utils.json_to_sheet(instrucciones);
+  hojaInstrucciones["!cols"] = [{ wch: 18 }, { wch: 80 }];
+
+  XLSX.utils.book_append_sheet(libro, hojaAlumnos, "Alumnos");
+  XLSX.utils.book_append_sheet(libro, hojaInstrucciones, "Instrucciones");
+  return libro;
+}
 function asignarAlumnosPorCarrera(alumnos, configuracion) {
   const porCarrera = alumnos.reduce((acc, alumno) => {
     acc[alumno.carrera] = acc[alumno.carrera] || [];
@@ -507,7 +545,19 @@ function asignarAlumnosPorCarrera(alumnos, configuracion) {
 
   return { resultado, resumen };
 }
+router.get("/asignacion-grupos/template", verificarToken, (req, res) => {
+  try {
+    const libro = crearWorkbookPlantillaAsignacion();
+    const buffer = XLSX.write(libro, { type: "buffer", bookType: "xlsx" });
 
+    res.setHeader("Content-Disposition", "attachment; filename=plantilla-asignacion-grupos.xlsx");
+    res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+    res.send(buffer);
+  } catch (error) {
+    console.error("ERROR PLANTILLA ASIGNACION GRUPOS:", error);
+    res.status(500).json({ error: "Error al generar la plantilla de asignación de grupos" });
+  }
+});
 router.post("/asignacion-grupos", verificarToken, uploadAsignacion.single("excel"), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: "No se recibió archivo Excel" });
