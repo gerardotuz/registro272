@@ -61,12 +61,12 @@
 <input name="segundo_apellido" placeholder="Segundo Apellido" required type="text"/>
 <input name="curp" placeholder="CURP" required type="text"/>
 <input name="carrera" placeholder="Carrera" readonly type="text"/>
-<input name="periodo_semestral" placeholder="Periodo Semestral" readonly type="text" value="2025-2026"/>
+<input name="periodo_semestral" placeholder="Periodo Semestral" readonly type="text" value="2026-2027"/>
 <input name="semestre" placeholder="Semestre" readonly type="text" value="Primer Semestre"/>
 <input name="grupo" placeholder="Grupo" readonly type="text"/>
 
   <select name="nacionalidad" required><option value="">Selecciona Nacionalidad</option><option value="Mexicano">Mexicano</option><option value="Extranjero">Extranjero</option></select>
-<input name="pais_extranjero" placeholder="País (si es extranjero)" type="text"/>
+<input name="pais_extranjero" placeholder="País (si es extranjero)" type="text" disabled/>
 <select name="estado_civil" required><option value="">Estado Civil</option><option value="Soltero">Soltero</option><option value="Casado">Casado</option><option value="Unión libre">Unión libre</option><option value="Otro">Otro</option></select>
 <input name="turno" placeholder="Turno" readonly type="text"/>
 <div class="campo-fecha"><label for="fecha_nacimiento">Fecha de Nacimiento</label><input id="fecha_nacimiento" name="fecha_nacimiento" required type="date"/></div>
@@ -95,8 +95,8 @@
   <legend>Datos Médicos</legend>
   <div><input name="numero_seguro_social" placeholder="NÚMERO DE SEGURO SOCIAL DEL ALUMNO" type="text" inputmode="numeric" pattern="[0-9]*" title="Ingresa únicamente números" oninput="this.value = this.value.replace(/[^0-9]/g, '')" required/>
     <a href="https://www.imss.gob.mx/tramites/imss02008" target="_blank" rel="noopener noreferrer">Consultar o tramitar NSS</a></div>
-  <select name="unidad_medica_familiar" required><option value="">Selecciona Unidad Medica</option><option value="13">13</option><option value="14">14</option><option value="15">15</option><option value="16">16</option><option value="19">19</option></select><input name="enfermedad_cronica_o_alergia_respuesta" placeholder="¿Tiene enfermedad o alergia? (Sí/No)" type="text"/><input name="enfermedad_cronica_o_alergia_detalle" placeholder="Detalle enfermedad o alergia" type="text"/><select name="discapacidad" required><option value="">Selecciona discapacidad</option><option value="Ninguna">Ninguna</option><option value="Visual">Visual</option><option value="Motriz">Motriz</option><option value="Auditiva">Auditiva</option><option value="Habla">Habla</option><option value="Otro">Otro</option></select><select name="entrega_diagnostico" required><option value="">¿Entrega diagnóstico?</option><option value="Sí">Sí</option><option value="No">No</option></select><textarea name="detalle_enfermedad" placeholder="Detalle de enfermedad" rows="5"></textarea></fieldset>
-
+  <select name="unidad_medica_familiar" required><option value="">Selecciona Unidad Medica</option><option value="13">13</option><option value="14">14</option><option value="15">15</option><option value="16">16</option><option value="19">19</option></select><input name="enfermedad_cronica_o_alergia_respuesta" placeholder="¿Tiene enfermedad o alergia? (Sí/No)" type="text"/><input name="enfermedad_cronica_o_alergia_detalle" placeholder="Detalle enfermedad o alergia" type="text"/><select name="discapacidad" required><option value="">Selecciona discapacidad</option><option value="Ninguna">Ninguna</option><option value="Visual">Visual</option><option value="Motriz">Motriz</option><option value="Auditiva">Auditiva</option><option value="Habla">Habla</option><option value="Otro">Otro</option></select><select name="entrega_diagnostico" required><option value="">¿Entrega diagnóstico?</option><option value="Sí">Sí</option><option value="No">No</option></select><textarea name="detalle_enfermedad" placeholder="Detalle de enfermedad" rows="5" disabled></textarea></fieldset>
+    
 <fieldset><legend>Situación Académica</legend>
  <label for="adeudo">¿Cuantas materias tienes en adeudo?</label>
   <input name="adeudo" placeholder="Adeudo: número de materias reprobadas" min="0" step="1" type="number" value="0"/>
@@ -113,7 +113,48 @@ const BASE_URL = window.location.origin.includes('localhost')
 const OPCIONES_CARRERA = ['A Y B', 'PROGRAMACIÓN', 'GESTIÓN E INNOVACIÓN TURÍSTICA', 'VENTAS', 'ROBOTICA'];
 const IDS_OPCIONES = ['primera_opcion', 'segunda_opcion', 'tercera_opcion', 'cuarta_opcion', 'quinta_opcion'];
 
-  function marcarCamposObligatorios() {
+  function esValorMexicano(valor) {
+  return ['mexicano', 'mexicana', 'mexico'].includes(normalizarValorFormulario(valor));
+}
+
+function esDiscapacidadNinguna(valor) {
+  return normalizarValorFormulario(valor) === 'ninguna';
+}
+
+function actualizarCamposCondicionales() {
+  const nacionalidad = document.querySelector('[name="nacionalidad"]');
+  const paisExtranjero = document.querySelector('[name="pais_extranjero"]');
+  if (nacionalidad && paisExtranjero) {
+    const requierePais = normalizarValorFormulario(nacionalidad.value) === 'extranjero';
+    paisExtranjero.disabled = !requierePais;
+    paisExtranjero.required = requierePais;
+    if (!requierePais) paisExtranjero.value = '';
+  }
+
+  const discapacidad = document.querySelector('[name="discapacidad"]');
+  const entregaDiagnostico = document.querySelector('[name="entrega_diagnostico"]');
+  const detalleEnfermedad = document.querySelector('[name="detalle_enfermedad"]');
+  if (discapacidad && entregaDiagnostico && detalleEnfermedad) {
+    const requiereDetalle = discapacidad.value && !esDiscapacidadNinguna(discapacidad.value);
+    entregaDiagnostico.disabled = !requiereDetalle;
+    entregaDiagnostico.required = requiereDetalle;
+    detalleEnfermedad.disabled = !requiereDetalle;
+    detalleEnfermedad.required = requiereDetalle;
+    if (!requiereDetalle) {
+      entregaDiagnostico.value = 'No';
+      detalleEnfermedad.value = '';
+    }
+  }
+}
+
+function inicializarCamposCondicionales() {
+  document.querySelector('[name="nacionalidad"]')?.addEventListener('change', actualizarCamposCondicionales);
+  document.querySelector('[name="discapacidad"]')?.addEventListener('change', actualizarCamposCondicionales);
+  actualizarCamposCondicionales();
+}
+
+function marcarCamposObligatorios() {
+  
   const formulario = document.getElementById('registroForm');
   if (!formulario) return;
 
@@ -189,6 +230,7 @@ async function buscarNumeroControl(numeroControl) {
 
 document.addEventListener('DOMContentLoaded', () => {
   marcarCamposObligatorios();
+  inicializarCamposCondicionales();
   const buscar = document.getElementById('buscarControlForm');
   const numeroControlUrl = obtenerNumeroControlDesdeUrl();
 
@@ -404,6 +446,7 @@ function asignarValorCampo(nombre, valor) {
     });
 
     campo.selectedIndex = opcion ? opcion.index : 0;
+     campo.dispatchEvent(new Event('change', { bubbles: true }));
     return;
   }
 
@@ -427,6 +470,7 @@ function consultarFolioYAutocompletar(){
   const set = asignarValorCampo;
   const mappings={adeudo: datos.adeudo ?? datos.materias_reprobadas ?? datos.materiasReprobadas,...datos.datos_alumno,...datos.datos_generales,...datos.datos_medicos,...datos.secundaria_origen,...datos.tutor_responsable,'habla_lengua_indigena_respuesta':datos.datos_generales?.habla_lengua_indigena?.respuesta,'habla_lengua_indigena_cual':datos.datos_generales?.habla_lengua_indigena?.cual,'enfermedad_cronica_o_alergia_respuesta':datos.datos_medicos?.enfermedad_cronica_o_alergia?.respuesta,'enfermedad_cronica_o_alergia_detalle':datos.datos_medicos?.enfermedad_cronica_o_alergia?.detalle,'persona_emergencia_nombre':datos.persona_emergencia?.nombre,'persona_emergencia_parentesco':datos.persona_emergencia?.parentesco,'persona_emergencia_telefono':datos.persona_emergencia?.telefono};
   Object.entries(mappings).forEach(([k,v])=>set(k,v));
+   actualizarCamposCondicionales();
 
   if (reinscripcionEstaBloqueada(datos)) {
     deshabilitarFormulario('Este número de control ya tiene una reinscripción capturada y no puede editarse. Si necesitas cambios, acude a control escolar.');
