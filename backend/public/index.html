@@ -8,11 +8,17 @@
 
 
 </head>
-<body>
-<nav>
-  <div class="nav-logo">
-    <img src="/logo.png" alt="Logo" />
-  </div>
+<body class="registro-aguilas inicio-aguilas">
+<header class="registro-hero inicio-hero">
+  <nav class="registro-nav" aria-label="Navegación principal">
+    <div class="brand-lockup">
+      <img alt="Logo CBTIS 272" src="/logo.png"/>
+      <div>
+        <p class="eyebrow">Águilas CBTIS 272</p>
+        <h1>Portal de Registro</h1>
+        <p class="hero-subtitle">Consulta tu folio, número de control o reimprime tu ficha</p>
+      </div>
+    </div>
   <div class="nav-links">
     <a href="index.html">Inicio</a>
    <!-- <a href="consultar-grupo.html">Consultar grupo</a> -->
@@ -23,8 +29,13 @@
     <a href="formulario-reinscripcion.html">Reinscripción</a>-->
   </div>
 </nav>
-
-<h2>Consulta tu folio o número de control</h2>
+  <div class="hero-mascot" aria-hidden="true">
+    <img alt="" src="/logo.png"/>
+  </div>
+</header>
+<main class="registro-shell inicio-shell">
+<section class="inicio-card" aria-labelledby="consultaTitulo">
+<h2 id="consultaTitulo">Consulta tu folio o número de control</h2>
 <form id="busquedaRegistroForm">
   <input
     type="text"
@@ -41,7 +52,7 @@
   <input type="text" id="folioReimpresion" placeholder="Ingresa tu folio o número de control para reimprimir" required />
   <button type="submit">Reimprimir PDF</button>
 </form>
-
+</section>
 <div id="alerta-servidor" style="display:none; background-color:#ffcdd2; color:#b71c1c; padding:10px; text-align:center; font-weight:bold;">
   ⚠️ El servidor está experimentando una alta demanda. Si no carga correctamente, intenta más tarde.
 </div>
@@ -146,12 +157,6 @@ busquedaRegistroForm.addEventListener("submit", (e) => {
   });
 });
 </script>
-
-
-
-
-
-
-
+</main>
 </body>
 </html>
