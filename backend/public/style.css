@@ -797,3 +797,69 @@ body.registro-aguilas::after {
     grid-template-columns: 1fr;
   }
 }
+
+/* ===== Reinscripción homologada con Registro 272 ===== */
+.reinscripcion-aguilas .lookup-card {
+  width: min(760px, 100%);
+  margin: 0 auto 28px;
+  padding: 24px;
+  border: 1px solid var(--aguila-borde);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: var(--aguila-sombra);
+}
+
+.reinscripcion-aguilas .lookup-card h3 {
+  margin: 0 0 8px;
+  color: #6f001a;
+  font-size: clamp(1.35rem, 3vw, 2rem);
+  font-weight: 950;
+  letter-spacing: -0.03em;
+}
+
+.reinscripcion-aguilas .lookup-card p {
+  margin: 0 0 18px;
+  color: #5d6670;
+  font-weight: 700;
+}
+
+.reinscripcion-aguilas #buscarControlForm {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 14px;
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.reinscripcion-aguilas #buscarControlForm button {
+  min-width: 150px;
+  border-radius: 8px;
+  background: linear-gradient(180deg, #9c0429, #650017);
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.reinscripcion-aguilas #registroForm[style*="display:none"] {
+  display: none !important;
+}
+
+.reinscripcion-aguilas #registroForm .acciones-formulario {
+  width: 100%;
+}
+
+.reinscripcion-aguilas #registroForm .btn-guardar-reinscripcion {
+  width: min(340px, 100%) !important;
+  margin: 8px auto 0;
+  background: linear-gradient(180deg, #9c0429, #650017);
+  box-shadow: 0 12px 22px rgba(101, 0, 23, .32);
+}
+
+@media (max-width: 620px) {
+  .reinscripcion-aguilas #buscarControlForm {
+    grid-template-columns: 1fr;
+  }
+}
