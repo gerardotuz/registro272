@@ -70,7 +70,7 @@ async function generarAsignacion() {
 
   const res = await fetch("/api/superadmin/asignacion-grupos", {
     method: "POST",
-    headers: { Authorization: `Bearer ${tokenAsignacion}` },
+  
     body: formData
   });
 
