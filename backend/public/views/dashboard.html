@@ -635,7 +635,15 @@ Folio
                 <label>Tipo Trámite</label>
                 <input type="text" id="tipo_tramite" class="form-control">
               </div>
-              
+              <div class="col-md-4 mb-2 d-none" data-registrado-only>
+                <div class="form-check mt-4">
+                  <input class="form-check-input" type="checkbox" id="desbloquear_reinscripcion">
+                  <label class="form-check-label" for="desbloquear_reinscripcion">
+                    Desbloquear alumno para reimprimir ficha
+                  </label>
+                </div>
+                <small class="text-muted">Úsalo cuando Control Escolar corrija las materias reprobadas a 2 o menos.</small>
+              </div>
               <div class="col-md-4 mb-2">
                 <label>Primer Apellido</label>
                 <input type="text" id="primer_apellido" class="form-control">
