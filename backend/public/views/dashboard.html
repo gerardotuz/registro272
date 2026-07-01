@@ -393,10 +393,70 @@
       padding: 18px;
     }
   }
+    /* Ajuste visual Águilas CBTIS 272 para homologar con registro */
+  body.admin-aguilas {
+    background:
+      radial-gradient(circle at 88% 18%, rgba(255, 255, 255, 0.12) 0 11%, transparent 12%),
+      linear-gradient(135deg, #5e0016 0%, #8b001f 38%, #f7f8fb 38.2%, #ffffff 100%);
+  }
+
+  .admin-aguilas nav {
+    width: 100%;
+    margin: 0;
+    padding: 18px max(22px, calc((100vw - 1180px) / 2));
+    border: 0;
+    border-bottom: 4px solid rgba(201, 144, 40, 0.85);
+    border-radius: 0;
+    background: linear-gradient(110deg, rgba(94, 0, 22, 0.98), rgba(139, 0, 31, 0.98) 58%, rgba(94, 0, 22, 0.94));
+  }
+
+  .admin-aguilas .nav-logo::after {
+    content: 'Panel administrativo';
+    margin-left: 18px;
+    color: #fff;
+    font-size: clamp(1.5rem, 3vw, 2.5rem);
+    font-weight: 950;
+    letter-spacing: -0.04em;
+    vertical-align: middle;
+  }
+
+  .admin-aguilas .nav-logo img {
+    height: 86px;
+  }
+
+  .admin-aguilas .nav-links a,
+  .admin-aguilas #logoutBtn {
+    border-radius: 0;
+    border-color: rgba(255, 255, 255, 0.22);
+    background: transparent;
+  }
+
+  .admin-aguilas .dashboard-hero {
+    border: 1px solid rgba(217, 221, 228, 0.95);
+    background:
+      linear-gradient(135deg, rgba(255,255,255,.98), rgba(255,255,255,.9)),
+      repeating-radial-gradient(circle at 90% 30%, rgba(139,0,31,.18) 0 2px, transparent 3px 10px);
+  }
+
+  .admin-aguilas .dashboard-eyebrow,
+  .admin-aguilas .admin-card-title,
+  .admin-aguilas h2.dashboard-title {
+    color: #6f001a;
+  }
+
+  .admin-aguilas .admin-card {
+    border: 1px solid #d9dde4;
+    border-radius: 16px;
+    box-shadow: 0 18px 40px rgba(58, 10, 24, 0.14);
+  }
+
+  .admin-aguilas .admin-card-header {
+    background: linear-gradient(180deg, #ffffff, #f8f8fa);
+  }
 </style>
 </head>
 
-<body class="dashboard-admin">
+<body class="dashboard-admin admin-aguilas">
   <!-- Navbar -->
 <nav>
   <div class="nav-logo">
