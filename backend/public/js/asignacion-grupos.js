@@ -33,6 +33,30 @@ function obtenerConfiguracion() {
   });
   return configuracion;
 }
+async function descargarPlantilla() {
+  mensajeAsignacion.textContent = "Descargando plantilla...";
+
+  const res = await fetch("/api/superadmin/asignacion-grupos/template", {
+    headers: { Authorization: `Bearer ${tokenAsignacion}` }
+  });
+
+  if (!res.ok) {
+    const error = await res.json().catch(() => ({ error: "No se pudo descargar la plantilla" }));
+    mensajeAsignacion.textContent = error.error;
+    return;
+  }
+
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "plantilla-asignacion-grupos.xlsx";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+  mensajeAsignacion.textContent = "Plantilla descargada correctamente.";
+}
 
 async function generarAsignacion() {
   const archivo = document.getElementById("excelInput").files[0];
@@ -69,7 +93,7 @@ async function generarAsignacion() {
   URL.revokeObjectURL(url);
   mensajeAsignacion.textContent = "Asignación generada correctamente.";
 }
-
+document.getElementById("descargarPlantillaBtn").addEventListener("click", descargarPlantilla);
 document.getElementById("agregarCarreraBtn").addEventListener("click", () => crearFilaConfiguracion());
 document.getElementById("generarBtn").addEventListener("click", generarAsignacion);
 crearFilaConfiguracion();
