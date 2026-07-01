@@ -366,6 +366,7 @@ select:required:invalid {
   font-weight: 600;
   line-height: 1.4;
 }
+
 /* ===== Rediseño visual Registro 272 estilo Águilas ===== */
 :root {
   --aguila-vino: #8b001f;
@@ -860,6 +861,104 @@ body.registro-aguilas::after {
 
 @media (max-width: 620px) {
   .reinscripcion-aguilas #buscarControlForm {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ===== Index / Portal de consulta homologado a Águilas CBTIS 272 ===== */
+.inicio-aguilas .inicio-shell {
+  min-height: calc(100vh - 230px);
+  display: grid;
+  align-items: start;
+}
+
+.inicio-aguilas .inicio-card {
+  width: min(780px, 100%);
+  margin: 0 auto;
+  padding: clamp(24px, 4vw, 38px);
+  border: 1px solid var(--aguila-borde);
+  border-radius: 18px;
+  background:
+    linear-gradient(135deg, rgba(255,255,255,.98), rgba(255,255,255,.90)),
+    repeating-radial-gradient(circle at 92% 25%, rgba(139,0,31,.14) 0 2px, transparent 3px 10px);
+  box-shadow: var(--aguila-sombra);
+}
+
+.inicio-aguilas .inicio-card h2 {
+  display: block;
+  margin: 0 0 10px;
+  padding: 0;
+  background: transparent;
+  color: #6f001a;
+  text-align: left;
+  font-size: clamp(1.8rem, 4vw, 2.7rem);
+  font-weight: 950;
+  line-height: 1.02;
+  letter-spacing: -0.04em;
+}
+
+.inicio-aguilas .inicio-card h2::after {
+  content: "Completa una búsqueda para continuar con registro, reinscripción o reimpresión.";
+  display: block;
+  max-width: 560px;
+  margin-top: 10px;
+  color: #5d6670;
+  font-size: 0.98rem;
+  font-weight: 700;
+  line-height: 1.5;
+  letter-spacing: 0;
+}
+
+.inicio-aguilas #busquedaRegistroForm,
+.inicio-aguilas #busquedaForm,
+.inicio-aguilas #reimprimirForm {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 14px;
+  width: 100%;
+  max-width: none;
+  margin: 22px 0 0;
+  padding: 0;
+  background: transparent;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.inicio-aguilas #reimprimirForm {
+  margin-top: 14px;
+  padding-top: 18px;
+  border-top: 1px solid rgba(139, 0, 31, 0.12);
+}
+
+.inicio-aguilas #busquedaRegistroForm button,
+.inicio-aguilas #busquedaForm button,
+.inicio-aguilas #reimprimirForm button {
+  min-width: 160px;
+  border-radius: 8px;
+  background: linear-gradient(180deg, #9c0429, #650017);
+  box-shadow: 0 12px 22px rgba(101, 0, 23, .24);
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.inicio-aguilas #reimprimirForm button {
+  background: linear-gradient(180deg, #c99028, #9d6912);
+  color: #2f1e00;
+}
+
+.inicio-aguilas #alerta-servidor {
+  width: min(780px, 100%);
+  margin: 18px auto 0;
+  border: 1px solid #f1bd58;
+  border-radius: 10px;
+  background: #fff7df !important;
+  color: #694100 !important;
+}
+
+@media (max-width: 620px) {
+  .inicio-aguilas #busquedaRegistroForm,
+  .inicio-aguilas #busquedaForm,
+  .inicio-aguilas #reimprimirForm {
     grid-template-columns: 1fr;
   }
 }
