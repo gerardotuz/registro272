@@ -489,8 +489,10 @@ body.registro-aguilas::after {
   display: grid;
   place-items: center;
   gap: 6px;
+  color: #fff;
   font-size: 0.95rem;
   text-align: center;
+  text-shadow: 0 1px 3px rgba(50, 0, 12, 0.35);
 }
 
 .registro-aguilas .nav-links a span {
