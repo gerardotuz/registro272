@@ -36,9 +36,7 @@ function obtenerConfiguracion() {
 async function descargarPlantilla() {
   mensajeAsignacion.textContent = "Descargando plantilla...";
 
-  const res = await fetch("/api/superadmin/asignacion-grupos/template", {
-    headers: { Authorization: `Bearer ${tokenAsignacion}` }
-  });
+  const res = await fetch("/api/superadmin/asignacion-grupos/template");
 
   if (!res.ok) {
     const error = await res.json().catch(() => ({ error: "No se pudo descargar la plantilla" }));
