@@ -197,10 +197,10 @@ function construirDatosFormulario() {
     datos.semestre = datos.datos_alumno.semestre;
     datos.grupo = datos.datos_alumno.grupo;
     datos.turno = datos.datos_alumno.turno;
-  
-} else {
-    datos.desbloquear_registro = obtenerChecked('desbloquear_registro');
   }
+
+  return datos;
+}
 
 document.addEventListener('DOMContentLoaded', () => {
   if (!localStorage.getItem('login')) {
@@ -247,10 +247,6 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('[data-registrado-only]').forEach((el) => {
       el.classList.toggle('d-none', !esRegistrado);
     });
-    document.querySelectorAll('[data-alumno-only]').forEach((el) => {
-      el.classList.toggle('d-none', esRegistrado);
-    });
-    asignarValor('tipoAltaColeccion', coleccion);
     document.getElementById('folioLabel').textContent = esRegistrado ? 'Folio / Número de Control' : 'Folio';
   }
 
@@ -311,9 +307,6 @@ function cargarFormulario(alumnoOriginal, coleccion) {
     asignarValor('tipo_tramite', alumno.tipo_tramite);
 const desbloquear = document.getElementById('desbloquear_reinscripcion');
     if (desbloquear) desbloquear.checked = false;
-  const desbloquearRegistro = document.getElementById('desbloquear_registro');
-    if (desbloquearRegistro) desbloquearRegistro.checked = false;
-  
     Object.entries(da).forEach(([key, value]) => asignarValor(key, value));
     asignarValor('colonia', dg.colonia);
     asignarValor('domicilio', dg.domicilio);
@@ -455,20 +448,14 @@ if (!res.ok) {
     }
   });
 
-  document.getElementById('btnAgregarNuevo').addEventListener('click', () => {
+document.getElementById('btnAgregarNuevo').addEventListener('click', () => {
     const inputs = document.querySelectorAll('#editForm input, #editForm select, #editForm textarea');
     inputs.forEach(input => input.value = '');
-     const coleccion = obtenerValor('tipoAltaColeccion') || COLECCION_ALUMNOS;
-    document.getElementById('editCollection').value = coleccion;
-    configurarFormularioPorColeccion(coleccion);
+    document.getElementById('editId').value = '';
+    document.getElementById('editCollection').value = COLECCION_ALUMNOS;
+    configurarFormularioPorColeccion(COLECCION_ALUMNOS);
     new bootstrap.Modal(document.getElementById('editModal')).show();
   });
- const tipoAltaColeccion = document.getElementById('tipoAltaColeccion');
-  if (tipoAltaColeccion) tipoAltaColeccion.addEventListener('change', (e) => {
-    if (!obtenerValor('editId')) {
-      asignarValor('editCollection', e.target.value);
-      configurarFormularioPorColeccion(e.target.value);
-    }
-  });
+
   
 });
