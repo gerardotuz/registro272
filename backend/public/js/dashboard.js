@@ -455,7 +455,7 @@ if (!res.ok) {
     }
   });
 
-document.getElementById('btnAgregarNuevo').addEventListener('click', () => {
+  document.getElementById('btnAgregarNuevo').addEventListener('click', () => {
     const inputs = document.querySelectorAll('#editForm input, #editForm select, #editForm textarea');
     inputs.forEach(input => input.value = '');
      const coleccion = obtenerValor('tipoAltaColeccion') || COLECCION_ALUMNOS;
@@ -463,7 +463,8 @@ document.getElementById('btnAgregarNuevo').addEventListener('click', () => {
     configurarFormularioPorColeccion(coleccion);
     new bootstrap.Modal(document.getElementById('editModal')).show();
   });
-document.getElementById('tipoAltaColeccion')?.addEventListener('change', (e) => {
+ const tipoAltaColeccion = document.getElementById('tipoAltaColeccion');
+  if (tipoAltaColeccion) tipoAltaColeccion.addEventListener('change', (e) => {
     if (!obtenerValor('editId')) {
       asignarValor('editCollection', e.target.value);
       configurarFormularioPorColeccion(e.target.value);
