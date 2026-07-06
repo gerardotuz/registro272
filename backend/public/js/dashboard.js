@@ -200,8 +200,7 @@ function construirDatosFormulario() {
   
 } else {
     datos.desbloquear_registro = obtenerChecked('desbloquear_registro');
-  return datos;
-}
+  }
 
 document.addEventListener('DOMContentLoaded', () => {
   if (!localStorage.getItem('login')) {
@@ -459,9 +458,9 @@ if (!res.ok) {
 document.getElementById('btnAgregarNuevo').addEventListener('click', () => {
     const inputs = document.querySelectorAll('#editForm input, #editForm select, #editForm textarea');
     inputs.forEach(input => input.value = '');
-      document.getElementById('editCollection').value = obtenerValor('tipoAltaColeccion') || COLECCION_ALUMNOS;
-    configurarFormularioPorColeccion(document.getElementById('editCollection').value);
-    configurarFormularioPorColeccion(COLECCION_ALUMNOS);
+     const coleccion = obtenerValor('tipoAltaColeccion') || COLECCION_ALUMNOS;
+    document.getElementById('editCollection').value = coleccion;
+    configurarFormularioPorColeccion(coleccion);
     new bootstrap.Modal(document.getElementById('editModal')).show();
   });
 document.getElementById('tipoAltaColeccion')?.addEventListener('change', (e) => {
