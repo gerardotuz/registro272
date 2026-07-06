@@ -346,7 +346,10 @@ app.get("/api/paraescolar/:control", async (req, res) => {
 /* =========================
    ARCHIVOS ESTÁTICOS
 ========================= */
-
+app.use('/js/dashboard.js', (req, res, next) => {
+  res.set('Cache-Control', 'no-store');
+  next();
+});
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/pdfs', express.static(path.join(__dirname, 'public/pdfs')));
 
