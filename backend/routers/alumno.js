@@ -791,28 +791,6 @@ router.put('/dashboard/registrados/:id', async (req, res) => {
 router.post('/dashboard/registrados', async (req, res) => {
   try {
     const bodyUpper = normalizarNumeroSeguroSocial(toUpperData(req.body));
-     const numeroControl = normalizarNumeroControl(bodyUpper.numero_control || bodyUpper.numeroControl || bodyUpper.folio);
-
-    if (!numeroControl) {
-      return res.status(400).json({ message: 'Captura el número de control para alta de reinscripción' });
-    }
-
-    bodyUpper.numero_control = numeroControl;
-    bodyUpper.numeroControl = numeroControl;
-    bodyUpper.folio = numeroControl;
-    bodyUpper.tipo_tramite = bodyUpper.tipo_tramite || 'REINSCRIPCION';
-
-    // Al alta manual desde dashboard debe quedar desbloqueado para que el alumno pueda capturar.
-    bodyUpper.reinscripcion_completada = Boolean(bodyUpper.reinscripcion_completada) && bodyUpper.desbloquear_reinscripcion !== true;
-    bodyUpper.bloqueado_reinscripcion = Boolean(bodyUpper.bloqueado_reinscripcion) && bodyUpper.desbloquear_reinscripcion !== true;
-    bodyUpper.requiere_control_escolar = Boolean(bodyUpper.requiere_control_escolar);
-    bodyUpper.pdf_generado = Boolean(bodyUpper.pdf_generado);
-    delete bodyUpper.desbloquear_reinscripcion;
-
-    const existente = await buscarEnModeloPorNumeroControl(Registrado, numeroControl);
-    if (existente) {
-      return res.status(409).json({ message: 'Ya existe un alumno en registrados con ese número de control' });
-    }
     const nuevoRegistrado = new Registrado(bodyUpper);
     await nuevoRegistrado.save();
     res.status(201).json(nuevoRegistrado);
@@ -837,13 +815,6 @@ router.put('/dashboard/alumnos/:id', async (req, res) => {
     if (!alumnoActual) return res.status(404).json({ message: 'No encontrado' });
 
     const bodyUpper = normalizarNumeroSeguroSocial(toUpperData(req.body));
-    const desbloquearSolicitado = bodyUpper.desbloquear_registro === true;
-    delete bodyUpper.desbloquear_registro;
-
-    if (desbloquearSolicitado) {
-      bodyUpper.registro_completado = false;
-      bodyUpper.bloqueado = false;
-    }
     const nuevoPara = bodyUpper?.datos_generales?.paraescolar;
     const previoPara = alumnoActual?.datos_generales?.paraescolar;
     const cambiando = nuevoPara && (nuevoPara.toUpperCase() !== (previoPara || '').toUpperCase());
@@ -866,13 +837,6 @@ router.put('/dashboard/alumnos/:id', async (req, res) => {
 router.post('/dashboard/alumnos', async (req, res) => {
   try {
     const bodyUpper = normalizarNumeroSeguroSocial(toUpperData(req.body));
-     const desbloquearSolicitado = bodyUpper.desbloquear_registro === true;
-    delete bodyUpper.desbloquear_registro;
-
-    if (desbloquearSolicitado) {
-      bodyUpper.registro_completado = false;
-      bodyUpper.bloqueado = false;
-    }
     const nuevoPara = bodyUpper?.datos_generales?.paraescolar;
 
     if (nuevoPara) {
