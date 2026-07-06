@@ -485,7 +485,7 @@
       </p>
     </div>
     <div class="dashboard-hero-actions">
-      <button id="btnAgregarNuevo" class="btn dashboard-primary-btn">+ Agregar nuevo alumno</button>
+      <button id="btnAgregarNuevo" class="btn dashboard-primary-btn">+ Agregar alumno</button>
        <div class="folio-status-card" aria-live="polite">
         <p class="folio-status-label">Último folio asignado</p>
         <p id="ultimoFolioAsignado" class="folio-status-number">Cargando...</p>
@@ -607,6 +607,16 @@
             <input type="hidden" id="editCollection" value="alumnos">
             <div class="alert alert-info py-2" role="alert">
               <span id="tipoFormularioBadge">Colección: alumnos</span>
+                   <div class="small mt-1">Selecciona <strong>alumnos</strong> para nuevo ingreso o <strong>registrados</strong> para reinscripción.</div>
+            </div>
+            <div class="row" id="tipoAltaRow">
+              <div class="col-md-4 mb-2">
+                <label for="tipoAltaColeccion" style="font-weight: bold;">Tipo de alta</label>
+                <select id="tipoAltaColeccion" class="form-control border-primary">
+                  <option value="alumnos">Nuevo ingreso (colección alumnos)</option>
+                  <option value="registrados">Reinscripción (colección registrados)</option>
+                </select>
+              </div>
             </div>
             <!--  DATOS ALUMNO -->
             <h5>Datos del Alumno</h5>
@@ -639,7 +649,16 @@ Folio
                 <div class="form-check mt-4">
                   <input class="form-check-input" type="checkbox" id="desbloquear_reinscripcion">
                   <label class="form-check-label" for="desbloquear_reinscripcion">
-                    Desbloquear alumno para reimprimir ficha
+                     Desbloquear reinscripción para editar de nuevo
+                  </label>
+                </div>
+                  <small class="text-muted">Permite que el alumno vuelva a capturar el formulario con su folio.</small>
+              </div>
+              <div class="col-md-4 mb-2" data-alumno-only>
+                <div class="form-check mt-4">
+                  <input class="form-check-input" type="checkbox" id="desbloquear_registro">
+                  <label class="form-check-label" for="desbloquear_registro">
+                    Desbloquear registro para editar de nuevo
                   </label>
                 </div>
                 <small class="text-muted">Úsalo cuando Control Escolar corrija las materias reprobadas a 2 o menos.</small>
