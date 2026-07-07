@@ -294,6 +294,19 @@ function esValorVacio(valor) {
   return valor === undefined || valor === null || valor === '';
 }
 
+function quitarIdMongo(valor) {
+  if (!valor || typeof valor !== 'object') return valor;
+
+  if (Array.isArray(valor)) {
+    valor.forEach(quitarIdMongo);
+    return valor;
+  }
+
+  delete valor._id;
+  Object.values(valor).forEach(quitarIdMongo);
+  return valor;
+}
+
 function combinarSinBorrarDatosActuales(actual = {}, nuevo = {}) {
   if (!nuevo || typeof nuevo !== 'object' || Array.isArray(nuevo)) {
     return esValorVacio(nuevo) ? actual : nuevo;
@@ -819,14 +832,8 @@ router.get('/dashboard/alumnos', async (req, res) => {
 
   if (folioRegex) {
     queryAlumnos.folio = folioRegex;
-    queryRegistrados.$or = [
-      { numero_control: folioRegex },
-      { numeroControl: folioRegex },
-      { folio: folioRegex },
-      { curp: folioRegex },
-      { 'datos_alumno.numero_control': folioRegex },
-      { 'datos_alumno.curp': folioRegex }
-    ];
+    queryRegistrados.$or = crearFiltroNumeroControl(folio).$or;
+    
   }
 
   if (apellidosRegex) {
@@ -1288,7 +1295,7 @@ router.post('/guardar-reinscripcion', async (req, res) => {
     normalizarNumeroSeguroSocial(data);
      const datosActuales = normalizarRegistradoParaFormulario(reinscripcionExistente?.alumno || {}, numeroControl);
 
-    const payload = combinarSinBorrarDatosActuales(datosActuales, {
+    const payload = quitarIdMongo(combinarSinBorrarDatosActuales(datosActuales, {
       ...data,
       numero_control: numeroControl,
       numeroControl,
@@ -1301,7 +1308,7 @@ router.post('/guardar-reinscripcion', async (req, res) => {
       requiere_control_escolar: requiereControlEscolar,
       pdf_generado: !requiereControlEscolar,
       updatedAt: new Date()
-   });
+    }));
 
     await Registrado.findOneAndUpdate(
       crearFiltroNumeroControl(numeroControl),
