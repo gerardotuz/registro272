@@ -156,6 +156,9 @@ input:checked + .slider:before {
   text-decoration: none;
 }
 
+.estatal-only {
+  display: none;
+}
 
 /* ===== Asignación de grupos homologada a la identidad Águilas CBTIS 272 ===== */
 body.asignacion-aguilas {
