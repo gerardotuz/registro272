@@ -9,7 +9,7 @@
 </head>
 <body>
 
-<header class="header">
+<header class="header estatal-only" aria-hidden="true">
   <h1>SISTEMA ESTATAL DE REGISTRO</h1>
   <p>Control Centralizado de Planteles</p>
   <button id="logoutBtn">Cerrar Sesión</button>
@@ -17,7 +17,7 @@
   
 </header>
 
-<section class="cards">
+<section class="cards estatal-only" aria-hidden="true">
 
   <div class="card">
     <h3>Total General</h3>
@@ -60,7 +60,7 @@
   <p id="matchSepMensaje" class="mensaje"></p>
 </section>
   
-  <section class="tabla-section">
+  <section class="tabla-section estatal-only" aria-hidden="true">
   <h2>Detalle por Plantel</h2>
   <table id="tablaPlanteles">
     <thead>
@@ -73,11 +73,11 @@
   </table>
 </section>
 
-  <section class="grafica">
+ <section class="grafica estatal-only" aria-hidden="true">
   <canvas id="graficaPlanteles"></canvas>
 </section>
 
-<section class="tabla-section">
+<section class="tabla-section estatal-only" aria-hidden="true">
   <h2>Comparativa CURPs Repetidas</h2>
   <button id="logoutBtn" onclick="cargarMatriz()">Buscar CURPs Duplicadas</button>
 
