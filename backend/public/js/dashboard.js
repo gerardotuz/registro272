@@ -28,6 +28,7 @@ function normalizarAlumno(alumno = {}, coleccion = COLECCION_ALUMNOS) {
     estatus: alumno.estatus || '',
     materias_reprobadas: alumno.materias_reprobadas ?? alumno.adeudo ?? '',
     tipo_tramite: alumno.tipo_tramite || '',
+     permitir_reimpresion_pdf: Boolean(alumno.permitir_reimpresion_pdf || alumno.reimpresion_pdf_permitida),
     datos_alumno: {
       nombres: da.nombres || alumno.nombres || alumno.nombre || '',
       primer_apellido: da.primer_apellido || alumno.primer_apellido || '',
@@ -193,6 +194,7 @@ function construirDatosFormulario() {
     datos.adeudo = obtenerValor('materias_reprobadas');
     datos.tipo_tramite = obtenerValor('tipo_tramite') || 'REINSCRIPCION';
     datos.desbloquear_reinscripcion = obtenerChecked('desbloquear_reinscripcion');
+    datos.permitir_reimpresion_pdf = obtenerChecked('permitir_reimpresion_pdf');
     datos.nombres = datos.datos_alumno.nombres;
     datos.primer_apellido = datos.datos_alumno.primer_apellido;
     datos.segundo_apellido = datos.datos_alumno.segundo_apellido;
@@ -316,10 +318,12 @@ function cargarFormulario(alumnoOriginal, coleccion) {
     asignarValor('estatus', alumno.estatus);
     asignarValor('materias_reprobadas', alumno.materias_reprobadas);
     asignarValor('tipo_tramite', alumno.tipo_tramite);
-const desbloquear = document.getElementById('desbloquear_reinscripcion');
+    const desbloquear = document.getElementById('desbloquear_reinscripcion');
     if (desbloquear) desbloquear.checked = false;
-  const desbloquearAlumno = document.getElementById('desbloquear_registro_alumno');
+    const desbloquearAlumno = document.getElementById('desbloquear_registro_alumno');
     if (desbloquearAlumno) desbloquearAlumno.checked = false;
+    const permitirReimpresion = document.getElementById('permitir_reimpresion_pdf');
+    if (permitirReimpresion) permitirReimpresion.checked = Boolean(alumno.permitir_reimpresion_pdf);
     Object.entries(da).forEach(([key, value]) => asignarValor(key, value));
     asignarValor('colonia', dg.colonia);
     asignarValor('domicilio', dg.domicilio);
@@ -388,10 +392,14 @@ document.getElementById('btnGuardar').addEventListener('click', async () => {
     const id = obtenerValor('editId');
     const coleccion = obtenerValor('editCollection') || COLECCION_ALUMNOS;
     const datos = construirDatosFormulario();
-    if (coleccion === COLECCION_REGISTRADOS && datos.desbloquear_reinscripcion) {
+   if (coleccion === COLECCION_REGISTRADOS) {
       const materias = Number(datos.materias_reprobadas || 0);
-      if (materias > 2 && !confirm('El alumno aún tiene más de 2 materias reprobadas. ¿Deseas desbloquearlo de todos modos?')) {
+      if (datos.desbloquear_reinscripcion && materias > 2 && !confirm('El alumno aún tiene más de 2 materias reprobadas. ¿Deseas habilitar la edición de todos modos?')) {
         return;
+      }
+      if (datos.permitir_reimpresion_pdf && materias <= 2) {
+        alert('No es necesario permitir una excepción: con 2 o menos materias la reimpresión queda desbloqueada automáticamente.');
+        datos.permitir_reimpresion_pdf = false;
       }
     }
     const metodo = id ? 'PUT' : 'POST';
@@ -415,7 +423,29 @@ if (!res.ok) {
   });
 
 
+ document.getElementById('btnGenerarPdf')?.addEventListener('click', async () => {
+    const coleccion = obtenerValor('editCollection') || COLECCION_ALUMNOS;
+    const identificador = coleccion === COLECCION_REGISTRADOS
+      ? (obtenerValor('numero_control') || obtenerValor('folio'))
+      : obtenerValor('folio');
 
+    if (!identificador) {
+      alert('Guarda o captura el folio / número de control antes de generar el PDF.');
+      return;
+    }
+
+    const res = await fetch(`/api/reimprimir/${encodeURIComponent(identificador)}`);
+    if (!res.ok) {
+      const error = await res.json().catch(() => ({}));
+      alert(error.message || 'No se pudo generar el PDF');
+      return;
+    }
+
+    const pdf = await res.blob();
+    window.open(URL.createObjectURL(pdf), '_blank');
+  });
+
+  
   function eliminarAlumno(e) {
     const id = e.target.dataset.id;
    const coleccion = e.target.dataset.collection || COLECCION_ALUMNOS;
@@ -474,6 +504,10 @@ document.getElementById('btnAgregarNuevo').addEventListener('click', () => {
     if (tipoAltaAlumno) tipoAltaAlumno.value = COLECCION_ALUMNOS;
     const desbloquearAlumno = document.getElementById('desbloquear_registro_alumno');
     if (desbloquearAlumno) desbloquearAlumno.checked = false;
+   const desbloquearReinscripcion = document.getElementById('desbloquear_reinscripcion');
+    if (desbloquearReinscripcion) desbloquearReinscripcion.checked = false;
+    const permitirReimpresion = document.getElementById('permitir_reimpresion_pdf');
+    if (permitirReimpresion) permitirReimpresion.checked = false;
     configurarFormularioPorColeccion(COLECCION_ALUMNOS);
     new bootstrap.Modal(document.getElementById('editModal')).show();
   });
