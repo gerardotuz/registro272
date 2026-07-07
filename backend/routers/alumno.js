@@ -170,10 +170,21 @@ function obtenerMateriasReprobadas(registrado) {
   return Number.isFinite(numero) ? numero : 0;
 }
 
+function permiteReimpresionPDF(registrado) {
+  return Boolean(
+    registrado?.permitir_reimpresion_pdf === true ||
+    registrado?.reimpresion_pdf_permitida === true
+  );
+}
+
 function requiereControlEscolarParaPDF(registrado) {
+   const materiasReprobadas = obtenerMateriasReprobadas(registrado);
+  if (materiasReprobadas <= 2) return false;
+  if (permiteReimpresionPDF(registrado)) return false;
+
   return Boolean(
     registrado?.requiere_control_escolar === true ||
-    obtenerMateriasReprobadas(registrado) > 2
+    materiasReprobadas > 2
   );
 }
 function crearFiltroNumeroControl(numeroControl) {
@@ -879,18 +890,34 @@ router.get('/dashboard/alumnos/:id', async (req, res) => {
 router.put('/dashboard/registrados/:id', async (req, res) => {
   try {
     const bodyUpper = normalizarNumeroSeguroSocial(toUpperData(req.body));
-    const desbloquearSolicitado = bodyUpper.desbloquear_reinscripcion === true;
+   const permitirReimpresionSolicitado = bodyUpper.permitir_reimpresion_pdf === true;
     delete bodyUpper.desbloquear_reinscripcion;
+    delete bodyUpper.permitir_reimpresion_pdf;
 
+    
     const materiasReprobadas = Number(bodyUpper.materias_reprobadas ?? bodyUpper.adeudo ?? 0);
-    const puedeGenerarPDF = Number.isFinite(materiasReprobadas) && materiasReprobadas <= 2;
+    const tieneMateriasValidas = Number.isFinite(materiasReprobadas);
+    const puedeGenerarPDF = tieneMateriasValidas && materiasReprobadas <= 2;
+    const debeBloquearPDF = tieneMateriasValidas && materiasReprobadas > 2 && !permitirReimpresionSolicitado;
 
-    if (desbloquearSolicitado || puedeGenerarPDF) {
-      bodyUpper.requiere_control_escolar = false;
+   if (desbloquearSolicitado) {
       bodyUpper.bloqueado_reinscripcion = false;
       bodyUpper.reinscripcion_completada = false;
+      }
+
+    if (puedeGenerarPDF) {
+      bodyUpper.requiere_control_escolar = false;
+      bodyUpper.permitir_reimpresion_pdf = false;
       bodyUpper.pdf_generado = false;
+      } else if (permitirReimpresionSolicitado) {
+      bodyUpper.requiere_control_escolar = false;
+      bodyUpper.permitir_reimpresion_pdf = true;
+      bodyUpper.pdf_generado = false;
+    } else if (debeBloquearPDF) {
+      bodyUpper.requiere_control_escolar = true;
+      bodyUpper.permitir_reimpresion_pdf = false;
     }
+    
     const registrado = await Registrado.findByIdAndUpdate(req.params.id, bodyUpper, { new: true, strict: false });
     if (!registrado) return res.status(404).json({ message: 'No encontrado' });
     res.json(registrado);
@@ -1284,7 +1311,7 @@ router.post('/guardar-reinscripcion', async (req, res) => {
 
     if (requiereControlEscolar) {
       return res.status(200).json({
-        message: 'Reinscripción guardada. Debes acudir a control escolar por tener más de 3 o más materias reprobadas.',
+        message: 'Reinscripción guardada. Debes acudir a control escolar por tener 3 o más materias reprobadas.',
         pdf_generado: false,
         requiere_control_escolar: true
       });
