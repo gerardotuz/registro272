@@ -331,3 +331,41 @@ body.asignacion-aguilas {
     border-top: 1px solid rgba(255,255,255,.25);
   }
 }
+
+.match-sep-section p {
+  color: #4a4a4a;
+  line-height: 1.45;
+}
+
+.match-sep-form {
+  display: grid;
+  grid-template-columns: 1fr 180px auto;
+  gap: 10px 14px;
+  align-items: end;
+  padding: 18px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+}
+
+.match-sep-form label {
+  color: #7a1e2c;
+  font-weight: bold;
+}
+
+.match-sep-form input[type="file"],
+.match-sep-form input[type="number"] {
+  padding: 9px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.match-sep-form .primary-btn {
+  margin-top: 0;
+}
+
+@media (max-width: 860px) {
+  .match-sep-form {
+    grid-template-columns: 1fr;
+  }
+}
