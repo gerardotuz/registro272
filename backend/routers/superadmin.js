@@ -627,4 +627,192 @@ router.post("/asignacion-grupos", uploadAsignacion.single("excel"), async (req, 
 });
 
 
+/* =========================================
+   🤝 MATCH SEP VS ALUMNOS NUEVO INGRESO
+========================================= */
+const uploadMatchSep = multer({ dest: "uploads/" });
+
+function normalizarNombreMatch(valor) {
+  return String(valor || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/Ñ/g, "N")
+    .replace(/ñ/g, "n")
+    .replace(/[^a-zA-Z0-9 ]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .toUpperCase();
+}
+
+function separarNombreAlumno(alumno) {
+  const datos = alumno?.datos_alumno || {};
+  return [datos.nombres, datos.primer_apellido, datos.segundo_apellido]
+    .filter(Boolean)
+    .join(" ");
+}
+
+function crearRegistroMatchSep(row, index) {
+  const nombreCompleto = obtenerValor(row, [
+    "nombre completo",
+    "nombre",
+    "alumno",
+    "alumna",
+    "aspirante",
+    "nombres"
+  ]);
+
+  const nombres = obtenerValor(row, ["nombres", "nombre(s)", "nombre s"]);
+  const primerApellido = obtenerValor(row, ["primer apellido", "apellido paterno", "paterno"]);
+  const segundoApellido = obtenerValor(row, ["segundo apellido", "apellido materno", "materno"]);
+  const nombreArmado = [nombres, primerApellido, segundoApellido].filter(Boolean).join(" ");
+
+  return {
+    fila_excel: index + 2,
+    folio_sep: String(obtenerValor(row, ["folio sep", "folio", "folio asignado", "folio_asignado", "foliosep"]) || "").trim(),
+    nombre_sep: String(nombreCompleto || nombreArmado || "").trim(),
+    nombre_normalizado: normalizarNombreMatch(nombreCompleto || nombreArmado)
+  };
+}
+
+function crearFilaCoincidente(registroSep, alumno, estado, ordenPrioridad = "") {
+  const datos = alumno?.datos_alumno || {};
+  const fechaPreregristro = alumno?.fecha_registro || alumno?.createdAt || alumno?._id?.getTimestamp?.();
+
+  return {
+    estado_match: estado,
+    prioridad: ordenPrioridad,
+    fila_excel_sep: registroSep.fila_excel,
+    folio_sep: registroSep.folio_sep,
+    nombre_sep: registroSep.nombre_sep,
+    folio_sistema: alumno?.folio || "",
+    curp: datos.curp || "",
+    nombres: datos.nombres || "",
+    primer_apellido: datos.primer_apellido || "",
+    segundo_apellido: datos.segundo_apellido || "",
+    nombre_sistema: separarNombreAlumno(alumno),
+    fecha_preregistro: fechaPreregristro ? new Date(fechaPreregristro).toISOString() : "",
+    registro_completado: alumno?.registro_completado === true ? "SI" : "NO"
+  };
+}
+
+function crearFilaSinCoincidencia(registroSep) {
+  return {
+    estado_match: "SIN COINCIDENCIA",
+    fila_excel_sep: registroSep.fila_excel,
+    folio_sep: registroSep.folio_sep,
+    nombre_sep: registroSep.nombre_sep
+  };
+}
+
+function ajustarColumnas(worksheet, rows) {
+  const headers = Object.keys(rows[0] || {});
+  worksheet["!cols"] = headers.map(header => ({
+    wch: Math.min(42, Math.max(header.length + 2, ...rows.map(row => String(row[header] || "").length + 2)))
+  }));
+}
+
+router.post("/match-sep", verificarToken, uploadMatchSep.single("excel"), async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ error: "No se recibió archivo Excel" });
+
+    const limitePrioridad = Math.max(1, Number(req.body.limite || 500));
+    const workbook = XLSX.readFile(req.file.path);
+    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+    const rows = XLSX.utils.sheet_to_json(sheet, { defval: "" });
+
+    const registrosSep = rows
+      .map(crearRegistroMatchSep)
+      .filter(registro => registro.nombre_normalizado);
+
+    fs.unlinkSync(req.file.path);
+
+    if (!registrosSep.length) {
+      return res.status(400).json({ error: "El Excel no contiene nombres válidos. Usa una columna nombre, nombre completo o nombres." });
+    }
+
+    const nombresSep = new Set(registrosSep.map(registro => registro.nombre_normalizado));
+    const sepPorNombre = registrosSep.reduce((acc, registro) => {
+      acc[registro.nombre_normalizado] = acc[registro.nombre_normalizado] || [];
+      acc[registro.nombre_normalizado].push(registro);
+      return acc;
+    }, {});
+
+    const conn = getConnection("registro272");
+    const Alumno = conn.model("Alumno", alumnoSchema);
+    const alumnos = await Alumno.find({}, {
+      folio: 1,
+      registro_completado: 1,
+      fecha_registro: 1,
+      createdAt: 1,
+      "datos_alumno.nombres": 1,
+      "datos_alumno.primer_apellido": 1,
+      "datos_alumno.segundo_apellido": 1,
+      "datos_alumno.curp": 1
+    }).lean();
+    await conn.close();
+
+    const usados = new Set();
+    const coincidencias = [];
+
+    alumnos.forEach(alumno => {
+      const nombreNormalizado = normalizarNombreMatch(separarNombreAlumno(alumno));
+      if (!nombresSep.has(nombreNormalizado)) return;
+
+      const candidatosSep = sepPorNombre[nombreNormalizado] || [];
+      const registroSep = candidatosSep.find(registro => !usados.has(registro.fila_excel));
+      if (!registroSep) return;
+
+      usados.add(registroSep.fila_excel);
+      coincidencias.push({ registroSep, alumno });
+    });
+
+    coincidencias.sort((a, b) => {
+      const fechaA = new Date(a.alumno.fecha_registro || a.alumno.createdAt || a.alumno._id?.getTimestamp?.() || 0);
+      const fechaB = new Date(b.alumno.fecha_registro || b.alumno.createdAt || b.alumno._id?.getTimestamp?.() || 0);
+      return fechaA - fechaB;
+    });
+
+    const prioritarios = coincidencias.slice(0, limitePrioridad).map((item, index) =>
+      crearFilaCoincidente(item.registroSep, item.alumno, "PRIORIDAD", index + 1)
+    );
+    const restoCoincidencias = coincidencias.slice(limitePrioridad).map(item =>
+      crearFilaCoincidente(item.registroSep, item.alumno, "COINCIDENTE SIN PRIORIDAD")
+    );
+    const sinCoincidencia = registrosSep
+      .filter(registro => !usados.has(registro.fila_excel))
+      .map(crearFilaSinCoincidencia);
+
+    const resumen = [{
+      total_excel_sep: registrosSep.length,
+      total_coincidencias: coincidencias.length,
+      prioridad_exportada: prioritarios.length,
+      resto_coincidentes: restoCoincidencias.length,
+      sin_coincidencia: sinCoincidencia.length,
+      criterio_match: "Nombre completo normalizado",
+      criterio_prioridad: "Fecha de preregistro más antigua primero"
+    }];
+
+    const libro = XLSX.utils.book_new();
+    [
+      ["Prioridad_500", prioritarios],
+      ["Resto_coincidentes", restoCoincidencias],
+      ["Sin_coincidencia", sinCoincidencia],
+      ["Resumen", resumen]
+    ].forEach(([nombre, datos]) => {
+      const hoja = XLSX.utils.json_to_sheet(datos.length ? datos : [{ mensaje: "Sin registros" }]);
+      ajustarColumnas(hoja, datos.length ? datos : [{ mensaje: "Sin registros" }]);
+      XLSX.utils.book_append_sheet(libro, hoja, nombre);
+    });
+
+    const buffer = XLSX.write(libro, { type: "buffer", bookType: "xlsx" });
+    res.setHeader("Content-Disposition", "attachment; filename=match-sep-alumnos.xlsx");
+    res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+    res.send(buffer);
+  } catch (error) {
+    if (req.file?.path && fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
+    console.error("ERROR MATCH SEP:", error);
+    res.status(500).json({ error: "Error al generar match SEP vs alumnos" });
+  }
+});
+
 module.exports = router;
