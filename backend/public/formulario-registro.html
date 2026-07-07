@@ -469,18 +469,103 @@ function cargarCatalogoGeneral() {
 }
 
 function cargarSelectores(s, data) { const e = document.getElementById(`estado_${s}`), m = document.getElementById(`municipio_${s}`), c = document.getElementById(`ciudad_${s}`); if (!e || !m || !c) return; e.innerHTML='<option value="">-- Selecciona Estado --</option>'; m.innerHTML='<option value="">-- Selecciona Municipio --</option>'; c.innerHTML='<option value="">-- Selecciona Ciudad --</option>'; data.forEach(est=>{const o=document.createElement('option'); o.value=est.nombre; o.dataset.clave=est.clave; o.dataset.municipios=JSON.stringify(est.municipios||[]); o.textContent=est.nombre; e.appendChild(o);}); e.addEventListener('change',()=>{const ms=JSON.parse(e.selectedOptions[0]?.dataset.municipios||'[]'); m.innerHTML='<option value="">-- Selecciona Municipio --</option>'; c.innerHTML='<option value="">-- Selecciona Ciudad --</option>'; ms.forEach(mu=>{const o=document.createElement('option'); o.value=mu.nombre;o.dataset.clave=mu.clave;o.dataset.localidades=JSON.stringify(mu.localidades||[]);o.textContent=mu.nombre;m.appendChild(o);}); m.disabled=!ms.length;c.disabled=true;}); m.addEventListener('change',()=>{const ls=JSON.parse(m.selectedOptions[0]?.dataset.localidades||'[]'); c.innerHTML='<option value="">-- Selecciona Ciudad --</option>'; ls.forEach(l=>{const o=document.createElement('option'); o.value=l.nombre;o.dataset.clave=l.clave;o.textContent=l.nombre;c.appendChild(o);}); c.disabled=!ls.length;}); }
-async function consultarFolioYAutocompletar(){
+
+function primerValor(...valores) {
+  const encontrado = valores.find((valor) => valor !== undefined && valor !== null && valor !== '');
+  return encontrado ?? '';
+}
+
+function normalizarAlumnoParaFormulario(raw = {}) {
+  const datosAlumno = raw.datos_alumno || {};
+  const datosGenerales = raw.datos_generales || {};
+  const datosMedicos = raw.datos_medicos || {};
+  const secundariaOrigen = raw.secundaria_origen || {};
+  const tutorResponsable = raw.tutor_responsable || {};
+  const personaEmergencia = raw.persona_emergencia || {};
+
+  return {
+    ...raw,
+    datos_alumno: {
+      ...datosAlumno,
+      nombres: primerValor(datosAlumno.nombres, raw.nombres, raw.nombre),
+      primer_apellido: primerValor(datosAlumno.primer_apellido, raw.primer_apellido),
+      segundo_apellido: primerValor(datosAlumno.segundo_apellido, raw.segundo_apellido),
+      curp: primerValor(datosAlumno.curp, raw.curp),
+      carrera: primerValor(datosAlumno.carrera, raw.carrera),
+      periodo_semestral: primerValor(datosAlumno.periodo_semestral, raw.periodo_semestral),
+      semestre: primerValor(datosAlumno.semestre, raw.semestre, raw.grado),
+      grupo: primerValor(datosAlumno.grupo, raw.grupo),
+      turno: primerValor(datosAlumno.turno, raw.turno),
+      nacionalidad: primerValor(datosAlumno.nacionalidad, raw.nacionalidad),
+      pais_extranjero: primerValor(datosAlumno.pais_extranjero, raw.pais_extranjero),
+      estado_civil: primerValor(datosAlumno.estado_civil, raw.estado_civil),
+      fecha_nacimiento: primerValor(datosAlumno.fecha_nacimiento, raw.fecha_nacimiento),
+      edad: primerValor(datosAlumno.edad, raw.edad),
+      sexo: primerValor(datosAlumno.sexo, raw.sexo),
+      estado_nacimiento: primerValor(datosAlumno.estado_nacimiento, raw.estado_nacimiento),
+      municipio_nacimiento: primerValor(datosAlumno.municipio_nacimiento, raw.municipio_nacimiento),
+      ciudad_nacimiento: primerValor(datosAlumno.ciudad_nacimiento, raw.ciudad_nacimiento)
+    },
+    datos_generales: {
+      ...datosGenerales,
+      colonia: primerValor(datosGenerales.colonia, raw.colonia),
+      domicilio: primerValor(datosGenerales.domicilio, raw.domicilio),
+      codigo_postal: primerValor(datosGenerales.codigo_postal, raw.codigo_postal),
+      telefono_alumno: primerValor(datosGenerales.telefono_alumno, raw.telefono_alumno),
+      correo_alumno: primerValor(datosGenerales.correo_alumno, raw.correo_alumno),
+      paraescolar: primerValor(datosGenerales.paraescolar, raw.paraescolar),
+      hermanos_activos: primerValor(datosGenerales.hermanos_activos, raw.hermanos_activos),
+      tipo_sangre: primerValor(datosGenerales.tipo_sangre, raw.tipo_sangre),
+      entrega_diagnostico: primerValor(datosGenerales.entrega_diagnostico, raw.entrega_diagnostico),
+      detalle_enfermedad: primerValor(datosGenerales.detalle_enfermedad, raw.detalle_enfermedad),
+      contacto_emergencia_nombre: primerValor(datosGenerales.contacto_emergencia_nombre, raw.contacto_emergencia_nombre),
+      contacto_emergencia_telefono: primerValor(datosGenerales.contacto_emergencia_telefono, raw.contacto_emergencia_telefono),
+      habla_lengua_indigena: datosGenerales.habla_lengua_indigena || { respuesta: raw.habla_lengua_indigena_respuesta || '', cual: raw.habla_lengua_indigena_cual || '' }
+    },
+    datos_medicos: {
+      ...datosMedicos,
+      numero_seguro_social: primerValor(datosMedicos.numero_seguro_social, raw.numero_seguro_social),
+      unidad_medica_familiar: primerValor(datosMedicos.unidad_medica_familiar, raw.unidad_medica_familiar),
+      discapacidad: primerValor(datosMedicos.discapacidad, raw.discapacidad),
+      enfermedad_cronica_o_alergia: datosMedicos.enfermedad_cronica_o_alergia || { respuesta: raw.enfermedad_cronica_o_alergia_respuesta || '', detalle: raw.enfermedad_cronica_o_alergia_detalle || '' }
+    },
+    secundaria_origen: {
+      ...secundariaOrigen,
+      nombre_secundaria: primerValor(secundariaOrigen.nombre_secundaria, raw.nombre_secundaria),
+      cct_secundaria: primerValor(secundariaOrigen.cct_secundaria, raw.cct_secundaria),
+      regimen: primerValor(secundariaOrigen.regimen, raw.regimen),
+      promedio_general: primerValor(secundariaOrigen.promedio_general, raw.promedio_general),
+      modalidad: primerValor(secundariaOrigen.modalidad, raw.modalidad),
+      participaciones_secundaria: primerValor(secundariaOrigen.participaciones_secundaria, raw.participaciones_secundaria)
+    },
+    tutor_responsable: {
+      ...tutorResponsable,
+      nombre_padre: primerValor(tutorResponsable.nombre_padre, raw.nombre_padre),
+      telefono_padre: primerValor(tutorResponsable.telefono_padre, raw.telefono_padre),
+      nombre_madre: primerValor(tutorResponsable.nombre_madre, raw.nombre_madre),
+      telefono_madre: primerValor(tutorResponsable.telefono_madre, raw.telefono_madre),
+      vive_con: primerValor(tutorResponsable.vive_con, raw.vive_con)
+    },
+    persona_emergencia: {
+      ...personaEmergencia,
+      nombre: primerValor(personaEmergencia.nombre, raw.persona_emergencia_nombre),
+      parentesco: primerValor(personaEmergencia.parentesco, raw.persona_emergencia_parentesco),
+      telefono: primerValor(personaEmergencia.telefono, raw.persona_emergencia_telefono)
+    }
+  };
+}
+   async function consultarFolioYAutocompletar(){
   ;
   const set = asignarValorCampo;
   const fromLS = JSON.parse(localStorage.getItem('datosPrecargados') || 'null');
-  let datos = fromLS;
+  let datos = fromLS ? normalizarAlumnoParaFormulario(fromLS) : null;
   const folio = obtenerFolioRegistro();
 
   if (!datos && folio) {
     const res = await fetch(`${BASE_URL}/api/preregistro/${encodeURIComponent(folio)}`);
     const payload = await res.json();
     if (res.ok && payload.alumno) {
-      datos = payload.alumno;
+      datos = normalizarAlumnoParaFormulario(payload.alumno);
       localStorage.setItem('datosPrecargados', JSON.stringify(datos));
     }
   }
