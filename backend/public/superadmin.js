@@ -196,5 +196,51 @@ document.getElementById("logoutBtn").addEventListener("click", () => {
   window.location.href = "/superadmin-login.html";
 });
 
+
+const matchSepForm = document.getElementById("matchSepForm");
+
+if (matchSepForm) {
+  matchSepForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    const mensaje = document.getElementById("matchSepMensaje");
+    const archivo = document.getElementById("matchSepExcel").files[0];
+    const limite = document.getElementById("matchSepLimite").value || "500";
+
+    if (!archivo) {
+      mensaje.textContent = "Selecciona un archivo Excel de SEP.";
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("excel", archivo);
+    formData.append("limite", limite);
+    mensaje.textContent = "Procesando match, espera la descarga...";
+
+    const res = await fetch("/api/superadmin/match-sep", {
+      method: "POST",
+      headers: { Authorization: "Bearer " + token },
+      body: formData
+    });
+
+    if (!res.ok) {
+      const error = await res.json().catch(() => ({ error: "No se pudo generar el Excel" }));
+      mensaje.textContent = error.error || "No se pudo generar el Excel";
+      return;
+    }
+
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "match-sep-alumnos.xlsx";
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+    mensaje.textContent = "Excel generado correctamente.";
+  });
+}
+
 cargarEstadisticas();
 cargarBloqueo();
