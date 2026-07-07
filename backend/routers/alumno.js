@@ -294,6 +294,19 @@ function esValorVacio(valor) {
   return valor === undefined || valor === null || valor === '';
 }
 
+
+function quitarIdMongo(valor) {
+  if (!valor || typeof valor !== 'object') return valor;
+
+  if (Array.isArray(valor)) {
+    valor.forEach(quitarIdMongo);
+    return valor;
+  }
+
+  delete valor._id;
+  Object.values(valor).forEach(quitarIdMongo);
+  return valor;
+}
 function quitarIdMongo(valor) {
   if (!valor || typeof valor !== 'object') return valor;
 
@@ -896,8 +909,9 @@ router.get('/dashboard/alumnos/:id', async (req, res) => {
 
 router.put('/dashboard/registrados/:id', async (req, res) => {
   try {
-    const bodyUpper = normalizarNumeroSeguroSocial(toUpperData(req.body));
-   const permitirReimpresionSolicitado = bodyUpper.permitir_reimpresion_pdf === true;
+   const bodyUpper = quitarIdMongo(normalizarNumeroSeguroSocial(toUpperData(req.body)));
+    const desbloquearSolicitado = bodyUpper.desbloquear_reinscripcion === true;
+    const permitirReimpresionSolicitado = bodyUpper.permitir_reimpresion_pdf === true;
     delete bodyUpper.desbloquear_reinscripcion;
     delete bodyUpper.permitir_reimpresion_pdf;
 
