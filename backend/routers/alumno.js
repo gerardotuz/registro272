@@ -278,6 +278,116 @@ function tieneHermanosActivos(valor) {
   return ['SI', 'SÍ', 'YES', 'TRUE', '1'].includes(limpio);
 }
 
+function esValorVacio(valor) {
+  return valor === undefined || valor === null || valor === '';
+}
+
+function combinarSinBorrarDatosActuales(actual = {}, nuevo = {}) {
+  if (!nuevo || typeof nuevo !== 'object' || Array.isArray(nuevo)) {
+    return esValorVacio(nuevo) ? actual : nuevo;
+  }
+
+  const combinado = { ...(actual && typeof actual === 'object' && !Array.isArray(actual) ? actual : {}) };
+  Object.entries(nuevo).forEach(([clave, valor]) => {
+    if (Array.isArray(valor)) {
+      if (valor.length) combinado[clave] = valor;
+      return;
+    }
+
+    if (valor && typeof valor === 'object') {
+      combinado[clave] = combinarSinBorrarDatosActuales(combinado[clave], valor);
+      return;
+    }
+
+    if (!esValorVacio(valor)) {
+      combinado[clave] = valor;
+    }
+  });
+
+  return combinado;
+}
+
+function primerValor(...valores) {
+  return valores.find((valor) => !esValorVacio(valor)) || '';
+}
+
+function normalizarRegistradoParaFormulario(raw = {}, numeroControl = '') {
+  const datosAlumno = raw.datos_alumno || {};
+  const datosGenerales = raw.datos_generales || {};
+  const datosMedicos = raw.datos_medicos || {};
+  const secundariaOrigen = raw.secundaria_origen || {};
+  const tutorResponsable = raw.tutor_responsable || {};
+  const personaEmergencia = raw.persona_emergencia || {};
+
+  return {
+    ...raw,
+    folio: primerValor(raw.folio, raw.numero_control, raw.numeroControl, numeroControl),
+    numero_control: primerValor(raw.numero_control, raw.numeroControl, raw.folio, numeroControl),
+    numeroControl: primerValor(raw.numeroControl, raw.numero_control, raw.folio, numeroControl),
+    adeudo: raw.adeudo ?? raw.materias_reprobadas ?? raw.materiasReprobadas ?? '',
+    materias_reprobadas: raw.materias_reprobadas ?? raw.adeudo ?? raw.materiasReprobadas ?? '',
+    datos_alumno: {
+      ...datosAlumno,
+      nombres: primerValor(datosAlumno.nombres, raw.nombres, raw.nombre),
+      primer_apellido: primerValor(datosAlumno.primer_apellido, raw.primer_apellido),
+      segundo_apellido: primerValor(datosAlumno.segundo_apellido, raw.segundo_apellido),
+      curp: primerValor(datosAlumno.curp, raw.curp),
+      carrera: primerValor(datosAlumno.carrera, raw.carrera),
+      periodo_semestral: primerValor(datosAlumno.periodo_semestral, raw.periodo_semestral),
+      semestre: primerValor(datosAlumno.semestre, raw.semestre, raw.grado),
+      grupo: primerValor(datosAlumno.grupo, raw.grupo),
+      turno: primerValor(datosAlumno.turno, raw.turno),
+      nacionalidad: primerValor(datosAlumno.nacionalidad, raw.nacionalidad),
+      pais_extranjero: primerValor(datosAlumno.pais_extranjero, raw.pais_extranjero),
+      estado_civil: primerValor(datosAlumno.estado_civil, raw.estado_civil),
+      fecha_nacimiento: primerValor(datosAlumno.fecha_nacimiento, raw.fecha_nacimiento),
+      edad: primerValor(datosAlumno.edad, raw.edad),
+      sexo: primerValor(datosAlumno.sexo, raw.sexo),
+      estado_nacimiento: primerValor(datosAlumno.estado_nacimiento, raw.estado_nacimiento),
+      municipio_nacimiento: primerValor(datosAlumno.municipio_nacimiento, raw.municipio_nacimiento),
+      ciudad_nacimiento: primerValor(datosAlumno.ciudad_nacimiento, raw.ciudad_nacimiento)
+    },
+    datos_generales: {
+      ...datosGenerales,
+      colonia: primerValor(datosGenerales.colonia, raw.colonia),
+      domicilio: primerValor(datosGenerales.domicilio, raw.domicilio),
+      codigo_postal: primerValor(datosGenerales.codigo_postal, raw.codigo_postal),
+      telefono_alumno: primerValor(datosGenerales.telefono_alumno, raw.telefono_alumno),
+      correo_alumno: primerValor(datosGenerales.correo_alumno, raw.correo_alumno),
+      tipo_sangre: primerValor(datosGenerales.tipo_sangre, raw.tipo_sangre),
+      hermanos_activos: primerValor(datosGenerales.hermanos_activos, raw.hermanos_activos),
+      entrega_diagnostico: primerValor(datosGenerales.entrega_diagnostico, raw.entrega_diagnostico),
+      detalle_enfermedad: primerValor(datosGenerales.detalle_enfermedad, raw.detalle_enfermedad),
+      carta_poder: primerValor(datosGenerales.carta_poder, raw.carta_poder),
+      contacto_emergencia_nombre: primerValor(datosGenerales.contacto_emergencia_nombre, raw.contacto_emergencia_nombre),
+      contacto_emergencia_telefono: primerValor(datosGenerales.contacto_emergencia_telefono, raw.contacto_emergencia_telefono),
+      habla_lengua_indigena: datosGenerales.habla_lengua_indigena || { respuesta: raw.habla_lengua_indigena_respuesta || '', cual: raw.habla_lengua_indigena_cual || '' }
+    },
+    datos_medicos: {
+      ...datosMedicos,
+      numero_seguro_social: primerValor(datosMedicos.numero_seguro_social, raw.numero_seguro_social),
+      unidad_medica_familiar: primerValor(datosMedicos.unidad_medica_familiar, raw.unidad_medica_familiar),
+      discapacidad: primerValor(datosMedicos.discapacidad, raw.discapacidad),
+      enfermedad_cronica_o_alergia: datosMedicos.enfermedad_cronica_o_alergia || { respuesta: raw.enfermedad_cronica_o_alergia_respuesta || '', detalle: raw.enfermedad_cronica_o_alergia_detalle || '' }
+    },
+    secundaria_origen: { ...secundariaOrigen, participaciones_secundaria: primerValor(secundariaOrigen.participaciones_secundaria, raw.participaciones_secundaria) },
+    tutor_responsable: {
+      ...tutorResponsable,
+      nombre_padre: primerValor(tutorResponsable.nombre_padre, raw.nombre_padre),
+      telefono_padre: primerValor(tutorResponsable.telefono_padre, raw.telefono_padre),
+      nombre_madre: primerValor(tutorResponsable.nombre_madre, raw.nombre_madre),
+      telefono_madre: primerValor(tutorResponsable.telefono_madre, raw.telefono_madre),
+      vive_con: primerValor(tutorResponsable.vive_con, raw.vive_con)
+    },
+    persona_emergencia: {
+      ...personaEmergencia,
+      nombre: primerValor(personaEmergencia.nombre, raw.persona_emergencia_nombre),
+      parentesco: primerValor(personaEmergencia.parentesco, raw.persona_emergencia_parentesco),
+      telefono: primerValor(personaEmergencia.telefono, raw.persona_emergencia_telefono)
+    }
+  };
+}
+
 async function buscarRegistradoPorNumeroControl(numeroControl) {
   const registradoPlantel = await buscarEnModeloPorNumeroControl(Registrado, numeroControl);
   if (registradoPlantel) {
@@ -346,7 +456,7 @@ router.get('/reinscripcion/:numeroControl', async (req, res) => {
 
     res.json({
       message: 'Datos de reinscripción encontrados',
-      alumno: encontrado.alumno,
+      alumno: normalizarRegistradoParaFormulario(encontrado.alumno, numeroControl),
       origen: encontrado.origen
     });
   } catch (error) {
@@ -1146,7 +1256,9 @@ router.post('/guardar-reinscripcion', async (req, res) => {
     const materiasReprobadas = Number(data?.materias_reprobadas ?? data?.materiasReprobadas ?? data?.adeudo ?? 0);
     const requiereControlEscolar = materiasReprobadas > 2;
     normalizarNumeroSeguroSocial(data);
-    const payload = {
+     const datosActuales = normalizarRegistradoParaFormulario(reinscripcionExistente?.alumno || {}, numeroControl);
+
+    const payload = combinarSinBorrarDatosActuales(datosActuales, {
       ...data,
       numero_control: numeroControl,
       numeroControl,
@@ -1159,7 +1271,7 @@ router.post('/guardar-reinscripcion', async (req, res) => {
       requiere_control_escolar: requiereControlEscolar,
       pdf_generado: !requiereControlEscolar,
       updatedAt: new Date()
-    };
+   });
 
     await Registrado.findOneAndUpdate(
       crearFiltroNumeroControl(numeroControl),
