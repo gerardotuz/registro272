@@ -815,6 +815,13 @@ router.put('/dashboard/alumnos/:id', async (req, res) => {
     if (!alumnoActual) return res.status(404).json({ message: 'No encontrado' });
 
     const bodyUpper = normalizarNumeroSeguroSocial(toUpperData(req.body));
+      const desbloquearSolicitado = bodyUpper.desbloquear_registro_alumno === true;
+    delete bodyUpper.desbloquear_registro_alumno;
+
+    if (desbloquearSolicitado) {
+      bodyUpper.registro_completado = false;
+      bodyUpper.bloqueado = false;
+    }
     const nuevoPara = bodyUpper?.datos_generales?.paraescolar;
     const previoPara = alumnoActual?.datos_generales?.paraescolar;
     const cambiando = nuevoPara && (nuevoPara.toUpperCase() !== (previoPara || '').toUpperCase());
@@ -837,6 +844,7 @@ router.put('/dashboard/alumnos/:id', async (req, res) => {
 router.post('/dashboard/alumnos', async (req, res) => {
   try {
     const bodyUpper = normalizarNumeroSeguroSocial(toUpperData(req.body));
+    delete bodyUpper.desbloquear_registro_alumno;
     const nuevoPara = bodyUpper?.datos_generales?.paraescolar;
 
     if (nuevoPara) {
