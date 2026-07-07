@@ -278,6 +278,7 @@ function tieneHermanosActivos(valor) {
   return ['SI', 'SÍ', 'YES', 'TRUE', '1'].includes(limpio);
 }
 
+
 function esValorVacio(valor) {
   return valor === undefined || valor === null || valor === '';
 }
@@ -423,9 +424,9 @@ async function buscarRegistradoPorNumeroControl(numeroControl) {
 // ---------- Endpoints ----------
 router.get('/folio/:folio', async (req, res) => {
   try {
-    const alumno = await Alumno.findOne({ folio: req.params.folio });
+    const alumno = await Alumno.findOne({ folio: req.params.folio }).lean();
     if (!alumno) return res.status(404).json({ message: 'Folio no encontrado' });
-    res.json(alumno);
+   res.json(normalizarRegistradoParaFormulario(alumno, alumno.folio));
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -440,7 +441,7 @@ router.get('/preregistro/:folio', async (req, res) => {
 
     res.json({
       message: 'Datos de preregistro encontrados',
-      alumno
+       alumno: normalizarRegistradoParaFormulario(alumno, folio)
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -1220,9 +1221,11 @@ router.post('/guardar-registro', async (req, res) => {
 
     upperCaseData.registro_completado = true;
 
-    await Alumno.findOneAndUpdate({ folio }, upperCaseData, { upsert: true });
+    const payloadRegistro = combinarSinBorrarDatosActuales(registroExistente || {}, upperCaseData);
 
-    const datosAnidados = flattenToNested(upperCaseData);
+        await Alumno.findOneAndUpdate({ folio }, payloadRegistro, { upsert: true });
+
+    const datosAnidados = flattenToNested(payloadRegistro);
     const nombreArchivo = `${datosAnidados.datos_alumno?.curp || 'formulario'}_registro.pdf`;
     await generarPDFRegistro(datosAnidados, nombreArchivo);
 
