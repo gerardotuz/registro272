@@ -181,6 +181,10 @@ function construirDatosFormulario() {
     }
   };
 
+   if (coleccion === COLECCION_ALUMNOS) {
+    datos.desbloquear_registro_alumno = obtenerChecked('desbloquear_registro_alumno');
+  }
+  
   if (coleccion === COLECCION_REGISTRADOS) {
     datos.numero_control = numeroControl;
     datos.numeroControl = numeroControl;
@@ -247,6 +251,13 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('[data-registrado-only]').forEach((el) => {
       el.classList.toggle('d-none', !esRegistrado);
     });
+     document.querySelectorAll('[data-alumno-only]').forEach((el) => {
+      el.classList.toggle('d-none', esRegistrado);
+    });
+    const tipoAltaWrapper = document.getElementById('tipoAltaWrapper');
+    if (tipoAltaWrapper) tipoAltaWrapper.classList.toggle('d-none', Boolean(document.getElementById('editId')?.value));
+    const tipoAltaAlumno = document.getElementById('tipoAltaAlumno');
+    if (tipoAltaAlumno) tipoAltaAlumno.value = coleccion;
     document.getElementById('folioLabel').textContent = esRegistrado ? 'Folio / Número de Control' : 'Folio';
   }
 
@@ -307,6 +318,8 @@ function cargarFormulario(alumnoOriginal, coleccion) {
     asignarValor('tipo_tramite', alumno.tipo_tramite);
 const desbloquear = document.getElementById('desbloquear_reinscripcion');
     if (desbloquear) desbloquear.checked = false;
+  const desbloquearAlumno = document.getElementById('desbloquear_registro_alumno');
+    if (desbloquearAlumno) desbloquearAlumno.checked = false;
     Object.entries(da).forEach(([key, value]) => asignarValor(key, value));
     asignarValor('colonia', dg.colonia);
     asignarValor('domicilio', dg.domicilio);
@@ -366,7 +379,7 @@ const desbloquear = document.getElementById('desbloquear_reinscripcion');
       .then(res => res.json())
       .then(alumno => {
         cargarFormulario(alumno, coleccion);
-
+ configurarFormularioPorColeccion(coleccion);
         new bootstrap.Modal(document.getElementById('editModal')).show();
       });
   }
@@ -447,12 +460,20 @@ if (!res.ok) {
       alert('Error al cargar archivo');
     }
   });
-
+ document.getElementById('tipoAltaAlumno')?.addEventListener('change', (e) => {
+    const coleccion = e.target.value || COLECCION_ALUMNOS;
+    document.getElementById('editCollection').value = coleccion;
+    configurarFormularioPorColeccion(coleccion);
+  });
 document.getElementById('btnAgregarNuevo').addEventListener('click', () => {
     const inputs = document.querySelectorAll('#editForm input, #editForm select, #editForm textarea');
     inputs.forEach(input => input.value = '');
     document.getElementById('editId').value = '';
     document.getElementById('editCollection').value = COLECCION_ALUMNOS;
+     const tipoAltaAlumno = document.getElementById('tipoAltaAlumno');
+    if (tipoAltaAlumno) tipoAltaAlumno.value = COLECCION_ALUMNOS;
+    const desbloquearAlumno = document.getElementById('desbloquear_registro_alumno');
+    if (desbloquearAlumno) desbloquearAlumno.checked = false;
     configurarFormularioPorColeccion(COLECCION_ALUMNOS);
     new bootstrap.Modal(document.getElementById('editModal')).show();
   });
