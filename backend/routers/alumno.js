@@ -1229,7 +1229,7 @@ router.post('/guardar-registro', async (req, res) => {
       return res.status(400).json({ message: 'Faltan datos obligatorios' });
     }
 
-    const registroExistente = await Alumno.findOne({ folio }).lean();
+     const registroExistente = await buscarEnModeloPorNumeroControl(Alumno, folio);
     if (alumnoYaTieneRegistroFinal(registroExistente)) {
       return res.status(409).json({
         message: 'Este folio ya tiene un registro finalizado y no puede editarse. Si necesitas cambios, acude a control escolar.'
@@ -1272,7 +1272,7 @@ router.post('/guardar-registro', async (req, res) => {
 
     const payloadRegistro = combinarSinBorrarDatosActuales(registroExistente || {}, upperCaseData);
 
-        await Alumno.findOneAndUpdate({ folio }, payloadRegistro, { upsert: true });
+       await Alumno.findOneAndUpdate({ _id: registroExistente?._id || new mongoose.Types.ObjectId() }, payloadRegistro, { upsert: true });
 
     const datosAnidados = flattenToNested(payloadRegistro);
     const nombreArchivo = `${datosAnidados.datos_alumno?.curp || 'formulario'}_registro.pdf`;
