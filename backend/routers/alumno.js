@@ -448,7 +448,13 @@ async function buscarRegistradoPorNumeroControl(numeroControl) {
       return { alumno: registradoOtroPlantel, origen: `registrados:${plantel}` };
     }
   }
-
+// Los alumnos de nuevo ingreso pueden cargarse directamente en la colección `alumnos`
+  // usando el folio como identificador para la reinscripción/actualización de expediente.
+  const alumnoPlantel = await buscarEnModeloPorNumeroControl(Alumno, numeroControl);
+  if (alumnoPlantel) {
+    return { alumno: alumnoPlantel, origen: 'alumnos' };
+  }
+  
   // Fallback para alumnos cargados desde el módulo de paraescolares con número de control.
   const paraescolar = await buscarEnModeloPorNumeroControl(Paraescolar, numeroControl);
   if (paraescolar) {
@@ -490,7 +496,7 @@ router.get('/reinscripcion/:numeroControl', async (req, res) => {
     const numeroControl = String(req.params.numeroControl || '').trim().toUpperCase();
     const encontrado = await buscarRegistradoPorNumeroControl(numeroControl);
 
-    if (!encontrado) return res.status(404).json({ message: 'Número de control no encontrado en registrados' });
+    if (!encontrado) return res.status(404).json({ message: 'Número de control o folio no encontrado en registrados ni alumnos' });
 
     res.json({
       message: 'Datos de reinscripción encontrados',
