@@ -129,16 +129,12 @@ async function buscarRegistroOReinscripcion(identificador) {
     return true;
   };
 
-  const pareceNumeroControl = /^\d+$/.test(identificador);
-  const encontrado = pareceNumeroControl
-    ? await buscarReinscripcion()
-    : (await buscarFolio()) || (await buscarReinscripcion());
+   // Los folios cargados también son numéricos; por eso siempre se consulta primero
+  // la colección de alumnos y se envía al formulario de registro cuando existe.
+  const encontrado = (await buscarFolio()) || (await buscarReinscripcion());
 
   if (!encontrado) {
-   const mensaje = pareceNumeroControl
-      ? "No se encontró el número de control en registrados"
-      : "No se encontró el folio en alumnos ni el número de control en registrados";
-    alert(mensaje);
+  alert("No se encontró el folio en alumnos ni el número de control en registrados");
   }
 }
 
