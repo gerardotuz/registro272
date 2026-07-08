@@ -463,19 +463,23 @@ function puntajeGrupo(grupo, alumno) {
 function crearWorkbookPlantillaAsignacion() {
   const encabezados = [
    
+     "folio",
+    "curp",
     "nombre",
+    "carrera",
     "sexo",
     "promedio"
   ];
 
   const ejemplo = [
-  { nombre: "JUAN PEREZ LOPEZ", carrera: "PROGRAMACIÓN", sexo: "H", promedio: 92.5 },
-    { nombre: "MARIA GARCIA RUIZ", carrera: "A Y B", sexo: "M", promedio: 89.75 },
-    { nombre: "ANA LOPEZ MARTINEZ", carrera: "PROGRAMACIÓN", sexo: "F", promedio: 95 }
+   { folio: "2026-0001", curp: "PELJ080101HOCRPN01", nombre: "JUAN PEREZ LOPEZ", carrera: "PROGRAMACIÓN", sexo: "H", promedio: 92.5 },
+    { folio: "2026-0002", curp: "GARM080202MOCRZR02", nombre: "MARIA GARCIA RUIZ", carrera: "A Y B", sexo: "M", promedio: 89.75 },
+    { folio: "2026-0003", curp: "LOMA080303MOCPRN03", nombre: "ANA LOPEZ MARTINEZ", carrera: "PROGRAMACIÓN", sexo: "F", promedio: 95 }
   ];
 
   const instrucciones = [
-   
+    { campo: "folio", descripcion: "Folio o número de control del alumno. Se conserva sin modificar en el resultado de asignación." },
+    { campo: "curp", descripcion: "CURP del alumno. Se conserva sin modificar en el resultado de asignación." },
     { campo: "nombre", descripcion: "Nombre completo del alumno." },
     { campo: "carrera", descripcion: "Carrera asignada por secretaría. El sistema respeta este dato y solo reparte grupos dentro de esa carrera." },
     { campo: "sexo", descripcion: "Acepta H/M, Hombre/Mujer, Masculino/Femenino o F." },
@@ -487,6 +491,8 @@ function crearWorkbookPlantillaAsignacion() {
   XLSX.utils.sheet_add_aoa(hojaAlumnos, [encabezados], { origin: "A1" });
   hojaAlumnos["!cols"] = [
     
+    { wch: 16 },
+    { wch: 22 },
     { wch: 34 },
     { wch: 28 },
     { wch: 12 },
@@ -538,6 +544,8 @@ function agregarResumenYResultado(grupos, resultado, resumen) {
           turno: grupo.turno,
           grupo: grupo.grupo,
           numero_lista: posicion + 1,
+           folio: alumno.folio,
+          curp: alumno.curp,
           nombre: alumno.nombre,
           sexo: alumno.sexo,
           promedio_examen: alumno.promedio,
@@ -611,7 +619,9 @@ router.post("/asignacion-grupos", uploadAsignacion.single("excel"), async (req, 
 
     const alumnos = rows.map((row, index) => ({
       filaExcel: index + 2,
-        carrera: String(obtenerValor(row, ["carrera", "carrera asignada", "especialidad", "programa", "programa asignado"]) || "").trim(),
+         folio: String(obtenerValor(row, ["folio", "no. control", "no control", "numero de control", "número de control", "numero_control", "numeroControl"]) || "").trim(),
+      curp: String(obtenerValor(row, ["curp", "c.u.r.p."]) || "").trim().toUpperCase(),
+      carrera: String(obtenerValor(row, ["carrera", "carrera asignada", "especialidad", "programa", "programa asignado"]) || "").trim(),
       nombre: String(obtenerValor(row, ["nombre", "alumno", "alumna", "nombre completo", "nombres"]) || "").trim(),
       sexo: detectarSexo(obtenerValor(row, ["sexo", "genero", "género"])),
       promedio: obtenerNumero(obtenerValor(row, ["promedio", "promedio examen", "promedio del examen de admisión", "examen", "calificacion", "calificación"]))
