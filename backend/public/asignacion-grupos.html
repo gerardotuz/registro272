@@ -33,13 +33,15 @@
 
     <section class="card card-wide">
       <h2>2. Configurar grupos por carrera</h2>
-        <p>Agrega una fila por cada carrera que venga en el Excel para indicar cuántos grupos habrá en matutino y vespertino; la capacidad predeterminada es 50 alumnos. Si alguna carrera no está configurada, se crearán grupos automáticos para esa carrera.</p>
+       <p>Agrega una fila por cada carrera que venga en el Excel para indicar cuántos grupos habrá en matutino y vespertino; también puedes escribir los nombres de los grupos separados por coma (por ejemplo: 1A, 1B, 1C). La capacidad predeterminada es 50 alumnos. Si alguna carrera no está configurada, se crearán grupos automáticos para esa carrera.</p>
       <table id="tablaConfiguracion">
         <thead>
           <tr>
             <th>Carrera</th>
             <th>Grupos matutino</th>
+            <th>Nombres matutino</th>
             <th>Grupos vespertino</th>
+            <th>Nombres vespertino</th>
             <th>Capacidad</th>
             <th></th>
           </tr>
@@ -51,7 +53,7 @@
 
     <section class="card card-wide">
       <h2>3. Generar resultado</h2>
-   <p>El sistema conserva la carrera asignada por secretaría y reparte grupos, buscando equilibrar hombres/mujeres, mejores promedios, grupos y turnos.</p>
+    <p>El sistema conserva la carrera asignada por secretaría y reparte grupos usando los nombres que escribiste; si dejas nombres vacíos, usará M1, V1 o AUTO como respaldo.</p>
       <button id="generarBtn" class="primary-btn">Generar Excel de asignación</button>
       <p id="mensajeAsignacion" class="mensaje"></p>
     </section>
