@@ -26,14 +26,14 @@
   <main class="tabla-section asignacion-panel">
     <section class="card card-wide">
       <h2>1. Cargar base de datos</h2>
-      <p>Descarga la plantilla para capturar los datos con los encabezados correctos. El Excel solo debe incluir <strong>nombre</strong>, <strong>sexo/género</strong> y <strong>promedio del examen</strong>; la carrera se asigna automáticamente con la configuración de grupos.</p>
+     <p>Carga el Excel de secretaría con los encabezados <strong>nombre</strong>, <strong>carrera</strong>, <strong>sexo/género</strong> y, si está disponible, <strong>promedio del examen</strong>. La carrera ya no se asigna aquí: el sistema respeta la carrera indicada en el archivo y solo equilibra los grupos dentro de cada carrera.</p>
       <button id="descargarPlantillaBtn" class="primary-btn" type="button">Descargar plantilla Excel</button>
       <input id="excelInput" type="file" accept=".xlsx,.xls" />
     </section>
 
     <section class="card card-wide">
       <h2>2. Configurar grupos por carrera</h2>
-      <p>Agrega una fila por carrera. Puedes indicar cuántos grupos habrá en matutino y vespertino; la capacidad predeterminada es 50 alumnos.</p>
+        <p>Agrega una fila por cada carrera que venga en el Excel para indicar cuántos grupos habrá en matutino y vespertino; la capacidad predeterminada es 50 alumnos. Si alguna carrera no está configurada, se crearán grupos automáticos para esa carrera.</p>
       <table id="tablaConfiguracion">
         <thead>
           <tr>
@@ -51,7 +51,7 @@
 
     <section class="card card-wide">
       <h2>3. Generar resultado</h2>
-    <p>El sistema asigna la carrera y reparte grupos, buscando equilibrar hombres/mujeres, mejores promedios, grupos y turnos.</p>
+   <p>El sistema conserva la carrera asignada por secretaría y reparte grupos, buscando equilibrar hombres/mujeres, mejores promedios, grupos y turnos.</p>
       <button id="generarBtn" class="primary-btn">Generar Excel de asignación</button>
       <p id="mensajeAsignacion" class="mensaje"></p>
     </section>
