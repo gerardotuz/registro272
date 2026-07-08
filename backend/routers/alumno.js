@@ -461,9 +461,10 @@ async function buscarRegistradoPorNumeroControl(numeroControl) {
 // ---------- Endpoints ----------
 router.get('/folio/:folio', async (req, res) => {
   try {
-    const alumno = await Alumno.findOne({ folio: req.params.folio }).lean();
+  const folio = String(req.params.folio || '').trim().toUpperCase();
+    const alumno = await buscarEnModeloPorNumeroControl(Alumno, folio);
     if (!alumno) return res.status(404).json({ message: 'Folio no encontrado' });
-   res.json(normalizarRegistradoParaFormulario(alumno, alumno.folio));
+      res.json(normalizarRegistradoParaFormulario(alumno, folio));
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -472,7 +473,7 @@ router.get('/folio/:folio', async (req, res) => {
 router.get('/preregistro/:folio', async (req, res) => {
   try {
     const folio = String(req.params.folio || '').trim().toUpperCase();
-    const alumno = await Alumno.findOne({ folio }).lean();
+     const alumno = await buscarEnModeloPorNumeroControl(Alumno, folio);
 
     if (!alumno) return res.status(404).json({ message: 'Folio no encontrado en preregistro' });
 
