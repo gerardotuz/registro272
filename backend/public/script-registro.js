@@ -17,7 +17,7 @@ const PARAESCOLARES_FALLBACK = [
   'TEATRO-CANTO',
   'TOCHO BANDERA',
   'VOLEIBOL',
-  'ORATORIA-DECLAMACION',
+  'ORATORIA-DECLAMACIÓN',
   'MÚSICA'
 ];
 function formatearFechaNacimiento(fecha) {
