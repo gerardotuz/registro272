@@ -456,16 +456,17 @@ function crearWorkbookPlantillaAsignacion() {
   ];
 
   const ejemplo = [
-   { nombre: "JUAN PEREZ LOPEZ", sexo: "H", promedio: 92.5 },
-    { nombre: "MARIA GARCIA RUIZ", sexo: "M", promedio: 89.75 },
-    { nombre: "ANA LOPEZ MARTINEZ", sexo: "F", promedio: 95 }
+  { nombre: "JUAN PEREZ LOPEZ", carrera: "PROGRAMACIÓN", sexo: "H", promedio: 92.5 },
+    { nombre: "MARIA GARCIA RUIZ", carrera: "A Y B", sexo: "M", promedio: 89.75 },
+    { nombre: "ANA LOPEZ MARTINEZ", carrera: "PROGRAMACIÓN", sexo: "F", promedio: 95 }
   ];
 
   const instrucciones = [
    
     { campo: "nombre", descripcion: "Nombre completo del alumno." },
+    { campo: "carrera", descripcion: "Carrera asignada por secretaría. El sistema respeta este dato y solo reparte grupos dentro de esa carrera." },
     { campo: "sexo", descripcion: "Acepta H/M, Hombre/Mujer, Masculino/Femenino o F." },
-    { campo: "promedio", descripcion: "Promedio del examen de admisión. Usa número, por ejemplo 92.5." }
+    { campo: "promedio", descripcion: "Promedio del examen de admisión. Usa número, por ejemplo 92.5. Si no viene, se toma como 0." }
   ];
 
   const libro = XLSX.utils.book_new();
@@ -474,6 +475,7 @@ function crearWorkbookPlantillaAsignacion() {
   hojaAlumnos["!cols"] = [
     
     { wch: 34 },
+    { wch: 28 },
     { wch: 12 },
     { wch: 14 }
   ];
@@ -543,20 +545,18 @@ function asignarListaEnGrupos(lista, grupos) {
     elegido.alumnos.push({ ...alumno, ordenPromedioCarrera: index + 1 });
   });
 }
-
+function obtenerConfiguracionCarrera(configuracion, carrera) {
+  const entradas = Object.entries(configuracion || {});
+  const normalizada = normalizarTexto(carrera);
+  const encontrada = entradas.find(([key]) => normalizarTexto(key) === normalizada);
+  return encontrada ? encontrada[1] : {};
+}
 function asignarAlumnosPorCarrera(alumnos, configuracion) {
    const resultado = [];
   const resumen = [];
-  const todosSinCarrera = alumnos.every(alumno => !alumno.carrera);
-
-  if (todosSinCarrera) {
-    const grupos = crearGruposDesdeConfiguracion(configuracion, alumnos.length);
-    asignarListaEnGrupos(alumnos, grupos);
-    agregarResumenYResultado(grupos, resultado, resumen);
-    return { resultado, resumen };
-  }
+ 
   const porCarrera = alumnos.reduce((acc, alumno) => {
-  const carrera = alumno.carrera || "GENERAL";
+  const carrera = alumno.carrera;
     acc[carrera] = acc[carrera] || [];
     acc[carrera].push(alumno);
     return acc;
@@ -565,7 +565,7 @@ function asignarAlumnosPorCarrera(alumnos, configuracion) {
  
 
   for (const [carrera, lista] of Object.entries(porCarrera)) {
-    const config = configuracion[carrera] || configuracion[normalizarTexto(carrera)] || {};
+    const config = obtenerConfiguracionCarrera(configuracion, carrera);
     const grupos = crearGruposParaCarrera(carrera, config, lista.length);
     asignarListaEnGrupos(lista, grupos);
     agregarResumenYResultado(grupos, resultado, resumen);
@@ -598,7 +598,7 @@ router.post("/asignacion-grupos", uploadAsignacion.single("excel"), async (req, 
 
     const alumnos = rows.map((row, index) => ({
       filaExcel: index + 2,
-       carrera: String(obtenerValor(row, ["carrera", "especialidad", "programa"]) || "").trim(),
+        carrera: String(obtenerValor(row, ["carrera", "carrera asignada", "especialidad", "programa", "programa asignado"]) || "").trim(),
       nombre: String(obtenerValor(row, ["nombre", "alumno", "alumna", "nombre completo", "nombres"]) || "").trim(),
       sexo: detectarSexo(obtenerValor(row, ["sexo", "genero", "género"])),
       promedio: obtenerNumero(obtenerValor(row, ["promedio", "promedio examen", "promedio del examen de admisión", "examen", "calificacion", "calificación"]))
@@ -607,7 +607,15 @@ router.post("/asignacion-grupos", uploadAsignacion.single("excel"), async (req, 
     fs.unlinkSync(req.file.path);
 
     if (!alumnos.length) {
-       return res.status(400).json({ error: "El Excel no contiene alumnos válidos. Revisa encabezados: nombre, sexo y promedio." });
+        return res.status(400).json({ error: "El Excel no contiene alumnos válidos. Revisa encabezados: nombre, carrera, sexo/género y promedio." });
+    }
+
+    const alumnosSinCarrera = alumnos.filter(alumno => !alumno.carrera);
+    if (alumnosSinCarrera.length) {
+      const filas = alumnosSinCarrera.slice(0, 10).map(alumno => alumno.filaExcel).join(", ");
+      return res.status(400).json({
+        error: `Hay alumnos sin carrera asignada por secretaría. Revisa la columna carrera en las filas: ${filas}${alumnosSinCarrera.length > 10 ? "..." : ""}.`
+      });
     }
 
     const { resultado, resumen } = asignarAlumnosPorCarrera(alumnos, configuracion);
