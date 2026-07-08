@@ -12,7 +12,9 @@ function crearFilaConfiguracion(carrera = "") {
   tr.innerHTML = `
     <td><input type="text" class="carrera" placeholder="Ej. Programación" value="${carrera}"></td>
     <td><input type="number" class="matutino" min="0" value="1"></td>
+    <td><input type="text" class="nombres-matutino" placeholder="Ej. 1A, 1B o A, B"></td>
     <td><input type="number" class="vespertino" min="0" value="1"></td>
+     <td><input type="text" class="nombres-vespertino" placeholder="Ej. 1C, 1D o C, D"></td>
     <td><input type="number" class="capacidad" min="1" value="50"></td>
     <td><button type="button" class="eliminar-fila">Eliminar</button></td>
   `;
@@ -27,7 +29,9 @@ function obtenerConfiguracion() {
     if (!carrera) return;
     configuracion[carrera] = {
       matutino: Number(tr.querySelector(".matutino").value || 0),
+      nombresMatutino: tr.querySelector(".nombres-matutino").value,
       vespertino: Number(tr.querySelector(".vespertino").value || 0),
+      nombresVespertino: tr.querySelector(".nombres-vespertino").value,
       capacidad: Number(tr.querySelector(".capacidad").value || 50)
     };
   });
