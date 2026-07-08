@@ -448,12 +448,6 @@ async function buscarRegistradoPorNumeroControl(numeroControl) {
       return { alumno: registradoOtroPlantel, origen: `registrados:${plantel}` };
     }
   }
-// Los alumnos de nuevo ingreso pueden cargarse directamente en la colección `alumnos`
-  // usando el folio como identificador para la reinscripción/actualización de expediente.
-  const alumnoPlantel = await buscarEnModeloPorNumeroControl(Alumno, numeroControl);
-  if (alumnoPlantel) {
-    return { alumno: alumnoPlantel, origen: 'alumnos' };
-  }
   
   // Fallback para alumnos cargados desde el módulo de paraescolares con número de control.
   const paraescolar = await buscarEnModeloPorNumeroControl(Paraescolar, numeroControl);
