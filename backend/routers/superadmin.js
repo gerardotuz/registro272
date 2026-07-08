@@ -412,18 +412,31 @@ function obtenerNumero(valor) {
   return Number.isFinite(numero) ? numero : 0;
 }
 
+function normalizarNombresGrupos(valor) {
+  if (Array.isArray(valor)) {
+    return valor.map(item => String(item || "").trim()).filter(Boolean);
+  }
+
+  return String(valor || "")
+    .split(",")
+    .map(item => item.trim())
+    .filter(Boolean);
+}
+
 function crearGruposParaCarrera(carrera, config, totalAlumnos) {
   const grupos = [];
-  const matutino = Math.max(0, Number(config?.matutino || 0));
-  const vespertino = Math.max(0, Number(config?.vespertino || 0));
+   const nombresMatutino = normalizarNombresGrupos(config?.nombresMatutino);
+  const nombresVespertino = normalizarNombresGrupos(config?.nombresVespertino);
+  const matutino = Math.max(nombresMatutino.length, Math.max(0, Number(config?.matutino || 0)));
+  const vespertino = Math.max(nombresVespertino.length, Math.max(0, Number(config?.vespertino || 0)));
   const capacidad = Math.max(1, Number(config?.capacidad || 50));
 
   for (let i = 1; i <= matutino; i++) {
-    grupos.push({ carrera, turno: "Matutino", grupo: `M${i}`, capacidad, alumnos: [] });
+   grupos.push({ carrera, turno: "Matutino", grupo: nombresMatutino[i - 1] || `M${i}`, capacidad, alumnos: [] });
   }
 
   for (let i = 1; i <= vespertino; i++) {
-    grupos.push({ carrera, turno: "Vespertino", grupo: `V${i}`, capacidad, alumnos: [] });
+   grupos.push({ carrera, turno: "Vespertino", grupo: nombresVespertino[i - 1] || `V${i}`, capacidad, alumnos: [] });
   }
 
   if (grupos.length === 0) {
