@@ -748,11 +748,7 @@ router.get('/reimprimir/:folio', async (req, res) => {
     if (alumno) {
       const datosAlumnoPDF = flattenToNested(alumno.toObject());
 
-      const esRegistroCompleto = Boolean(
-        alumno?.datos_generales?.quinta_opcion ||
-        alumno?.datos_alumno?.nacionalidad ||
-        alumno?.secundaria_origen?.estudias
-      );
+      const esRegistroCompleto = alumnoYaTieneRegistroFinal(alumno);
 
       const nombreArchivoAlumno = esRegistroCompleto
         ? `${alumno.folio}_registro.pdf`
