@@ -393,7 +393,8 @@ const tipoTramite = String(datos.tipo_tramite || '').trim().toUpperCase();
 
   drawFooterImage();
 
- y += 90;
+  doc.addPage();
+  y = START_Y;
   const tituloSolicitud = esReinscripcion ? 'Solicitud de Reinscripción' : 'Solicitud de Inscripción';
   y = drawSectionTitle(tituloSolicitud, y);
   y = drawBox('Nombre completo del alumno', nombreCompletoAlumno, marginX, y, 500); y += GAP_Y;
