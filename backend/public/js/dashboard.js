@@ -434,7 +434,8 @@ if (!res.ok) {
       return;
     }
 
-    const res = await fetch(`/api/reimprimir/${encodeURIComponent(identificador)}`);
+    const query = new URLSearchParams({ coleccion }).toString();
+    const res = await fetch(`/api/reimprimir/${encodeURIComponent(identificador)}?${query}`);
     if (!res.ok) {
       const error = await res.json().catch(() => ({}));
       alert(error.message || 'No se pudo generar el PDF');
