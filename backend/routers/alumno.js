@@ -909,19 +909,24 @@ router.get('/dashboard/alumnos', async (req, res) => {
   const queryAlumnos = {};
   const queryRegistrados = {};
 
-   queryAlumnos.$or = crearFiltroNumeroControl(folio).$or;
-    queryAlumnos.folio = folioRegex;
-    queryRegistrados.$or = crearFiltroNumeroControl(folio).$or;
+ if (folioRegex) {
+    const filtroFolio = [
+      ...crearFiltroNumeroControl(folio).$or,
+      { folio: folioRegex }
+    ];
+
+    queryAlumnos.$or = filtroFolio;
+    queryRegistrados.$or = filtroFolio;
     
   }
 
- const filtroNombresAlumnos = [
-    queryAlumnos.$or = [
+  if (apellidosRegex) {
+    const filtroNombresAlumnos = [
       { 'datos_alumno.primer_apellido': apellidosRegex },
       { 'datos_alumno.segundo_apellido': apellidosRegex },
       { 'datos_alumno.nombres': apellidosRegex }
     ];
- queryAlumnos.$and = queryAlumnos.$or
+     queryAlumnos.$and = queryAlumnos.$or
       ? [{ $or: queryAlumnos.$or }, { $or: filtroNombresAlumnos }]
       : [{ $or: filtroNombresAlumnos }];
     delete queryAlumnos.$or;
