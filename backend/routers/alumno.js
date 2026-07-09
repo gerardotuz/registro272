@@ -397,6 +397,12 @@ function normalizarRegistradoParaFormulario(raw = {}, numeroControl = '') {
       entrega_diagnostico: primerValor(datosGenerales.entrega_diagnostico, raw.entrega_diagnostico),
       detalle_enfermedad: primerValor(datosGenerales.detalle_enfermedad, raw.detalle_enfermedad),
       carta_poder: primerValor(datosGenerales.carta_poder, raw.carta_poder),
+      responsable_emergencia: {
+        ...(datosGenerales.responsable_emergencia || {}),
+        nombre: primerValor(datosGenerales.responsable_emergencia?.nombre, raw.responsable_emergencia_nombre),
+        telefono: primerValor(datosGenerales.responsable_emergencia?.telefono, raw.responsable_emergencia_telefono),
+        parentesco: primerValor(datosGenerales.responsable_emergencia?.parentesco, raw.responsable_emergencia_parentesco)
+      },
       contacto_emergencia_nombre: primerValor(datosGenerales.contacto_emergencia_nombre, raw.contacto_emergencia_nombre),
       contacto_emergencia_telefono: primerValor(datosGenerales.contacto_emergencia_telefono, raw.contacto_emergencia_telefono),
       habla_lengua_indigena: datosGenerales.habla_lengua_indigena || { respuesta: raw.habla_lengua_indigena_respuesta || '', cual: raw.habla_lengua_indigena_cual || '' }
