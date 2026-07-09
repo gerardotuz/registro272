@@ -411,12 +411,18 @@ function obtenerAliasSelect(nombre, valor) {
   const normalizado = normalizarValorFormulario(valor);
   const aliasPorCampo = {
     nacionalidad: {
-      mexicana: 'mexicano',
+       mexicana: 'mexicano',
       mexicano: 'mexicano',
       mex: 'mexicano',
       mexico: 'mexicano',
+      mexicanoa: 'mexicano',
+      'mexicano a': 'mexicano',
+      'nacionalidad mexicana': 'mexicano',
       extranjero: 'extranjero',
-      extranjera: 'extranjero'
+      extranjera: 'extranjero',
+      extranjeroa: 'extranjero',
+      'extranjero a': 'extranjero',
+      'nacionalidad extranjera': 'extranjero'
     },
     sexo: {
       f: 'femenino',
@@ -454,7 +460,8 @@ function asignarValorCampo(nombre, valor) {
     const opcion = Array.from(campo.options).find((option) => {
       const valueNormalizado = normalizarValorFormulario(option.value);
       const textoNormalizado = normalizarValorFormulario(option.textContent);
-      return valueNormalizado === buscado || textoNormalizado === buscado;
+      return valueNormalizado === buscado || textoNormalizado === buscado ||
+        (nombre === 'nacionalidad' && (buscado.includes(valueNormalizado) || buscado.includes(textoNormalizado)));
     });
 
     campo.selectedIndex = opcion ? opcion.index : 0;
@@ -523,7 +530,8 @@ function normalizarAlumnoParaFormulario(raw = {}) {
   const secundariaOrigen = raw.secundaria_origen || {};
   const tutorResponsable = raw.tutor_responsable || {};
   const personaEmergencia = raw.persona_emergencia || {};
-
+const responsableEmergencia = datosGenerales.responsable_emergencia || raw.responsable_emergencia || {};
+   const responsableEmergencia = datosGenerales.responsable_emergencia || raw.responsable_emergencia || {};
   return {
     ...raw,
     datos_alumno: {
@@ -537,7 +545,7 @@ function normalizarAlumnoParaFormulario(raw = {}) {
       semestre: primerValor(datosAlumno.semestre, raw.semestre, raw.grado),
       grupo: primerValor(datosAlumno.grupo, raw.grupo),
       turno: primerValor(datosAlumno.turno, raw.turno),
-      nacionalidad: primerValor(datosAlumno.nacionalidad, raw.nacionalidad),
+         nacionalidad: primerValor(datosAlumno.nacionalidad, raw.nacionalidad, datosGenerales.nacionalidad),
       pais_extranjero: primerValor(datosAlumno.pais_extranjero, raw.pais_extranjero),
       estado_civil: primerValor(datosAlumno.estado_civil, raw.estado_civil),
       fecha_nacimiento: primerValor(datosAlumno.fecha_nacimiento, raw.fecha_nacimiento),
@@ -561,6 +569,12 @@ function normalizarAlumnoParaFormulario(raw = {}) {
       detalle_enfermedad: primerValor(datosGenerales.detalle_enfermedad, raw.detalle_enfermedad),
       contacto_emergencia_nombre: primerValor(datosGenerales.contacto_emergencia_nombre, raw.contacto_emergencia_nombre),
       contacto_emergencia_telefono: primerValor(datosGenerales.contacto_emergencia_telefono, raw.contacto_emergencia_telefono),
+       responsable_emergencia: {
+        ...responsableEmergencia,
+        nombre: primerValor(responsableEmergencia.nombre, raw.responsable_emergencia_nombre),
+        telefono: primerValor(responsableEmergencia.telefono, raw.responsable_emergencia_telefono),
+        parentesco: primerValor(responsableEmergencia.parentesco, raw.responsable_emergencia_parentesco)
+      },
       habla_lengua_indigena: datosGenerales.habla_lengua_indigena || { respuesta: raw.habla_lengua_indigena_respuesta || '', cual: raw.habla_lengua_indigena_cual || '' }
     },
     datos_medicos: {
@@ -613,8 +627,8 @@ function normalizarAlumnoParaFormulario(raw = {}) {
   }
 
   if(!datos) return;
-  const mappings={...datos.datos_alumno,...datos.datos_generales,...datos.datos_medicos,...datos.secundaria_origen,...datos.tutor_responsable,'habla_lengua_indigena_respuesta':datos.datos_generales?.habla_lengua_indigena?.respuesta,'habla_lengua_indigena_cual':datos.datos_generales?.habla_lengua_indigena?.cual,'enfermedad_cronica_o_alergia_respuesta':datos.datos_medicos?.enfermedad_cronica_o_alergia?.respuesta,'enfermedad_cronica_o_alergia_detalle':datos.datos_medicos?.enfermedad_cronica_o_alergia?.detalle,'persona_emergencia_nombre':datos.persona_emergencia?.nombre,'persona_emergencia_parentesco':datos.persona_emergencia?.parentesco,'persona_emergencia_telefono':datos.persona_emergencia?.telefono};
-  Object.entries(mappings).forEach(([k,v])=>set(k,v));
+    const mappings={...datos.datos_alumno,...datos.datos_generales,...datos.datos_medicos,...datos.secundaria_origen,...datos.tutor_responsable,'habla_lengua_indigena_respuesta':datos.datos_generales?.habla_lengua_indigena?.respuesta,'habla_lengua_indigena_cual':datos.datos_generales?.habla_lengua_indigena?.cual,'enfermedad_cronica_o_alergia_respuesta':datos.datos_medicos?.enfermedad_cronica_o_alergia?.respuesta,'enfermedad_cronica_o_alergia_detalle':datos.datos_medicos?.enfermedad_cronica_o_alergia?.detalle,'persona_emergencia_nombre':datos.persona_emergencia?.nombre,'persona_emergencia_parentesco':datos.persona_emergencia?.parentesco,'persona_emergencia_telefono':datos.persona_emergencia?.telefono,'responsable_emergencia_nombre':datos.datos_generales?.responsable_emergencia?.nombre,'responsable_emergencia_telefono':datos.datos_generales?.responsable_emergencia?.telefono,'responsable_emergencia_parentesco':datos.datos_generales?.responsable_emergencia?.parentesco};
+     Object.entries(mappings).forEach(([k,v])=>set(k,v));
 
   cargarCuposParaescolar(datos?.datos_generales?.paraescolar || '');
 
