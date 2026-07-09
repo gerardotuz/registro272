@@ -503,6 +503,41 @@ router.get('/reinscripcion/:numeroControl', async (req, res) => {
   }
 });
 
+function obtenerValorRuta(obj, ruta) {
+  return ruta.split('.').reduce((actual, clave) => (actual && actual[clave] !== undefined ? actual[clave] : undefined), obj);
+}
+
+const CAMPOS_MINIMOS_PDF_REGISTRO = [
+  ['datos_alumno.nombres', 'nombres del alumno'],
+  ['datos_alumno.primer_apellido', 'primer apellido'],
+  ['datos_alumno.curp', 'CURP'],
+  ['datos_alumno.fecha_nacimiento', 'fecha de nacimiento'],
+  ['datos_alumno.sexo', 'sexo'],
+  ['datos_generales.domicilio', 'domicilio'],
+  ['datos_generales.telefono_alumno', 'teléfono del alumno'],
+  ['tutor_responsable.vive_con', 'persona con la que vive'],
+  ['persona_emergencia.nombre', 'contacto de emergencia'],
+  ['persona_emergencia.telefono', 'teléfono de emergencia']
+];
+
+function validarDatosMinimosPDFRegistro(datos) {
+  const faltantes = CAMPOS_MINIMOS_PDF_REGISTRO
+    .filter(([ruta]) => esValorVacio(obtenerValorRuta(datos, ruta)))
+    .map(([, etiqueta]) => etiqueta);
+
+  return {
+    valido: faltantes.length === 0,
+    faltantes
+  };
+}
+
+function responderPDFNoGenerado(res, message, faltantes = []) {
+  return res.status(409).json({
+    message,
+    pdf_generado: false,
+    faltantes
+  });
+}
 function normalizarRegistradoParaPDF(registrado, numeroControl) {
   const raw = registrado || {};
   if (raw.datos_alumno) {
@@ -759,7 +794,19 @@ router.get('/reimprimir/:folio', async (req, res) => {
         });
       }
 
+     
+      
       const datosRegistradoPDF = normalizarRegistradoParaPDF(encontrado.alumno, identificador);
+       const validacionPDFRegistro = validarDatosMinimosPDFRegistro(datosRegistradoPDF);
+
+      if (!validacionPDFRegistro.valido) {
+        return responderPDFNoGenerado(
+          res,
+          `No se generó el PDF de registro porque faltan datos obligatorios: ${validacionPDFRegistro.faltantes.join(', ')}. Corrige o completa la captura y vuelve a intentar.`,
+          validacionPDFRegistro.faltantes
+        );
+      }
+      
       const nombreArchivoRegistrado = `${identificador}.pdf`;
       const rutaPDFRegistrado = await generarPDFRegistro(datosRegistradoPDF, nombreArchivoRegistrado);
       const fullPathRegistrado = path.join(__dirname, '../public', rutaPDFRegistrado);
@@ -775,15 +822,26 @@ router.get('/reimprimir/:folio', async (req, res) => {
     if (alumno) {
       const datosAlumnoPDF = flattenToNested(alumno.toObject());
 
-    const esRegistroCompleto = alumnoYaTieneRegistroFinal(alumno);
+     const esRegistroCompleto = alumnoYaTieneRegistroFinal(alumno);
+      if (!esRegistroCompleto) {
+        return responderPDFNoGenerado(
+          res,
+          'No se generó el PDF de registro porque este folio sólo tiene preregistro o está incompleto. Completa el registro antes de reimprimir la ficha final.'
+        );
+      }
+     
 
-      const nombreArchivoAlumno = esRegistroCompleto
-        ? `${alumno.folio}_registro.pdf`
-        : `${alumno.folio}.pdf`;
+     const validacionPDFRegistro = validarDatosMinimosPDFRegistro(datosAlumnoPDF);
+      if (!validacionPDFRegistro.valido) {
+        return responderPDFNoGenerado(
+          res,
+          `No se generó el PDF de registro porque faltan datos obligatorios: ${validacionPDFRegistro.faltantes.join(', ')}. Corrige o completa la captura y vuelve a intentar.`,
+          validacionPDFRegistro.faltantes
+        );
+      }
 
-      const rutaPDFAlumno = esRegistroCompleto
-        ? await generarPDFRegistro(datosAlumnoPDF, nombreArchivoAlumno)
-        : await generarPDF(datosAlumnoPDF, nombreArchivoAlumno);
+       const nombreArchivoAlumno = `${alumno.folio}_registro.pdf`;
+      const rutaPDFAlumno = await generarPDFRegistro(datosAlumnoPDF, nombreArchivoAlumno);
 
       const fullPathAlumno = path.join(__dirname, '../public', rutaPDFAlumno);
       return res.sendFile(fullPathAlumno);
