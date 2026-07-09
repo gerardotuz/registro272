@@ -817,10 +817,10 @@ router.get('/reimprimir/:folio', async (req, res) => {
       return generarPDFRegistrado(await buscarRegistradoPorNumeroControl(identificador));
     }
 
-    const alumno = await Alumno.findOne({ folio: identificador });
+    const alumno = await buscarEnModeloPorNumeroControl(Alumno, identificador);
 
     if (alumno) {
-      const datosAlumnoPDF = flattenToNested(alumno.toObject());
+      const datosAlumnoPDF = flattenToNested(alumno);
 
      const esRegistroCompleto = alumnoYaTieneRegistroFinal(alumno);
       if (!esRegistroCompleto) {
@@ -840,7 +840,7 @@ router.get('/reimprimir/:folio', async (req, res) => {
         );
       }
 
-       const nombreArchivoAlumno = `${alumno.folio}_registro.pdf`;
+      const nombreArchivoAlumno = `${datosAlumnoPDF.folio || identificador}_registro.pdf`;
       const rutaPDFAlumno = await generarPDFRegistro(datosAlumnoPDF, nombreArchivoAlumno);
 
       const fullPathAlumno = path.join(__dirname, '../public', rutaPDFAlumno);
@@ -909,19 +909,22 @@ router.get('/dashboard/alumnos', async (req, res) => {
   const queryAlumnos = {};
   const queryRegistrados = {};
 
-  if (folioRegex) {
+   queryAlumnos.$or = crearFiltroNumeroControl(folio).$or;
     queryAlumnos.folio = folioRegex;
     queryRegistrados.$or = crearFiltroNumeroControl(folio).$or;
     
   }
 
-  if (apellidosRegex) {
+ const filtroNombresAlumnos = [
     queryAlumnos.$or = [
       { 'datos_alumno.primer_apellido': apellidosRegex },
       { 'datos_alumno.segundo_apellido': apellidosRegex },
       { 'datos_alumno.nombres': apellidosRegex }
     ];
-
+ queryAlumnos.$and = queryAlumnos.$or
+      ? [{ $or: queryAlumnos.$or }, { $or: filtroNombresAlumnos }]
+      : [{ $or: filtroNombresAlumnos }];
+    delete queryAlumnos.$or;
     const filtroNombresRegistrados = [
       { primer_apellido: apellidosRegex },
       { segundo_apellido: apellidosRegex },
