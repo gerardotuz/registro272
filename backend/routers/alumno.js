@@ -743,15 +743,39 @@ router.post('/cargar-excel', upload.single('archivo'), async (req, res) => {
 router.get('/reimprimir/:folio', async (req, res) => {
   try {
     const identificador = String(req.params.folio || '').trim().toUpperCase();
+    const coleccionSolicitada = String(req.query.coleccion || req.query.origen || '')
+      .trim()
+      .toLowerCase();
+    const generarPDFRegistrado = async (encontrado) => {
+      if (!encontrado) {
+        return res.status(404).json({ message: 'Folio o número de control no encontrado' });
+      }
+
+      if (requiereControlEscolarParaPDF(encontrado.alumno)) {
+        return res.status(403).json({
+          message: 'No se puede reimprimir la ficha porque tienes 3 o más materias reprobadas. Acude a control escolar.',
+          requiere_control_escolar: true,
+          pdf_generado: false
+        });
+      }
+
+      const datosRegistradoPDF = normalizarRegistradoParaPDF(encontrado.alumno, identificador);
+      const nombreArchivoRegistrado = `${identificador}.pdf`;
+      const rutaPDFRegistrado = await generarPDFRegistro(datosRegistradoPDF, nombreArchivoRegistrado);
+      const fullPathRegistrado = path.join(__dirname, '../public', rutaPDFRegistrado);
+      return res.sendFile(fullPathRegistrado);
+    };
+
+    if (coleccionSolicitada === 'registrados') {
+      return generarPDFRegistrado(await buscarRegistradoPorNumeroControl(identificador));
+    }
+
     const alumno = await Alumno.findOne({ folio: identificador });
 
     if (alumno) {
       const datosAlumnoPDF = flattenToNested(alumno.toObject());
 
-     const forzarPDFAlumno = String(req.query.coleccion || req.query.origen || '')
-        .trim()
-        .toLowerCase() === 'alumnos';
-      const esRegistroCompleto = !forzarPDFAlumno && alumnoYaTieneRegistroFinal(alumno);
+    const esRegistroCompleto = alumnoYaTieneRegistroFinal(alumno);
 
       const nombreArchivoAlumno = esRegistroCompleto
         ? `${alumno.folio}_registro.pdf`
@@ -765,23 +789,7 @@ router.get('/reimprimir/:folio', async (req, res) => {
       return res.sendFile(fullPathAlumno);
     }
 
-    const encontrado = await buscarRegistradoPorNumeroControl(identificador);
-
-    if (!encontrado) {
-      return res.status(404).json({ message: 'Folio o número de control no encontrado' });
-    }
- if (requiereControlEscolarParaPDF(encontrado.alumno)) {
-      return res.status(403).json({
-        message: 'No se puede reimprimir la ficha porque tienes 3 o más materias reprobadas. Acude a control escolar.',
-        requiere_control_escolar: true,
-        pdf_generado: false
-      });
-    }
-    const datosRegistradoPDF = normalizarRegistradoParaPDF(encontrado.alumno, identificador);
-    const nombreArchivoRegistrado = `${identificador}.pdf`;
-    const rutaPDFRegistrado = await generarPDFRegistro(datosRegistradoPDF, nombreArchivoRegistrado);
-    const fullPathRegistrado = path.join(__dirname, '../public', rutaPDFRegistrado);
-    return res.sendFile(fullPathRegistrado);
+  return generarPDFRegistrado(await buscarRegistradoPorNumeroControl(identificador));
 
   } catch (err) {
     console.error("❌ Error al reimprimir:", err);
